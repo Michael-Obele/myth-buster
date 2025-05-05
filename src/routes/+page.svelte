@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
-	import { Flame, Check, X, HelpCircle, BookOpen, ExternalLink, ArrowRight } from 'lucide-svelte';
+	import { Flame, Check, X, BookOpen, ArrowRight } from 'lucide-svelte';
 	import SparklesText from '$lib/components/SparklesText.svelte';
 
 	// Reactive state for animations
@@ -14,11 +14,13 @@
 		card3: false
 	});
 
+	type Key = 'cta' | 'card1' | 'card2' | 'card3';
+
 	// Function to toggle hover state
-	function toggleHover(key: 'cta' | 'card1' | 'card2' | 'card3', value: boolean) {
+	function toggleHover(key: Key, value: boolean) {
 		hoverState[key] = value;
 	}
-	
+
 	// Generate random particles for the floating elements
 	const particles = $state(
 		Array.from({ length: 15 }, () => ({
@@ -73,7 +75,11 @@
 		<div class="mb-16 flex flex-col items-center text-center">
 			<div class="mb-6 flex items-center gap-3">
 				<Flame class="h-10 w-10 animate-pulse text-primary" />
-				<SparklesText text="Myth Buster" className="font-serif text-5xl font-bold tracking-tight text-primary md:text-6xl" />
+				<SparklesText
+					text="Myth Buster"
+					class="font-serif text-5xl font-bold tracking-tight text-primary md:text-6xl"
+				/>
+
 				<Badge class="bg-primary/20 text-primary">AI Powered</Badge>
 			</div>
 
@@ -290,7 +296,7 @@
 			transform: translateY(0) translateX(0);
 		}
 	}
-	
+
 	.floating-particle {
 		animation-name: float;
 		animation-timing-function: ease-in-out;
