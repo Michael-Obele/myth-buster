@@ -1,7 +1,8 @@
 <script lang="ts">
 	// SparklesText component inspired by Magic UI
 	// Props for customization
-	let { text, className = '' } = $props<{ text: string; className?: string }>();
+	import { cn } from '$lib/utils';
+	let { text, class: className = '' } = $props<{ text: string; class?: string }>();
 
 	// State for sparkle animations
 	let sparkles = $state(
@@ -27,7 +28,7 @@
 
 <div class="sparkles-text-container relative inline-block">
 	<!-- Text content -->
-	<span class={`relative z-10 ${className}`}>
+	<span class={cn('relative z-10', className)}>
 		{text}
 	</span>
 
