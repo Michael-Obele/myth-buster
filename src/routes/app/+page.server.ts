@@ -177,6 +177,13 @@ export const actions: Actions = {
       try {
         const content = answer.choices?.[0]?.message?.content;
         console.log('Raw content from Perplexity:', content);
+        console.log('Citations from Perplexity:', answer.citations);
+
+        // Initialize with any citations from the API response
+        const apiCitations = answer.citations?.map((url: string, index: number) => ({
+          title: `Source ${index + 1}`,
+          url
+        })) || [];
 
         if (content) {
           const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
@@ -191,8 +198,27 @@ export const actions: Actions = {
             }
 
             explanation = parsedContent.explanation || '';
-            citations = parsedContent.citations || [];
             mythOrigin = parsedContent.mythOrigin || '';
+            
+            // Get citations from the parsed JSON content
+            const jsonCitations = parsedContent.citations || [];
+            
+            // Merge citations from both sources, removing duplicates by URL
+            const citationMap = new Map();
+            
+            // Add JSON citations first (they have titles)
+            jsonCitations.forEach((citation: { title: string; url: string }) => {
+              citationMap.set(citation.url, citation);
+            });
+            
+            // Then add API citations, but only if not already in the map
+            apiCitations.forEach((citation: { title: string; url: string }) => {
+              if (!citationMap.has(citation.url)) {
+                citationMap.set(citation.url, citation);
+              }
+            });
+            
+            citations = Array.from(citationMap.values());
           }
         }
       } catch (error) {

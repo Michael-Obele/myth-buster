@@ -9,6 +9,7 @@
 	import * as Progress from '$lib/components/ui/progress';
 	import * as Separator from '$lib/components/ui/separator';
 	import { Skeleton } from '$lib/components/ui/skeleton';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 	import type { SubmitFunction } from '@sveltejs/kit';
@@ -21,13 +22,16 @@
 		Link,
 		Book,
 		ExternalLink,
-		Trash2
+		Trash2,
+		Sparkles
 	} from 'lucide-svelte';
+	import { cn } from '$lib/utils';
 
 	let myth = $state('');
 	let loading = $state(false);
 	let mythJustSubmitted = $state(false);
 	let clearingCache = $state(false);
+	let activeCitation = $state<{ title: string; url: string } | null>(null);
 
 	let { form }: PageProps = $props();
 
@@ -42,31 +46,95 @@
 					: '';
 	});
 
-	let verdictColor = $derived(() => {
-		const verdict = form?.data?.verdict;
-		return verdict === 'true'
-			? 'bg-emerald-500'
-			: verdict === 'false'
-				? 'bg-red-500'
-				: 'bg-purple-500';
+	// Citation regex - matches [n] patterns where n is 1-2 digits
+	const CITATION_REGEX = /\[(\d{1,2})\](?!\w)/g;
+
+	// Define types for our segments
+	type TextSegment = {
+		type: 'text';
+		content: string;
+	};
+
+	type CitationSegment = {
+		type: 'citation';
+		content: string;
+		index: number;
+		valid: boolean;
+	};
+
+	type ExplanationSegment = TextSegment | CitationSegment;
+
+	// Function to parse explanation into segments
+	function parseExplanation(text: string): ExplanationSegment[] {
+		if (!text) return [];
+
+		const segments: ExplanationSegment[] = [];
+		let lastIndex = 0;
+		let match;
+
+		// Reset regex state
+		CITATION_REGEX.lastIndex = 0;
+
+		while ((match = CITATION_REGEX.exec(text)) !== null) {
+			// Add text before the match
+			if (match.index > lastIndex) {
+				segments.push({
+					type: 'text',
+					content: text.substring(lastIndex, match.index)
+				});
+			}
+
+			// Add the citation reference
+			const citationIndex = parseInt(match[1]) - 1;
+			const isCitationValid =
+				form?.data?.citations && citationIndex >= 0 && citationIndex < form.data.citations.length;
+
+			segments.push({
+				type: 'citation',
+				content: match[0],
+				index: citationIndex,
+				valid: isCitationValid
+			});
+
+			lastIndex = match.index + match[0].length;
+		}
+
+		// Add any remaining text
+		if (lastIndex < text.length) {
+			segments.push({
+				type: 'text',
+				content: text.substring(lastIndex)
+			});
+		}
+
+		return segments;
+	}
+
+	// Store the segments in a reactive variable using Svelte 5's $state
+	let explanationSegments: ExplanationSegment[] = $state([]);
+
+	// Update segments when form changes
+	$effect(() => {
+		if (form?.data?.explanation) {
+			explanationSegments = parseExplanation(form.data.explanation);
+		} else {
+			explanationSegments = [];
+		}
 	});
 
-	let verdictIcon = $derived(() => {
-		const verdict = form?.data?.verdict;
-		return verdict === 'true' ? Check : verdict === 'false' ? X : HelpCircle;
-	});
+	function handleCitationClick(index: number) {
+		if (form?.data?.citations && index >= 0 && index < form.data.citations.length) {
+			activeCitation = form.data.citations[index];
+		}
+	}
 
-	let isCached = $derived(() => {
-		return form && 'cached' in form && form.cached === true;
-	});
-
-	// Helper function to extract the myth from the response
-	let displayedMyth = $derived(() => {
-		if (!form) return myth;
-
-		// For both cached and non-cached responses, use the same logic
-		return form?.data?.answer?.choices?.[0]?.message?.content?.split('\n')[0] || myth;
-	});
+	function handleCitationKeyDown(event: KeyboardEvent) {
+		if (event.key === 'Enter' || event.key === ' ') {
+			const target = event.target as HTMLElement;
+			const index = parseInt(target.getAttribute('data-index') || '0');
+			handleCitationClick(index);
+		}
+	}
 
 	const handleSubmit: SubmitFunction = () => {
 		loading = true;
@@ -93,20 +161,21 @@
 		};
 	};
 
-	$effect(() => {
-		form;
-		mythJustSubmitted = false;
-	});
+	// $effect(() => {
+	// 	form;
+	// 	mythJustSubmitted = false;
+	// });
 </script>
 
 <section class="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 px-4 py-6">
 	<Card.Root
-		class="mx-auto max-w-3xl rounded-xl border-2 border-primary/50 bg-background shadow-xl"
+		class="mx-auto max-w-3xl rounded-xl border-2 border-primary/50 bg-background/90 shadow-xl backdrop-blur-sm"
 	>
 		<Card.Header>
 			<div class="flex items-center justify-between">
 				<Card.Title class="flex items-center gap-2 font-serif text-3xl">
-					<Flame class="h-7 w-7 animate-bounce text-primary" /> Myth Buster
+					<Flame class="h-7 w-7 text-primary" />
+					<span class="font-bold text-white"> Myth Buster </span>
 					<Badge class="ml-2 bg-primary/20 text-primary">AI Powered</Badge>
 				</Card.Title>
 
@@ -140,7 +209,7 @@
 		<Card.Content>
 			{#if !form?.data?.verdict || loading}
 				<form
-					class="mt-4 flex flex-col gap-4"
+					class="mt-6 flex flex-col gap-4"
 					method="POST"
 					action="?/verifyMyth"
 					use:enhance={handleSubmit}
@@ -148,12 +217,13 @@
 					<Textarea
 						name="myth"
 						bind:value={myth}
-						placeholder="e.g. 'Bulls get angry when they see red.'"
-						class="min-h-[100px] rounded-lg border-2 border-primary/30 bg-card p-3 font-mono text-lg text-foreground shadow-sm focus:border-primary"
+						placeholder="Enter a myth or claim (e.g., 'Drinking water upside down cures hiccups')"
+						class="min-h-32 border-primary/20 text-base focus-visible:ring-primary"
+						required
 					/>
 					<Button
 						type="submit"
-						class="self-end bg-primary px-6 py-2 text-lg font-bold text-primary-foreground ring-accent transition-all hover:ring-2 disabled:opacity-50"
+						class="bg-gradient-to-r from-primary to-purple-600 transition-opacity hover:opacity-90"
 						disabled={loading || !myth.trim()}
 					>
 						{#if loading}
@@ -180,25 +250,7 @@
 				{#if form.cached}
 					<div class="mt-2 flex items-center justify-end">
 						<Badge variant="outline" class="text-xs text-muted-foreground">
-							<DatabaseZap />
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="12"
-								height="12"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="mr-1"
-							>
-								<rect width="18" height="18" x="3" y="3" rx="2" />
-								<path d="M3 9h18" />
-								<path d="M3 15h18" />
-								<path d="M9 3v18" />
-								<path d="M15 3v18" />
-							</svg>
+							<DatabaseZap class="mr-3 size-4" />
 							Cached Response
 						</Badge>
 					</div>
@@ -206,50 +258,91 @@
 
 				<!-- Verdict Card -->
 				<div class="mt-6">
-					<div class="mb-4 flex items-center gap-2">
-						<div
-							class={`flex h-10 w-10 items-center justify-center rounded-full ${verdictColor} text-white`}
-						>
-							{#if form?.data?.verdict === 'true'}
-								<Check />
-							{:else if form?.data?.verdict === 'false'}
-								<X />
-							{:else}
-								<HelpCircle />
-							{/if}
-						</div>
-						<h2 class="text-2xl font-bold">{verdictText()}</h2>
+					<div class="mb-4 flex items-center gap-3">
+						{#if form?.data?.verdict === 'true'}
+							<div
+								class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg"
+							>
+								<Check class="h-6 w-6" />
+							</div>
+						{:else if form?.data?.verdict === 'false'}
+							<div
+								class="flex h-12 w-12 items-center justify-center rounded-full bg-red-500 text-white shadow-lg"
+							>
+								<X class="h-6 w-6" />
+							</div>
+						{:else}
+							<div
+								class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500 text-white shadow-lg"
+							>
+								<HelpCircle class="h-6 w-6" />
+							</div>
+						{/if}
+						<h2 class="text-3xl font-bold text-white">
+							{verdictText()}
+						</h2>
 					</div>
 
 					<!-- Explanation -->
 					<div
-						class="mb-6 rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm"
+						class="mb-6 rounded-lg border border-primary/30 bg-card p-5 text-card-foreground shadow-md"
 					>
-						<h3 class="mb-2 font-medium">Explanation</h3>
-						<p class="text-muted-foreground">
-							{form?.data?.explanation || 'No explanation provided.'}
-						</p>
+						<h3 class="mb-3 text-xl font-medium">Explanation</h3>
+						<div
+							class="text-lg leading-relaxed text-muted-foreground focus:outline-none"
+							role="textbox"
+							tabindex="0"
+							aria-label="Explanation with clickable citations"
+						>
+							{#each explanationSegments as segment (segment.content)}
+								{#if segment.type === 'text'}
+									{segment.content}
+								{:else if segment.type === 'citation' && segment.valid}
+									<button
+										type="button"
+										class="m-0 inline-flex cursor-pointer border-none bg-transparent p-0 font-medium text-primary hover:underline"
+										onclick={() => handleCitationClick(segment.index)}
+										onkeydown={handleCitationKeyDown}
+										data-index={segment.index}
+										aria-label={`View citation ${segment.index + 1}`}
+									>
+										{segment.content}
+									</button>
+								{:else}
+									{segment.content}
+								{/if}
+							{/each}
+						</div>
+						<div class="mt-4 flex justify-end">
+							<Button
+								variant="outline"
+								class="gap-2 border-primary/30 text-primary hover:bg-primary/70"
+							>
+								<span>Premium Insights</span>
+								<Sparkles />
+							</Button>
+						</div>
 					</div>
 
 					<!-- Citations -->
 					{#if form?.data?.citations && form.data.citations.length > 0}
-						<Accordion.Root type="single" class="w-full">
-							<Accordion.Item value="citations">
+						<Accordion.Root type="single" class="w-full rounded-lg border border-primary/20">
+							<Accordion.Item value="citations" class="border-none">
 								<Accordion.Trigger
-									class="flex w-full items-center justify-between py-2 text-left font-medium"
+									class="flex w-full items-center justify-between rounded-t-lg px-4 py-3 text-left font-medium hover:bg-muted/50"
 								>
 									<div class="flex items-center gap-2">
-										<Book class="h-4 w-4" />
+										<Book class="h-4 w-4 text-primary" />
 										Citations
 									</div>
 								</Accordion.Trigger>
-								<Accordion.Content class="pt-2">
-									<ul class="space-y-2">
+								<Accordion.Content class="px-4 pb-4 pt-1">
+									<ul class="space-y-3">
 										{#each form.data.citations as citation}
 											<li
-												class="flex items-start gap-2 rounded border border-border bg-muted/30 p-2"
+												class="flex items-start gap-3 rounded-md border border-primary/20 bg-muted/30 p-3 transition-colors hover:bg-muted/50"
 											>
-												<Link class="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+												<Link class="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
 												<div>
 													<p class="font-medium">{citation.title}</p>
 													<a
@@ -272,15 +365,21 @@
 
 					<!-- Myth Origin -->
 					{#if form?.data?.mythOrigin}
-						<div class="mt-4 rounded-lg border border-border bg-muted/30 p-4">
-							<h3 class="mb-2 font-medium">Origin of the Myth</h3>
-							<p class="text-sm text-muted-foreground">{form.data.mythOrigin}</p>
+						<div
+							class="mt-4 rounded-lg border border-primary/20 bg-muted/30 p-4 transition-colors hover:bg-muted/40"
+						>
+							<h3 class="mb-2 text-lg font-medium">Origin of the Myth</h3>
+							<p class="text-muted-foreground">{form.data.mythOrigin}</p>
 						</div>
 					{/if}
 
 					<!-- Try Another Button -->
 					<form method="GET" class="mt-6" use:enhance={handleReset}>
-						<Button type="submit" variant="outline" class="w-full border-primary text-primary">
+						<Button
+							type="submit"
+							variant="outline"
+							class="w-full border-primary py-6 text-lg text-primary hover:bg-primary/70"
+						>
 							Verify Another Myth
 						</Button>
 					</form>
@@ -289,3 +388,35 @@
 		</Card.Content>
 	</Card.Root>
 </section>
+
+<!-- Citation Alert Dialog -->
+<AlertDialog.Root open={activeCitation !== null}>
+	<AlertDialog.Content class="bg-black/70">
+		<AlertDialog.Header>
+			<AlertDialog.Title>Citation Source</AlertDialog.Title>
+			<AlertDialog.Description>
+				{#if activeCitation}
+					<div class="mb-4">
+						<h4 class="font-medium text-white">{activeCitation.title}</h4>
+						<p class="mt-1 break-all text-sm text-muted-foreground text-white/65">
+							{activeCitation.url}
+						</p>
+					</div>
+				{/if}
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel onclick={() => (activeCitation = null)}>Close</AlertDialog.Cancel>
+			{#if activeCitation}
+				<a href={activeCitation.url} target="_blank" rel="noopener noreferrer">
+					<AlertDialog.Action>
+						<div class="flex items-center gap-1">
+							<span>Visit Source</span>
+							<ExternalLink class="h-4 w-4" />
+						</div>
+					</AlertDialog.Action>
+				</a>
+			{/if}
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>
