@@ -87,6 +87,3 @@
 		</div>
 	{/if}
 </nav>
-
-<!-- Spacer to prevent content from being hidden under the navbar -->
-<div class="h-14 bg-black"></div>

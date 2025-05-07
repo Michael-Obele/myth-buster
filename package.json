@@ -50,7 +50,9 @@
 		"vitest": "^3.0.0"
 	},
 	"dependencies": {
+		"@lordicon/element": "^1.11.0",
 		"animejs": "^4.0.2",
+		"lottie-web": "^5.12.2",
 		"lucide-svelte": "^0.507.0",
 		"mode-watcher": "^1.0.6",
 		"svelte-motion": "^0.12.2"

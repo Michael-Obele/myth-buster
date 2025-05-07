@@ -5,6 +5,8 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { Flame, Check, X, BookOpen, ArrowRight } from 'lucide-svelte';
 	import SparklesText from '$lib/components/SparklesText.svelte';
+	const swipe = '/lottie/swipe.json';
+	const attention = '/lottie/attention.json';
 
 	// Reactive state for animations
 	let hoverState = $state({
@@ -32,6 +34,94 @@
 			delay: -Math.random() * 15
 		}))
 	);
+
+	const featureCards: {
+		hoverKey: Key;
+		gradient: string;
+		border: string;
+		icon: any; // Using any for Svelte component type
+		iconBg: string;
+		iconColor: string;
+		title: string;
+		description: string;
+		samplePrefix: string;
+		samplePrefixColor: string;
+		sampleText: string;
+	}[] = [
+		{
+			hoverKey: 'card1',
+			gradient: 'bg-gradient-to-r from-emerald-600 to-emerald-400',
+			border: 'border-emerald-500/30',
+			icon: Check,
+			iconBg: 'bg-emerald-500/20',
+			iconColor: 'text-emerald-500',
+			title: 'Verify Myths',
+			description:
+				'Input any statement or myth and get an accurate verdict backed by reliable sources.',
+			samplePrefix: 'True:',
+			samplePrefixColor: 'text-emerald-500',
+			sampleText: 'Bulls are colorblind and react to movement, not the color red.'
+		},
+		{
+			hoverKey: 'card2',
+			gradient: 'bg-gradient-to-r from-red-600 to-red-400',
+			border: 'border-red-500/30',
+			icon: X,
+			iconBg: 'bg-red-500/20',
+			iconColor: 'text-red-500',
+			title: 'Debunk Falsehoods',
+			description:
+				'Get detailed explanations that correct misconceptions with factual information.',
+			samplePrefix: 'False:',
+			samplePrefixColor: 'text-red-500',
+			sampleText:
+				'We only use 10% of our brain. This is a common misconception with no scientific basis.'
+		},
+		{
+			hoverKey: 'card3',
+			gradient: 'bg-gradient-to-r from-purple-600 to-purple-400',
+			border: 'border-purple-500/30',
+			icon: BookOpen,
+			iconBg: 'bg-purple-500/20',
+			iconColor: 'text-purple-500',
+			title: 'Explore Origins',
+			description: 'Learn where myths originated and how they became part of popular culture.',
+			samplePrefix: 'Origin:',
+			samplePrefixColor: 'text-purple-500',
+			sampleText:
+				'The myth about carrots improving night vision was British propaganda during WWII.'
+		}
+	];
+
+	const howItWorksSteps = [
+		{
+			number: 1,
+			title: 'Enter Your Myth',
+			color: 'bg-primary text-white',
+			ring: 'ring-white dark:ring-gray-900',
+			iconBg: 'bg-primary dark:bg-blue-900',
+			titleColor: 'text-primary',
+			description: 'Type in any statement, claim, or myth you want to verify.'
+		},
+		{
+			number: 2,
+			title: 'AI Analysis',
+			color: 'bg-purple-500 text-white',
+			ring: 'ring-white dark:ring-gray-900',
+			iconBg: 'bg-purple-500 dark:bg-blue-900',
+			titleColor: 'text-purple-500',
+			description: 'Our AI analyzes the statement using advanced research and reliable sources.'
+		},
+		{
+			number: 3,
+			title: 'Get Results',
+			color: 'bg-emerald-500 text-white',
+			ring: 'ring-white dark:ring-gray-900',
+			iconBg: 'bg-emerald-500 dark:bg-blue-900',
+			titleColor: 'text-emerald-500',
+			description: 'Receive a detailed verdict with explanations, citations, and myth origins.'
+		}
+	];
 </script>
 
 <!-- Animated background with particles and gradient -->
@@ -73,19 +163,41 @@
 	>
 		<!-- Hero section -->
 		<div class="mb-16 flex flex-col items-center text-center">
-			<div class="mb-6 flex items-center gap-3">
-				<Flame class="h-10 w-10 animate-pulse text-primary" />
-				<SparklesText
-					text="Myth Buster"
-					class="font-serif text-5xl font-bold tracking-tight text-primary md:text-6xl"
-				/>
+			<section class="flex items-end">
+				<lord-icon
+					src={attention}
+					trigger="loop"
+					stroke="thick"
+					target="section"
+					state="hover-draw"
+					class="relative top-10 mb-10 size-20 text-muted-foreground transition-colors hover:text-primary sm:mx-2"
+					colors="primary:white"
+				></lord-icon>
 
-				<Badge class="bg-primary/20 text-primary">AI Powered</Badge>
-			</div>
+				<div class="mb-6 flex items-center gap-3">
+					<Flame class="size-14 animate-pulse text-primary" />
+					<SparklesText
+						text="Myth Buster"
+						class="font-serif text-5xl font-bold tracking-tight text-primary md:text-6xl"
+					/>
 
-			<p class="mb-8 max-w-2xl text-center text-xl text-muted-foreground">
-				Uncover the truth behind common myths and misconceptions with our AI-powered myth-busting
-				tool. Get detailed explanations, reliable sources, and learn the origins of popular myths.
+					<Badge class="bg-primary/20 text-primary hover:text-white">AI Powered</Badge>
+				</div>
+			</section>
+
+			<p class="mb-8 max-w-2xl text-center text-xl leading-loose text-muted-foreground">
+				<span class="text-2xl font-semibold text-primary">Uncover</span>
+				the
+				<span class="handwritten-underline relative z-10 text-2xl font-semibold text-primary"
+					>truth</span
+				>
+				behind common
+				<span
+					class="mx-2 bg-gradient-to-r from-purple-500 to-emerald-500 bg-clip-text text-2xl font-semibold tracking-wide text-transparent"
+					>myth</span
+				>
+				and misconceptions with our AI-powered myth-busting tool. Get detailed explanations, reliable
+				sources, and learn the origins of popular myths.
 			</p>
 
 			<!-- Animated CTA button wrapper -->
@@ -112,165 +224,127 @@
 		</div>
 
 		<!-- Feature cards -->
-		<div class="grid w-full max-w-5xl grid-cols-1 gap-8 md:grid-cols-3">
-			<!-- Card 1: Verify Myths -->
-			<div
-				class="group relative transition-all duration-300 hover:scale-105"
-				role="group"
-				onmouseenter={() => toggleHover('card1', true)}
-				onmouseleave={() => toggleHover('card1', false)}
-			>
-				<div
-					class="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-400 opacity-0 blur transition duration-300 group-hover:opacity-70"
-					class:opacity-50={hoverState.card1}
-				></div>
-				<Card.Root
-					class="relative h-full overflow-hidden rounded-xl border-2 border-emerald-500/30 bg-background/80 backdrop-blur"
-				>
-					<Card.Header class="pb-4">
-						<div
-							class="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20"
-						>
-							<Check class="h-6 w-6 text-emerald-500" />
-						</div>
-						<Card.Title class="text-xl font-bold">Verify Myths</Card.Title>
-						<Card.Description>
-							Input any statement or myth and get an accurate verdict backed by reliable sources.
-						</Card.Description>
-					</Card.Header>
-					<Card.Content>
-						<div class="rounded-lg bg-muted/50 p-3 text-sm">
-							<span class="font-mono text-emerald-500">True:</span> Bulls are colorblind and react to
-							movement, not the color red.
-						</div>
-					</Card.Content>
-				</Card.Root>
-			</div>
 
-			<!-- Card 2: Debunk Falsehoods -->
-			<div
-				class="group relative transition-all duration-300 hover:scale-105"
-				role="group"
-				onmouseenter={() => toggleHover('card2', true)}
-				onmouseleave={() => toggleHover('card2', false)}
-			>
-				<div
-					class="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-red-600 to-red-400 opacity-0 blur transition duration-300 group-hover:opacity-70"
-					class:opacity-50={hoverState.card2}
-				></div>
-				<Card.Root
-					class="relative h-full overflow-hidden rounded-xl border-2 border-red-500/30 bg-background/80 backdrop-blur"
-				>
-					<Card.Header class="pb-4">
-						<div class="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-red-500/20">
-							<X class="h-6 w-6 text-red-500" />
-						</div>
-						<Card.Title class="text-xl font-bold">Debunk Falsehoods</Card.Title>
-						<Card.Description>
-							Get detailed explanations that correct misconceptions with factual information.
-						</Card.Description>
-					</Card.Header>
-					<Card.Content>
-						<div class="rounded-lg bg-muted/50 p-3 text-sm">
-							<span class="font-mono text-red-500">False:</span> We only use 10% of our brain. This is
-							a common misconception with no scientific basis.
-						</div>
-					</Card.Content>
-				</Card.Root>
-			</div>
+		<!-- Mobile Timeline (visible on mobile only) -->
+		<ol class="relative block border-s border-gray-200 dark:border-gray-700 md:hidden">
+			{#each featureCards as card (card.title)}
+				<li class="mb-10 ms-6">
+					<span
+						class="absolute flex h-6 w-6 items-center justify-center {card.iconBg} -start-3 rounded-full ring-8 ring-white dark:ring-gray-900"
+					>
+						{#if card.icon}
+							<card.icon class="h-2.5 w-2.5 {card.iconColor}" />
+						{/if}
+					</span>
+					<h3 class="mb-1 flex items-center text-lg font-semibold text-gray-900 dark:text-white">
+						{card.title}
+					</h3>
+					<p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">
+						{card.description}
+					</p>
+					<div class="rounded-lg bg-muted/50 p-3 text-sm">
+						<span class={`font-mono ${card.samplePrefixColor}`}>{card.samplePrefix}</span>
+						{card.sampleText}
+					</div>
+				</li>
+			{/each}
+		</ol>
 
-			<!-- Card 3: Explore Origins -->
-			<div
-				class="group relative transition-all duration-300 hover:scale-105"
-				role="group"
-				onmouseenter={() => toggleHover('card3', true)}
-				onmouseleave={() => toggleHover('card3', false)}
-			>
+		<!-- Desktop Grid (hidden on mobile) -->
+		<div class="hidden w-full max-w-5xl grid-cols-1 gap-8 md:grid md:grid-cols-3">
+			{#each featureCards as card (card.title)}
 				<div
-					class="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-purple-600 to-purple-400 opacity-0 blur transition duration-300 group-hover:opacity-70"
-					class:opacity-50={hoverState.card3}
-				></div>
-				<Card.Root
-					class="relative h-full overflow-hidden rounded-xl border-2 border-purple-500/30 bg-background/80 backdrop-blur"
+					class="group relative transition-all duration-300 hover:scale-105"
+					role="group"
+					onmouseenter={() => toggleHover(card.hoverKey, true)}
+					onmouseleave={() => toggleHover(card.hoverKey, false)}
 				>
-					<Card.Header class="pb-4">
-						<div
-							class="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-purple-500/20"
-						>
-							<BookOpen class="h-6 w-6 text-purple-500" />
-						</div>
-						<Card.Title class="text-xl font-bold">Explore Origins</Card.Title>
-						<Card.Description>
-							Learn where myths originated and how they became part of popular culture.
-						</Card.Description>
-					</Card.Header>
-					<Card.Content>
-						<div class="rounded-lg bg-muted/50 p-3 text-sm">
-							<span class="font-mono text-purple-500">Origin:</span> The myth about carrots improving
-							night vision was British propaganda during WWII.
-						</div>
-					</Card.Content>
-				</Card.Root>
-			</div>
+					<div
+						class={`absolute -inset-0.5 rounded-xl ${card.gradient} opacity-0 blur transition duration-300 group-hover:opacity-70`}
+						class:opacity-50={hoverState[card.hoverKey]}
+					></div>
+					<Card.Root
+						class={`relative h-full overflow-hidden rounded-xl border-2 ${card.border} bg-background/80 backdrop-blur`}
+					>
+						<Card.Header class="pb-4">
+							<div
+								class={`mb-2 flex h-12 w-12 items-center justify-center rounded-full ${card.iconBg}`}
+							>
+								{#if card.icon}
+									<card.icon class={`h-6 w-6 ${card.iconColor}`} />
+								{/if}
+							</div>
+							<Card.Title class="text-xl font-bold">{card.title}</Card.Title>
+							<Card.Description>
+								{card.description}
+							</Card.Description>
+						</Card.Header>
+						<Card.Content>
+							<div class="rounded-lg bg-muted/50 p-3 text-sm">
+								<span class={`font-mono ${card.samplePrefixColor}`}>{card.samplePrefix}</span>
+								{card.sampleText}
+							</div>
+						</Card.Content>
+					</Card.Root>
+				</div>
+			{/each}
 		</div>
 
 		<!-- How it works section -->
-		<div class="mt-20 w-full max-w-4xl">
+
+		<div id="how-it-works" class="mt-20 w-full max-w-4xl scroll-mt-14">
 			<h2 class="mb-8 text-center font-serif text-3xl font-bold">How It Works</h2>
 
-			<div class="relative">
+			<!-- Mobile Timeline (block md:hidden) -->
+			<ol class="relative block border-s border-gray-200 dark:border-gray-700 md:hidden">
+				{#each howItWorksSteps as step}
+					<li class="mb-10 ms-6">
+						<span
+							class={`absolute flex h-6 w-6 items-center justify-center ${step.iconBg} -start-3 rounded-full ${step.ring} ${step.color}`}
+						>
+							<span class="font-bold">{step.number}</span>
+						</span>
+						<h3 class={`mb-1 text-lg font-semibold dark:text-white ${step.titleColor}`}>
+							{step.title}
+						</h3>
+						<p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">
+							{step.description}
+						</p>
+					</li>
+				{/each}
+			</ol>
+
+			<!-- Desktop Timeline (hidden on mobile) -->
+			<div class="relative hidden md:block">
 				<!-- Timeline line -->
 				<div
-					class="absolute left-4 top-0 h-full w-0.5 bg-gradient-to-b from-primary via-purple-500 to-emerald-500 md:left-1/2"
+					class="absolute left-1/2 top-0 h-full w-0.5 bg-gradient-to-b from-primary via-purple-500 to-emerald-500"
 				></div>
-
-				<!-- Step 1 -->
-				<div class="relative mb-12 flex flex-col md:flex-row">
-					<div class="flex-1 pb-8 md:pr-12 md:text-right">
-						<h3 class="mb-2 text-xl font-bold text-primary">1. Enter Your Myth</h3>
-						<p class="text-muted-foreground">
-							Type in any statement, claim, or myth you want to verify.
-						</p>
+				{#each howItWorksSteps as step, i}
+					<div class="relative mb-12 flex flex-col md:flex-row">
+						<div class={`flex-1 pb-8 ${i % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:pl-12'}`}>
+							{#if i % 2 === 0}
+								<h3 class={`mb-2 text-xl font-bold ${step.titleColor}`}>
+									{step.number}. {step.title}
+								</h3>
+								<p class="text-muted-foreground">{step.description}</p>
+							{/if}
+						</div>
+						<div
+							class="absolute left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full {step.color}"
+						>
+							{step.number}
+						</div>
+						<div class={`flex-1 pb-8 ${i % 2 === 0 ? 'md:pl-12' : 'md:pr-12 md:text-right'}`}>
+							{#if i % 2 !== 0}
+								<h3 class={`mb-2 text-xl font-bold ${step.titleColor}`}>
+									{step.number}. {step.title}
+								</h3>
+								<p class="text-muted-foreground">{step.description}</p>
+							{/if}
+						</div>
 					</div>
-					<div
-						class="absolute left-0 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white md:left-1/2 md:-translate-x-1/2"
-					>
-						1
-					</div>
-					<div class="flex-1 md:pl-12"></div>
-				</div>
-
-				<!-- Step 2 -->
-				<div class="relative mb-12 flex flex-col md:flex-row">
-					<div class="flex-1 md:pr-12"></div>
-					<div
-						class="absolute left-0 flex h-8 w-8 items-center justify-center rounded-full bg-purple-500 text-white md:left-1/2 md:-translate-x-1/2"
-					>
-						2
-					</div>
-					<div class="flex-1 pb-8 md:pl-12">
-						<h3 class="mb-2 text-xl font-bold text-purple-500">2. AI Analysis</h3>
-						<p class="text-muted-foreground">
-							Our AI analyzes the statement using advanced research and reliable sources.
-						</p>
-					</div>
-				</div>
-
-				<!-- Step 3 -->
-				<div class="relative mb-12 flex flex-col md:flex-row">
-					<div class="flex-1 pb-8 md:pr-12 md:text-right">
-						<h3 class="mb-2 text-xl font-bold text-emerald-500">3. Get Results</h3>
-						<p class="text-muted-foreground">
-							Receive a detailed verdict with explanations, citations, and myth origins.
-						</p>
-					</div>
-					<div
-						class="absolute left-0 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-white md:left-1/2 md:-translate-x-1/2"
-					>
-						3
-					</div>
-					<div class="flex-1 md:pl-12"></div>
-				</div>
+				{/each}
 			</div>
 		</div>
 
@@ -302,5 +376,19 @@
 		animation-timing-function: ease-in-out;
 		animation-iteration-count: infinite;
 		position: absolute;
+	}
+
+	.handwritten-underline {
+		/* Use an SVG as a background image with two wavy lines */
+		background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10"><path d="M0,5 L5,4 L10,6 L15,5 L20,5" stroke="green" fill="none"/><path d="M0,8 L5,7 L10,9 L15,8 L20,8" stroke="green" fill="none"/></svg>');
+
+		/* Repeat the background image horizontally */
+		background-repeat: repeat-x;
+
+		/* Position the background at the bottom of the element */
+		background-position: bottom;
+
+		/* Add padding below the text to make space for the underline */
+		padding-bottom: 10px;
 	}
 </style>
