@@ -110,17 +110,10 @@
 		return segments;
 	}
 
-	// Store the segments in a reactive variable using Svelte 5's $state
-	let explanationSegments: ExplanationSegment[] = $state([]);
-
-	// Update segments when form changes
-	$effect(() => {
-		if (form?.data?.explanation) {
-			explanationSegments = parseExplanation(form.data.explanation);
-		} else {
-			explanationSegments = [];
-		}
-	});
+	// explanationSegments is derived from form.data.explanation
+	let explanationSegments = $derived(() =>
+		form?.data?.explanation ? (parseExplanation(form.data.explanation) as ExplanationSegment[]) : []
+	);
 
 	function handleCitationClick(index: number) {
 		if (form?.data?.citations && index >= 0 && index < form.data.citations.length) {
@@ -194,13 +187,13 @@
 						type="submit"
 						variant="outline"
 						size="sm"
-						class="text-xs text-muted-foreground hover:text-destructive"
+						class="border-destructive text-xs text-destructive hover:bg-destructive/70 hover:text-white"
 						disabled={clearingCache}
 					>
 						{#if clearingCache}
 							<div class="flex items-center gap-1">
 								<div
-									class="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"
+									class="h-3 w-3 animate-spin rounded-full border-2 border-destructive border-t-transparent"
 								></div>
 								Clearing...
 							</div>
@@ -285,7 +278,7 @@
 							tabindex="0"
 							aria-label="Explanation with clickable citations"
 						>
-							{#each explanationSegments as segment (segment.content)}
+							{#each explanationSegments() as segment (segment.content)}
 								{#if segment.type === 'text'}
 									{segment.content}
 								{:else if segment.type === 'citation' && segment.valid}
