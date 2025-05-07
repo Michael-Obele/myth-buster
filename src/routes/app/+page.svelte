@@ -160,12 +160,21 @@
 			await update();
 		};
 	};
-
-	// $effect(() => {
-	// 	form;
-	// 	mythJustSubmitted = false;
-	// });
 </script>
+
+{#snippet verdictIcon(verdict: string)}
+	{@const Icon = verdict === 'true' ? Check : verdict === 'false' ? X : HelpCircle}
+	<div
+		class="flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg{verdict ===
+		'true'
+			? ' bg-emerald-500'
+			: verdict === 'false'
+				? ' bg-red-500'
+				: ' bg-purple-500'}"
+	>
+		<Icon class="h-6 w-6" />
+	</div>
+{/snippet}
 
 <section class="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 px-4 py-6">
 	<Card.Root
@@ -259,25 +268,7 @@
 				<!-- Verdict Card -->
 				<div class="mt-6">
 					<div class="mb-4 flex items-center gap-3">
-						{#if form?.data?.verdict === 'true'}
-							<div
-								class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg"
-							>
-								<Check class="h-6 w-6" />
-							</div>
-						{:else if form?.data?.verdict === 'false'}
-							<div
-								class="flex h-12 w-12 items-center justify-center rounded-full bg-red-500 text-white shadow-lg"
-							>
-								<X class="h-6 w-6" />
-							</div>
-						{:else}
-							<div
-								class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500 text-white shadow-lg"
-							>
-								<HelpCircle class="h-6 w-6" />
-							</div>
-						{/if}
+						{@render verdictIcon(form?.data?.verdict)}
 						<h2 class="text-3xl font-bold text-white">
 							{verdictText()}
 						</h2>
