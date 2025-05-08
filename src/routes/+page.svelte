@@ -5,6 +5,8 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { Flame, Check, X, BookOpen, ArrowRight } from 'lucide-svelte';
 	import SparklesText from '$lib/components/SparklesText.svelte';
+	import BackgroundBoxes from '$lib/components/BackgroundBoxes.svelte';
+	import GridBeam from '$lib/components/GridBeam.svelte';
 	const swipe = '/lottie/swipe.json';
 	const attention = '/lottie/attention.json';
 
@@ -124,238 +126,224 @@
 	];
 </script>
 
-<!-- Animated background with particles and gradient -->
-<div class="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800">
-	<!-- Animated particles -->
-	<div class="absolute inset-0 z-0">
-		<div
-			class="absolute h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-purple-500/20 blur-3xl"
-		></div>
-		<div
-			class="absolute bottom-0 right-0 h-[30rem] w-[30rem] translate-x-1/3 translate-y-1/4 rounded-full bg-emerald-500/20 blur-3xl"
-		></div>
-		<div
-			class="absolute left-1/2 top-1/2 h-[20rem] w-[20rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500/20 blur-3xl"
-		></div>
-	</div>
-
-	<!-- Floating elements -->
-	<div class="absolute inset-0 z-0 opacity-30">
-		{#each particles as particle, i}
-			<div
-				class="floating-particle"
-				style="
-					width: {particle.size}px; 
-					height: {particle.size}px; 
-					left: {particle.left}%; 
-					top: {particle.top}%; 
-					opacity: {particle.opacity};
-					animation-duration: {particle.duration}s;
-					animation-delay: {particle.delay}s;
-				"
-			></div>
-		{/each}
-	</div>
-
-	<!-- Main content -->
-	<main
-		class="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 py-16 text-foreground"
+<!-- Animated background with grid pattern -->
+<div class="min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800">
+	<!-- Grid pattern overlay -->
+	<div class="absolute inset-0 bg-grid-black/[0.07] dark:bg-grid-white/[0.05]"></div>
+	<!-- Background boxes for additional visual effect -->
+	<BackgroundBoxes
+		className="opacity-50"
+		boxClassName="border border-slate-700/20"
+		pattern="grid"
+		patternColor="slate-700"
+		quantity={15}
 	>
-		<!-- Hero section -->
-		<div class="mb-16 flex flex-col items-center text-center">
-			<section class="flex items-end">
-				<lord-icon
-					src={attention}
-					trigger="loop"
-					stroke="thick"
-					target="section"
-					state="hover-draw"
-					class="relative top-10 mb-10 size-20 text-muted-foreground transition-colors hover:text-primary sm:mx-2"
-					colors="primary:white"
-				></lord-icon>
+		<!-- Main content -->
+		<main
+			class="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 py-16 text-foreground"
+		>
+			<!-- Hero section -->
+			<div class="mb-16 flex flex-col items-center text-center">
+				<section class="flex items-end">
+					<lord-icon
+						src={attention}
+						trigger="loop"
+						stroke="thick"
+						target="section"
+						state="hover-draw"
+						class="relative top-10 mb-10 size-20 text-muted-foreground transition-colors hover:text-primary sm:mx-2"
+						colors="primary:white"
+					></lord-icon>
 
-				<div class="mb-6 flex items-center gap-3">
-					<Flame class="size-14 animate-pulse text-primary" />
-					<SparklesText
-						text="Myth Buster"
-						class="font-serif text-5xl font-bold tracking-tight text-primary md:text-6xl"
-					/>
+					<div class="mb-6 flex items-center gap-3">
+						<Flame class="size-14 animate-pulse text-primary" />
+						<a href="/app">
+							<SparklesText
+								text="Myth Buster"
+								class="font-serif text-5xl font-bold tracking-tight text-primary md:text-6xl"
+							/>
+						</a>
 
-					<Badge class="bg-primary/20 text-primary hover:text-white">AI Powered</Badge>
-				</div>
-			</section>
-
-			<p class="mb-8 max-w-2xl text-center text-xl leading-loose text-muted-foreground">
-				<span class="text-2xl font-semibold text-primary">Uncover</span>
-				the
-				<span class="handwritten-underline relative z-10 text-2xl font-semibold text-primary"
-					>truth</span
-				>
-				behind common
-				<span
-					class="mx-2 bg-gradient-to-r from-purple-500 to-emerald-500 bg-clip-text text-2xl font-semibold tracking-wide text-transparent"
-					>myth</span
-				>
-				and misconceptions with our AI-powered myth-busting tool. Get detailed explanations, reliable
-				sources, and learn the origins of popular myths.
-			</p>
-
-			<!-- Animated CTA button wrapper -->
-			<div
-				class="relative"
-				tabindex="0"
-				role="button"
-				onmouseenter={() => toggleHover('cta', true)}
-				onmouseleave={() => toggleHover('cta', false)}
-			>
-				<div
-					class="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-purple-600 via-primary to-emerald-600 opacity-70 blur transition duration-1000"
-					class:opacity-100={hoverState.cta}
-					class:scale-105={hoverState.cta}
-				></div>
-				<Button
-					href="/app"
-					class="relative flex items-center gap-2 rounded-lg px-8 py-6 text-lg font-medium transition-all duration-300 hover:scale-105"
-				>
-					Start Busting Myths
-					<ArrowRight class="h-5 w-5" />
-				</Button>
-			</div>
-		</div>
-
-		<!-- Feature cards -->
-
-		<!-- Mobile Timeline (visible on mobile only) -->
-		<ol class="relative block border-s border-gray-200 dark:border-gray-700 md:hidden">
-			{#each featureCards as card (card.title)}
-				<li class="mb-10 ms-6">
-					<span
-						class="absolute flex h-6 w-6 items-center justify-center {card.iconBg} -start-3 rounded-full ring-8 ring-white dark:ring-gray-900"
-					>
-						{#if card.icon}
-							<card.icon class="h-2.5 w-2.5 {card.iconColor}" />
-						{/if}
-					</span>
-					<h3 class="mb-1 flex items-center text-lg font-semibold text-gray-900 dark:text-white">
-						{card.title}
-					</h3>
-					<p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">
-						{card.description}
-					</p>
-					<div class="rounded-lg bg-muted/50 p-3 text-sm">
-						<span class={`font-mono ${card.samplePrefixColor}`}>{card.samplePrefix}</span>
-						{card.sampleText}
+						<Badge class="bg-primary/20 text-primary hover:text-white">AI Powered</Badge>
 					</div>
-				</li>
-			{/each}
-		</ol>
+				</section>
 
-		<!-- Desktop Grid (hidden on mobile) -->
-		<div class="hidden w-full max-w-5xl grid-cols-1 gap-8 md:grid md:grid-cols-3">
-			{#each featureCards as card (card.title)}
+				<p class="mb-8 max-w-2xl text-center text-xl leading-loose text-muted-foreground">
+					<span class="text-2xl font-semibold text-primary">Uncover</span>
+					the
+					<span class="handwritten-underline relative z-10 text-2xl font-semibold text-primary"
+						>truth</span
+					>
+					behind common
+					<span
+						class="mx-2 bg-gradient-to-r from-purple-500 to-emerald-500 bg-clip-text text-2xl font-semibold tracking-wide text-transparent"
+						>myth</span
+					>
+					and misconceptions with our AI-powered myth-busting tool. Get detailed explanations, reliable
+					sources, and learn the origins of popular myths.
+				</p>
+
+				<!-- Animated CTA button wrapper -->
 				<div
-					class="group relative transition-all duration-300 hover:scale-105"
-					role="group"
-					onmouseenter={() => toggleHover(card.hoverKey, true)}
-					onmouseleave={() => toggleHover(card.hoverKey, false)}
+					class="relative"
+					tabindex="0"
+					role="button"
+					onmouseenter={() => toggleHover('cta', true)}
+					onmouseleave={() => toggleHover('cta', false)}
 				>
 					<div
-						class={`absolute -inset-0.5 rounded-xl ${card.gradient} opacity-0 blur transition duration-300 group-hover:opacity-70`}
-						class:opacity-50={hoverState[card.hoverKey]}
+						class="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-purple-600 via-primary to-emerald-600 opacity-70 blur transition duration-1000"
+						class:opacity-100={hoverState.cta}
+						class:scale-105={hoverState.cta}
 					></div>
-					<Card.Root
-						class={`relative h-full overflow-hidden rounded-xl border-2 ${card.border} bg-background/80 backdrop-blur`}
+					<Button
+						href="/app"
+						class="relative flex items-center gap-2 rounded-lg px-8 py-6 text-lg font-medium transition-all duration-300 hover:scale-105"
 					>
-						<Card.Header class="pb-4">
-							<div
-								class={`mb-2 flex h-12 w-12 items-center justify-center rounded-full ${card.iconBg}`}
-							>
-								{#if card.icon}
-									<card.icon class={`h-6 w-6 ${card.iconColor}`} />
-								{/if}
-							</div>
-							<Card.Title class="text-xl font-bold">{card.title}</Card.Title>
-							<Card.Description>
-								{card.description}
-							</Card.Description>
-						</Card.Header>
-						<Card.Content>
-							<div class="rounded-lg bg-muted/50 p-3 text-sm">
-								<span class={`font-mono ${card.samplePrefixColor}`}>{card.samplePrefix}</span>
-								{card.sampleText}
-							</div>
-						</Card.Content>
-					</Card.Root>
+						Start Busting Myths
+						<ArrowRight class="h-5 w-5" />
+					</Button>
 				</div>
-			{/each}
-		</div>
+			</div>
 
-		<!-- How it works section -->
+			<!-- Feature cards -->
 
-		<div id="how-it-works" class="mt-20 w-full max-w-4xl scroll-mt-14">
-			<h2 class="mb-8 text-center font-serif text-3xl font-bold">How It Works</h2>
-
-			<!-- Mobile Timeline (block md:hidden) -->
+			<!-- Mobile Timeline (visible on mobile only) -->
 			<ol class="relative block border-s border-gray-200 dark:border-gray-700 md:hidden">
-				{#each howItWorksSteps as step}
+				{#each featureCards as card (card.title)}
 					<li class="mb-10 ms-6">
 						<span
-							class={`absolute flex h-6 w-6 items-center justify-center ${step.iconBg} -start-3 rounded-full ${step.ring} ${step.color}`}
+							class="absolute flex h-6 w-6 items-center justify-center {card.iconBg} -start-3 rounded-full ring-8 ring-white dark:ring-gray-900"
 						>
-							<span class="font-bold">{step.number}</span>
+							{#if card.icon}
+								<card.icon class="h-2.5 w-2.5 {card.iconColor}" />
+							{/if}
 						</span>
-						<h3 class={`mb-1 text-lg font-semibold dark:text-white ${step.titleColor}`}>
-							{step.title}
+						<h3 class="mb-1 flex items-center text-lg font-semibold text-gray-900 dark:text-white">
+							{card.title}
 						</h3>
 						<p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">
-							{step.description}
+							{card.description}
 						</p>
+						<div class="rounded-lg bg-muted/50 p-3 text-sm">
+							<span class={`font-mono ${card.samplePrefixColor}`}>{card.samplePrefix}</span>
+							{card.sampleText}
+						</div>
 					</li>
 				{/each}
 			</ol>
 
-			<!-- Desktop Timeline (hidden on mobile) -->
-			<div class="relative hidden md:block">
-				<!-- Timeline line -->
-				<div
-					class="absolute left-1/2 top-0 h-full w-0.5 bg-gradient-to-b from-primary via-purple-500 to-emerald-500"
-				></div>
-				{#each howItWorksSteps as step, i}
-					<div class="relative mb-12 flex flex-col md:flex-row">
-						<div class={`flex-1 pb-8 ${i % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:pl-12'}`}>
-							{#if i % 2 === 0}
-								<h3 class={`mb-2 text-xl font-bold ${step.titleColor}`}>
-									{step.number}. {step.title}
-								</h3>
-								<p class="text-muted-foreground">{step.description}</p>
-							{/if}
-						</div>
+			<!-- Desktop Grid (hidden on mobile) -->
+			<div class="gird w-full max-w-5xl grid-cols-1 gap-8 md:grid md:grid-cols-3">
+				{#each featureCards as card (card.title)}
+					<div
+						class="group relative transition-all duration-300 hover:scale-105"
+						role="group"
+						onmouseenter={() => toggleHover(card.hoverKey, true)}
+						onmouseleave={() => toggleHover(card.hoverKey, false)}
+					>
 						<div
-							class="absolute left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full {step.color}"
+							class={`absolute -inset-0.5 rounded-xl ${card.gradient} opacity-0 blur transition duration-300 group-hover:opacity-70`}
+							class:opacity-50={hoverState[card.hoverKey]}
+						></div>
+						<Card.Root
+							class={`relative h-full overflow-hidden rounded-xl border-2 ${card.border} bg-background/80 backdrop-blur`}
 						>
-							{step.number}
-						</div>
-						<div class={`flex-1 pb-8 ${i % 2 === 0 ? 'md:pl-12' : 'md:pr-12 md:text-right'}`}>
-							{#if i % 2 !== 0}
-								<h3 class={`mb-2 text-xl font-bold ${step.titleColor}`}>
-									{step.number}. {step.title}
-								</h3>
-								<p class="text-muted-foreground">{step.description}</p>
-							{/if}
-						</div>
+							<Card.Header class="pb-4">
+								<div
+									class={`mb-2 flex h-12 w-12 items-center justify-center rounded-full ${card.iconBg}`}
+								>
+									{#if card.icon}
+										<card.icon class={`h-6 w-6 ${card.iconColor}`} />
+									{/if}
+								</div>
+								<Card.Title class="text-xl font-bold">{card.title}</Card.Title>
+								<Card.Description>
+									{card.description}
+								</Card.Description>
+							</Card.Header>
+							<Card.Content>
+								<div class="rounded-lg bg-muted/50 p-3 text-sm">
+									<span class={`font-mono ${card.samplePrefixColor}`}>{card.samplePrefix}</span>
+									{card.sampleText}
+								</div>
+							</Card.Content>
+						</Card.Root>
 					</div>
 				{/each}
 			</div>
-		</div>
 
-		<!-- Final CTA -->
-		<div class="mt-16 text-center">
-			<p class="mb-6 text-xl text-muted-foreground">Ready to separate fact from fiction?</p>
-			<Button href="/app" variant="outline" class="border-primary px-8 py-4 text-lg text-primary">
-				Start Busting Myths Now
-			</Button>
-		</div>
-	</main>
+			<!-- How it works section -->
+
+			<div id="how-it-works" class="mt-20 w-full max-w-4xl scroll-mt-14">
+				<h2 class="mb-8 text-center font-serif text-3xl font-bold">How It Works</h2>
+
+				<!-- Mobile Timeline (block md:hidden) -->
+				<ol class="relative block border-s border-gray-200 dark:border-gray-700 md:hidden">
+					{#each howItWorksSteps as step}
+						<li class="mb-10 ms-6">
+							<span
+								class={`absolute flex h-6 w-6 items-center justify-center ${step.iconBg} -start-3 rounded-full ${step.ring} ${step.color}`}
+							>
+								<span class="font-bold">{step.number}</span>
+							</span>
+							<h3 class={`mb-1 text-lg font-semibold dark:text-white ${step.titleColor}`}>
+								{step.title}
+							</h3>
+							<p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">
+								{step.description}
+							</p>
+						</li>
+					{/each}
+				</ol>
+
+				<!-- Desktop Timeline (hidden on mobile) -->
+				<div class="relative hidden md:block">
+					<!-- Timeline line -->
+					<div
+						class="absolute left-1/2 top-0 h-full w-0.5 bg-gradient-to-b from-primary via-purple-500 to-emerald-500"
+					></div>
+					{#each howItWorksSteps as step, i}
+						<div class="relative mb-12 flex flex-col md:flex-row">
+							<div class={`flex-1 pb-8 ${i % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:pl-12'}`}>
+								{#if i % 2 === 0}
+									<h3 class={`mb-2 text-xl font-bold ${step.titleColor}`}>
+										{step.number}. {step.title}
+									</h3>
+									<p class="text-muted-foreground">{step.description}</p>
+								{/if}
+							</div>
+							<div
+								class="absolute left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full {step.color}"
+							>
+								{step.number}
+							</div>
+							<div class={`flex-1 pb-8 ${i % 2 === 0 ? 'md:pl-12' : 'md:pr-12 md:text-right'}`}>
+								{#if i % 2 !== 0}
+									<h3 class={`mb-2 text-xl font-bold ${step.titleColor}`}>
+										{step.number}. {step.title}
+									</h3>
+									<p class="text-muted-foreground">{step.description}</p>
+								{/if}
+							</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+
+			<!-- Final CTA -->
+			<div class="mt-16 text-center">
+				<p class="mb-6 text-xl text-muted-foreground">Ready to separate fact from fiction?</p>
+				<Button
+					href="/app"
+					variant="outline"
+					class="border-primary px-8 py-4 text-lg text-primary hover:bg-primary/80"
+				>
+					Start Busting Myths Now
+				</Button>
+			</div>
+		</main>
+	</BackgroundBoxes>
 </div>
 
 <style>
