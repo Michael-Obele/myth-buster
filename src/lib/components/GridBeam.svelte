@@ -58,14 +58,14 @@
 		/>
 	</svg>
 
-	<!-- Beam in the bottom left -->
+	<!-- Beam in the top left (repositioned from bottom) -->
 	<svg
 		width="100"
 		height="40"
 		viewBox="0 0 100 40"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"
-		class="absolute bottom-0 left-0 ml-8 mb-12"
+		class="absolute left-0 top-12 ml-8"
 	>
 		<path
 			d="M0 .5h32M30 20h32M31.5 20V0"
@@ -90,14 +90,14 @@
 		/>
 	</svg>
 
-	<!-- Beam in the bottom right -->
+	<!-- Beam in the upper right (repositioned from bottom) -->
 	<svg
 		width="80"
 		height="30"
 		viewBox="0 0 80 30"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"
-		class="absolute bottom-0 right-0 mr-16 mb-8"
+		class="absolute right-0 top-20 mr-16"
 	>
 		<path
 			d="M0 .5h32M30 15h32"
@@ -106,14 +106,14 @@
 		/>
 	</svg>
 
-	<!-- Beam in the bottom center -->
+	<!-- Beam in the top center (repositioned from bottom) -->
 	<svg
 		width="65"
 		height="25"
 		viewBox="0 0 65 25"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"
-		class="absolute bottom-0 left-1/2 -translate-x-1/2 mb-4"
+		class="absolute left-1/2 top-16 -translate-x-1/2"
 	>
 		<path
 			d="M0 .5h32M0 12h32M15 12V0"
@@ -122,14 +122,14 @@
 		/>
 	</svg>
 
-	<!-- Beam in the center -->
+	<!-- Beam in the upper center (repositioned from center) -->
 	<svg
 		width="60"
 		height="60"
 		viewBox="0 0 60 60"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"
-		class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+		class="absolute left-1/2 top-1/4 -translate-x-1/2 -translate-y-1/2"
 	>
 		<path
 			d="M0 .5h32M0 30h32M0 59h32M15 30V0m0 59V30"
@@ -154,14 +154,14 @@
 		/>
 	</svg>
 
-	<!-- Beam in the middle right -->
+	<!-- Beam in the upper right (repositioned from middle right) -->
 	<svg
 		width="75"
 		height="35"
 		viewBox="0 0 75 35"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"
-		class="absolute right-0 top-2/3 mr-8"
+		class="absolute right-0 top-1/3 mr-8"
 	>
 		<path
 			d="M0 .5h32M0 17h32M15 17V0"
@@ -182,6 +182,22 @@
 		<path
 			d="M0 .5h32M0 15h20"
 			stroke="url(#grad11)"
+			stroke-width={1.5}
+		/>
+	</svg>
+
+	<!-- Added new beam in the top right corner -->
+	<svg
+		width="85"
+		height="35"
+		viewBox="0 0 85 35"
+		fill="none"
+		xmlns="http://www.w3.org/2000/svg"
+		class="absolute right-1/4 top-8 -translate-x-1/2"
+	>
+		<path
+			d="M0 .5h32M0 17h32M15 17V0"
+			stroke="url(#grad3)"
 			stroke-width={1.5}
 		/>
 	</svg>
