@@ -11,6 +11,7 @@
 | **Error Handling** | High | Medium | High | 0.5 day | **Should Have** |
 | **Confidence Meter** | Medium | Medium | Medium | 1 day | **Nice to Have** |
 | **Myth-Busting Streaks** | Low | Low | Medium | 0.5 day | **Nice to Have** |
+| **Myth Busting Game** | Medium | High | High | 2 days | **Nice to Have** |
 | **Myth Origin Stories** | Low | High | Medium | 2 days | **Future** |
 | **Seasonal Myths** | Low | Medium | Low | 1.5 days | **Future** |
 | **Advanced Analytics** | Low | High | Medium | 2 days | **Future** |

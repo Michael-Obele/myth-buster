@@ -45,6 +45,14 @@ This plan outlines the development of a myth-busting web app, built with Svelte 
    - Dark/light mode switch with shadcn-svelte Switch and lucide-svelte Moon/Sun icons.
    - Persist in local storage with Svelte 5 `$state`.
    - Tailwind CSS dark mode classes.
+9. **Myth Busting Game**:
+   - Interactive game where AI generates random facts/myths for users to evaluate.
+   - True/False selection with confidence slider (1-100%).
+   - Immediate feedback with explanations and evidence.
+   - Score tracking based on correctness and confidence level.
+   - Streak counter for consecutive correct answers.
+   - Visual feedback for correct/incorrect responses.
+   - Educational content explaining the truth behind each statement.
 
 ## Design and Theme
 - **Color Theme: Enchanted Codex**:
@@ -90,6 +98,11 @@ This plan outlines the development of a myth-busting web app, built with Svelte 
 - **Additional Features**:
   - Implement origins (Accordion), streaks (Badge), seasonal myths (Badge), audio cues (Switch) with shadcn-svelte components, lucide-svelte icons, and Tailwind animations.
   - Style with `codex` colors and parchment textures.
+  - Develop Myth Busting Game with:
+    - Server API endpoint to generate random facts/myths via Sonar API.
+    - Game UI with statement display, confidence slider, and True/False buttons.
+    - Score tracking and streak counter using Svelte 5 `$state`.
+    - Feedback system with explanations and visual cues for correct/incorrect answers.
 - **Polish and Optimization**:
   - Add theme toggle with Switch, Moon/Sun icons, and `dark:` classes.
   - Optimize with Svelte 5 reactivity, cached API queries.

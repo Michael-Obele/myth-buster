@@ -38,6 +38,12 @@
    - Offline indication when connection is lost
 
 ### Nice to Have (If Time Permits)
+1. **Myth Busting Game**
+   - Interactive game where AI generates random facts/myths
+   - True/False selection with confidence slider
+   - Score tracking and streak counting
+   - Educational feedback with explanations
+   - Visual and audio feedback for correct/incorrect answers
 1. **Confidence Meter**
    - User prediction interface before seeing verdict
    - Comparison between user confidence and actual result

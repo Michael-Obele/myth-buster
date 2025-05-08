@@ -10,7 +10,6 @@
 	import AboutTab from '$lib/components/about/AboutTab.svelte';
 	import FeaturesTab from '$lib/components/about/FeaturesTab.svelte';
 	import TechStackTab from '$lib/components/about/TechStackTab.svelte';
-	import SparklesText2 from '$lib/components/SparklesText2.svelte';
 </script>
 
 <div class="relative min-h-screen w-full overflow-hidden bg-background">
@@ -20,10 +19,10 @@
 			<div
 				class="floating-particle"
 				style={`
-					width: ${Math.random() * 10 + 5}px; 
-					height: ${Math.random() * 10 + 5}px; 
-					left: ${Math.random() * 100}%; 
-					top: ${Math.random() * 100}%; 
+					width: ${Math.random() * 10 + 5}px;
+					height: ${Math.random() * 10 + 5}px;
+					left: ${Math.random() * 100}%;
+					top: ${Math.random() * 100}%;
 					opacity: ${Math.random() * 0.5 + 0.1};
 					animation-duration: ${Math.random() * 20 + 10}s;
 					animation-delay: ${Math.random() * 5}s;
