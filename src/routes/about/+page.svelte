@@ -1,17 +1,25 @@
 <script lang="ts">
-	import { cn } from '$lib/utils';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Flame, Check, X, BookOpen, HelpCircle, Code, Users, ArrowRight } from 'lucide-svelte';
+	import { Flame, BookOpen, Check, Code, ArrowRight, HelpCircle, Users } from 'lucide-svelte'; // Added HelpCircle, Users
 	import SparklesText from '$lib/components/SparklesText.svelte';
 	import AboutTab from '$lib/components/about/AboutTab.svelte';
 	import FeaturesTab from '$lib/components/about/FeaturesTab.svelte';
 	import TechStackTab from '$lib/components/about/TechStackTab.svelte';
 	import BackgroundBoxes from '$lib/components/BackgroundBoxes.svelte';
+	import type { ComponentType } from 'svelte';
+
+	// Define Feature type
+	type Feature = {
+		title: string;
+		description: string;
+		icon: ComponentType;
+		priority: 'core' | 'nice' | 'important';
+	};
 
 	// Features data
-	const features = [
+	const features: Feature[] = [
 		{
 			title: 'Myth Verification',
 			description:
@@ -45,13 +53,13 @@
 			description:
 				'User prediction interface before seeing verdict with comparison to actual result.',
 			icon: HelpCircle,
-			priority: 'nice'
+			priority: 'nice' as const // Use 'as const' for literal type
 		},
 		{
 			title: 'Audio Cues',
 			description: 'Simple, non-intrusive sounds for different verdicts with volume control.',
 			icon: Users,
-			priority: 'important'
+			priority: 'important' as const // Use 'as const' for literal type
 		}
 	];
 
@@ -68,37 +76,6 @@
 		}
 	];
 
-	// Timeline data
-	const timelineItems = [
-		{
-			title: 'Project Inception',
-			date: 'March 2025',
-			description:
-				'The idea for Myth Buster was born out of a desire to combat misinformation with engaging technology.',
-			icon: Flame
-		},
-		{
-			title: 'Core Development',
-			date: 'April 2025',
-			description:
-				'Development of the core myth verification interface and integration with the Sonar API.',
-			icon: Code
-		},
-		{
-			title: 'Beta Testing',
-			date: 'May 2025',
-			description:
-				'Initial testing with a focus group to refine the user experience and improve accuracy.',
-			icon: Users
-		},
-		{
-			title: 'Public Launch',
-			date: 'May 2025',
-			description:
-				'Official launch of the Myth Buster web application with core features and the myth busting game.',
-			icon: BookOpen
-		}
-	];
 </script>
 
 <!-- Animated background with grid pattern -->
@@ -161,11 +138,11 @@
 
 				<div class="mt-6">
 					<Tabs.Content value="about">
-						<AboutTab />
+						<AboutTab {team} />
 					</Tabs.Content>
 
 					<Tabs.Content value="features">
-						<FeaturesTab />
+						<FeaturesTab features={features} />
 					</Tabs.Content>
 
 					<Tabs.Content value="tech">
