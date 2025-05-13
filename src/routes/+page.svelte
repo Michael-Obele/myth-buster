@@ -59,7 +59,7 @@
 			iconColor: 'text-emerald-500',
 			title: 'Verify Myths',
 			description:
-				'Input any statement or myth and get an accurate verdict backed by reliable sources.',
+				'Input any statement or myth and get an accurate verdict (True/False/Inconclusive) backed by reliable sources from the Sonar API.',
 			samplePrefix: 'True:',
 			samplePrefixColor: 'text-emerald-500',
 			sampleText: 'Bulls are colorblind and react to movement, not the color red.'
@@ -73,7 +73,7 @@
 			iconColor: 'text-red-500',
 			title: 'Debunk Falsehoods',
 			description:
-				'Get detailed explanations that correct misconceptions with factual information.',
+				'Get detailed explanations that correct misconceptions with factual information and citations.',
 			samplePrefix: 'False:',
 			samplePrefixColor: 'text-red-500',
 			sampleText:
@@ -87,7 +87,7 @@
 			iconBg: 'bg-purple-500/20',
 			iconColor: 'text-purple-500',
 			title: 'Explore Origins',
-			description: 'Learn where myths originated and how they became part of popular culture.',
+			description: 'If available, learn where myths originated and how they became part of popular culture, supported by sources.',
 			samplePrefix: 'Origin:',
 			samplePrefixColor: 'text-purple-500',
 			sampleText:
@@ -103,7 +103,7 @@
 			ring: 'ring-white dark:ring-gray-900',
 			iconBg: 'bg-primary dark:bg-blue-900',
 			titleColor: 'text-primary',
-			description: 'Type in any statement, claim, or myth you want to verify.'
+			description: 'Type in any statement, claim, or myth you want to verify into the input field.'
 		},
 		{
 			number: 2,
@@ -112,7 +112,7 @@
 			ring: 'ring-white dark:ring-gray-900',
 			iconBg: 'bg-purple-500 dark:bg-blue-900',
 			titleColor: 'text-purple-500',
-			description: 'Our AI analyzes the statement using advanced research and reliable sources.'
+			description: 'Our AI, powered by the Sonar API, analyzes the statement using advanced research and reliable sources.'
 		},
 		{
 			number: 3,
@@ -121,7 +121,7 @@
 			ring: 'ring-white dark:ring-gray-900',
 			iconBg: 'bg-emerald-500 dark:bg-blue-900',
 			titleColor: 'text-emerald-500',
-			description: 'Receive a detailed verdict with explanations, citations, and myth origins.'
+			description: 'Receive a detailed verdict (True/False/Inconclusive) with explanations and verifiable citations.'
 		}
 	];
 </script>
@@ -177,10 +177,10 @@
 					behind common
 					<span
 						class="mx-2 bg-gradient-to-r from-purple-500 to-emerald-500 bg-clip-text text-2xl font-semibold tracking-wide text-transparent"
-						>myth</span
+						>myths</span
 					>
-					and misconceptions with our AI-powered myth-busting tool. Get detailed explanations, reliable
-					sources, and learn the origins of popular myths.
+					and misconceptions with our AI-powered myth-busting tool. Leveraging the Sonar API, we provide
+					detailed explanations, reliable sources, and aim to help you separate fact from fiction.
 				</p>
 
 				<!-- Animated CTA button wrapper -->
@@ -234,7 +234,7 @@
 			</ol>
 
 			<!-- Desktop Grid (hidden on mobile) -->
-			<div class="gird w-full max-w-5xl grid-cols-1 gap-8 md:grid md:grid-cols-3">
+			<div class="hidden w-full max-w-5xl grid-cols-1 gap-8 md:grid md:grid-cols-3">
 				{#each featureCards as card (card.title)}
 					<div
 						class="group relative transition-all duration-300 hover:scale-105"
