@@ -1,49 +1,58 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import * as Accordion from '$lib/components/ui/accordion';
-	import { Check } from 'lucide-svelte';
+	import type { ComponentType } from 'svelte';
 
-	// Features array
-	let features = $state([
-		{
-			id: 'item-1',
-			title: 'Myth Verification Interface',
-			description:
-				"Our clean, intuitive interface allows you to input any statement for verification. You'll receive a clear verdict (True, False, or Inconclusive) with comprehensive explanations and reliable sources."
-		},
-		{
-			id: 'item-2',
-			title: 'Visual & Audio Cues',
-			description:
-				'Engaging visual indicators show you the verdict at a glance: green check for true statements, red X for false ones, and purple question mark for inconclusive results. Optional audio cues enhance the experience.'
-		},
-		{
-			id: 'item-3',
-			title: 'Confidence Meter',
-			description:
-				"Test your intuition by indicating how confident you are in a statement's truth before seeing the verdict. Compare your guess with the actual result for a fun, educational experience."
-		},
-		{
-			id: 'item-4',
-			title: 'Myth Origin Stories',
-			description:
-				'Discover the fascinating historical and cultural origins of common myths. Understanding where misconceptions come from helps prevent their spread and deepens your knowledge.'
-		}
-	]);
+	// Define prop type
+	type Feature = {
+		title: string;
+		description: string;
+		icon: ComponentType;
+		priority: 'core' | 'important' | 'nice';
+	};
+
+	// Define prop
+	const { features } = $props<{ features: Feature[] }>();
+
+	// Group features by priority
+	let coreFeatures: Feature[] = $derived(features.filter((f: Feature) => f.priority === 'core'));
+	let importantFeatures: Feature[] = $derived(features.filter((f: Feature) => f.priority === 'important'));
+	let niceToHaveFeatures: Feature[] = $derived(features.filter((f: Feature) => f.priority === 'nice'));
+
+	const priorityOrder = ['core', 'important', 'nice'];
+
+	let groupedFeatures = $derived(
+		priorityOrder.map((priority) => ({
+			priorityLabel:
+				priority === 'core'
+					? 'Core Features'
+					: priority === 'important'
+						? 'Important Enhancements'
+						: 'Nice-to-Have Features',
+			priorityKey: priority,
+			items: features.filter((f: Feature) => f.priority === priority)
+		}))
+	);
 </script>
 
 <Card.Root>
 	<Card.Header>
 		<Card.Title>Key Features</Card.Title>
-		<Card.Description>What makes Myth Buster special</Card.Description>
+		<Card.Description>What makes Myth Buster special, organized by priority.</Card.Description>
 	</Card.Header>
-	<Card.Content>
-		<Accordion.Root type="single" class="w-full">
-			{#each features as feature}
-				<Accordion.Item value={feature.id}>
+	<Card.Content class="space-y-6">
+		{#each groupedFeatures as group (group.priorityKey)}
+			{#if group.items.length > 0}
+				<div>
+					<h3 class="mb-3 text-lg font-semibold text-primary">{group.priorityLabel}</h3>
+					<Accordion.Root type="single" class="w-full">
+						{#each group.items as feature, i (feature.title)}
+							<Accordion.Item value={`${group.priorityKey}-item-${i}`}>
 					<Accordion.Trigger>
 						<div class="flex items-center gap-2">
-							<Check class="h-4 w-4 text-emerald-500" />
+							{#key feature.icon}
+								<feature.icon class="h-4 w-4 text-primary" />
+							{/key}
 							<span>{feature.title}</span>
 						</div>
 					</Accordion.Trigger>
@@ -55,5 +64,8 @@
 				</Accordion.Item>
 			{/each}
 		</Accordion.Root>
+				</div>
+			{/if}
+		{/each}
 	</Card.Content>
 </Card.Root>
