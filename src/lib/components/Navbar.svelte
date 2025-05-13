@@ -9,6 +9,7 @@
 	const navLinks = [
 		{ href: '/', label: 'Home' },
 		{ href: '/app', label: 'Verify Myths' },
+		{ href: '/game', label: 'Game' },
 		{ href: '/about', label: 'About' }
 	];
 
