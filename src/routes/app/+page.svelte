@@ -9,7 +9,7 @@
 	import * as Progress from '$lib/components/ui/progress';
 	import * as Separator from '$lib/components/ui/separator';
 	import { Skeleton } from '$lib/components/ui/skeleton';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import * as HoverCard from '$lib/components/ui/hover-card';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 	import type { SubmitFunction } from '@sveltejs/kit';
@@ -31,7 +31,6 @@
 	let loading = $state(false);
 	let mythJustSubmitted = $state(false);
 	let clearingCache = $state(false);
-	let activeCitation = $state<{ title: string; url: string } | null>(null);
 
 	let { form }: PageProps = $props();
 
@@ -114,20 +113,6 @@
 	let explanationSegments = $derived(() =>
 		form?.data?.explanation ? (parseExplanation(form.data.explanation) as ExplanationSegment[]) : []
 	);
-
-	function handleCitationClick(index: number) {
-		if (form?.data?.citations && index >= 0 && index < form.data.citations.length) {
-			activeCitation = form.data.citations[index];
-		}
-	}
-
-	function handleCitationKeyDown(event: KeyboardEvent) {
-		if (event.key === 'Enter' || event.key === ' ') {
-			const target = event.target as HTMLElement;
-			const index = parseInt(target.getAttribute('data-index') || '0');
-			handleCitationClick(index);
-		}
-	}
 
 	const handleSubmit: SubmitFunction = () => {
 		loading = true;
@@ -278,20 +263,41 @@
 							tabindex="0"
 							aria-label="Explanation with clickable citations"
 						>
-							{#each explanationSegments() as segment (segment.content)}
+							{#each explanationSegments() as segment, i (i + '-' + segment.content)}
 								{#if segment.type === 'text'}
 									{segment.content}
 								{:else if segment.type === 'citation' && segment.valid}
-									<button
-										type="button"
-										class="m-0 inline-flex cursor-pointer border-none bg-transparent p-0 font-medium text-primary hover:underline"
-										onclick={() => handleCitationClick(segment.index)}
-										onkeydown={handleCitationKeyDown}
-										data-index={segment.index}
-										aria-label={`View citation ${segment.index + 1}`}
-									>
-										{segment.content}
-									</button>
+									<HoverCard.Root>
+										<HoverCard.Trigger>
+											<span
+												class="inline-flex cursor-pointer font-medium text-primary hover:underline"
+												aria-label={`View citation ${segment.index + 1}`}
+											>
+												{segment.content}
+											</span>
+										</HoverCard.Trigger>
+										<HoverCard.Content
+											side="top"
+											class="w-80 border border-primary/30 bg-black/80 p-4 shadow-lg backdrop-blur-sm"
+										>
+											{#if form?.data?.citations && segment.index >= 0 && segment.index < form.data.citations.length}
+												{@const citation = form.data.citations[segment.index]}
+												<div class="flex flex-col gap-2">
+													<h4 class="font-medium text-white">{citation.title}</h4>
+													<p class="break-all text-sm text-white/70">{citation.url}</p>
+													<a
+														href={citation.url}
+														target="_blank"
+														rel="noopener noreferrer"
+														class="mt-2 inline-flex items-center gap-1 self-end text-sm text-primary hover:underline"
+													>
+														<span>Visit Source</span>
+														<ExternalLink class="h-3 w-3" />
+													</a>
+												</div>
+											{/if}
+										</HoverCard.Content>
+									</HoverCard.Root>
 								{:else}
 									{segment.content}
 								{/if}
@@ -372,35 +378,3 @@
 		</Card.Content>
 	</Card.Root>
 </section>
-
-<!-- Citation Alert Dialog -->
-<AlertDialog.Root open={activeCitation !== null}>
-	<AlertDialog.Content class="bg-black/70">
-		<AlertDialog.Header>
-			<AlertDialog.Title>Citation Source</AlertDialog.Title>
-			<AlertDialog.Description>
-				{#if activeCitation}
-					<div class="mb-4">
-						<h4 class="font-medium text-white">{activeCitation.title}</h4>
-						<p class="mt-1 break-all text-sm text-muted-foreground text-white/65">
-							{activeCitation.url}
-						</p>
-					</div>
-				{/if}
-			</AlertDialog.Description>
-		</AlertDialog.Header>
-		<AlertDialog.Footer>
-			<AlertDialog.Cancel onclick={() => (activeCitation = null)}>Close</AlertDialog.Cancel>
-			{#if activeCitation}
-				<a href={activeCitation.url} target="_blank" rel="noopener noreferrer">
-					<AlertDialog.Action>
-						<div class="flex items-center gap-1">
-							<span>Visit Source</span>
-							<ExternalLink class="h-4 w-4" />
-						</div>
-					</AlertDialog.Action>
-				</a>
-			{/if}
-		</AlertDialog.Footer>
-	</AlertDialog.Content>
-</AlertDialog.Root>
