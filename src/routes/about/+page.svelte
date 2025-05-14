@@ -3,11 +3,11 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Flame, BookOpen, Check, Code, ArrowRight, HelpCircle, Users } from 'lucide-svelte'; // Added HelpCircle, Users
-	import SparklesText from '$lib/components/SparklesText.svelte';
+	import SparklesText from '$lib/components/blocks/SparklesText.svelte';
 	import AboutTab from '$lib/components/about/AboutTab.svelte';
 	import FeaturesTab from '$lib/components/about/FeaturesTab.svelte';
 	import TechStackTab from '$lib/components/about/TechStackTab.svelte';
-	import BackgroundBoxes from '$lib/components/BackgroundBoxes.svelte';
+	import BackgroundBoxes from '$lib/components/blocks/BackgroundBoxes.svelte';
 	import type { ComponentType } from 'svelte';
 
 	// Define Feature type

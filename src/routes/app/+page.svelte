@@ -154,7 +154,7 @@
 	</div>
 {/snippet}
 
-<section class="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 px-4 py-6">
+<section class="min-h-screen px-4 py-6">
 	<Card.Root
 		class="mx-auto max-w-3xl rounded-xl border-2 border-primary/50 bg-background/90 shadow-xl backdrop-blur-sm"
 	>
