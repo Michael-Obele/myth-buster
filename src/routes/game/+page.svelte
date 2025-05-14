@@ -7,7 +7,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
 	import * as Tabs from '$lib/components/ui/tabs';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Badge } from '$lib/components/ui/badge';
 	import {
 		Check,
@@ -18,14 +18,16 @@
 		Flame,
 		Sparkles,
 		LoaderCircle,
-		Settings
+		Settings,
+		ChevronDown
 	} from 'lucide-svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import type { PageProps, ActionData } from './$types';
 	import { Label } from '$lib/components/ui/label';
 	import { Confetti } from 'svelte-confetti';
 	import { PersistedState } from 'runed';
-
+	import { toast } from 'svelte-sonner';
+	import GameAbout from './GameAbout.svelte';
 	// Import types from server
 	interface Citation {
 		url: string;
@@ -64,7 +66,6 @@
 	let { data, form }: PageProps = $props();
 
 	// --- State Management with Svelte 5 Runes and PersistedState ---
-	let confidence: number = $state(50);
 
 	// Use PersistedState for values we want to persist across sessions
 	const scoreState = new PersistedState('mythBusterScore', 0);
@@ -72,6 +73,7 @@
 	const streakState = new PersistedState('mythBusterStreak', 0);
 	const categoryState = new PersistedState('mythBusterCategory', 'general');
 	const difficultyState = new PersistedState('mythBusterDifficulty', 'medium');
+	const confidenceState = new PersistedState('mythBusterConfidence', 50);
 
 	const difficulties = [
 		{ label: 'Easy', value: 'easy' },
@@ -97,27 +99,52 @@
 	let streak = $state(streakState.current);
 	let selectedCategory = $state(categoryState.current);
 	let selectedDifficulty = $state(difficultyState.current);
+	let confidence = $state(confidenceState.current);
 
 	// When changing any of these values, we'll persist them
 	function updateScore(newScore: number) {
 		score = newScore;
 		scoreState.current = newScore;
+		console.log('Score updated:', newScore);
 		checkHighScore(newScore);
 	}
 
 	function updateStreak(newStreak: number) {
 		streak = newStreak;
 		streakState.current = newStreak;
+		console.log('Streak updated:', newStreak);
+
+		// Show streak notification for streaks of 3 or more
+		if (newStreak >= 3) {
+			let message = 'Keep it up! 🔥';
+			if (newStreak >= 10) {
+				message = 'Amazing streak! 🔥🔥🔥';
+			} else if (newStreak >= 5) {
+				message = 'Great streak! 🔥🔥';
+			}
+
+			toast.success(message, {
+				duration: 3000
+			});
+		}
 	}
 
 	function updateCategory(newCategory: string) {
 		selectedCategory = newCategory;
 		categoryState.current = newCategory;
+		console.log('Category updated:', newCategory);
 	}
 
 	function updateDifficulty(newDifficulty: string) {
 		selectedDifficulty = newDifficulty;
 		difficultyState.current = newDifficulty;
+		console.log('Difficulty updated:', newDifficulty);
+	}
+
+	function updateConfidence(newValue: number) {
+		confidence = newValue;
+		confidenceState.current = newValue;
+		console.log('Confidence updated:', newValue);
 	}
 
 	// UI state
@@ -144,17 +171,15 @@
 	let confidenceLevel = $derived(confidence < 25 ? 'low' : confidence < 75 ? 'medium' : 'high');
 
 	// Function to check and update high score
-	function checkHighScore(newScore: number) {
+	function checkHighScore(newScore: number): boolean {
 		if (newScore > highScore) {
 			highScore = newScore;
 			highScoreState.current = newScore;
-
-			// Show high score message if it's not the initial load
 			if (newScore > 0) {
-				showHighScoreMessage = true;
-				setTimeout(() => {
-					showHighScoreMessage = false;
-				}, 3000);
+				toast.success('🎉 New High Score! 🎉', {
+					duration: 3000
+				});
+				console.log('New high score achieved:', newScore);
 			}
 			return true;
 		}
@@ -163,31 +188,29 @@
 
 	// Helper function to process form results directly
 	function processFormResult(formResult: any) {
-		if (!formResult?.success) return;
+		console.log('Processing form result:', formResult);
+		if (!formResult?.success) {
+			console.log('Form result unsuccessful');
+			return;
+		}
 
 		// Handle answer results with points
 		if (formResult.points && typeof formResult.points === 'number') {
+			console.log('Processing answer with points:', formResult.points);
 			// Update score
 			updateScore(score + formResult.points);
 
-			// Update streak based on result
+			// Update streak for correct answers
 			if (formResult.result === 'correct') {
-				const oldStreak = streak;
+				console.log('Correct answer, updating streak');
 				updateStreak(streak + 1);
-
-				// Show streak animation if streak increased and is at least 2
-				if (streak >= 2 && streak > oldStreak) {
-					showStreakAnimation = true;
-					setTimeout(() => {
-						showStreakAnimation = false;
-					}, 2000);
-				}
 			} else {
+				// Reset streak on wrong answers
+				console.log('Incorrect answer, resetting streak');
 				updateStreak(0);
 			}
 		} else if (formResult.statement && !formResult.result) {
 			// Reset confidence for new statements
-			confidence = 50;
 		}
 	}
 
@@ -247,10 +270,17 @@
 	// Track the current answer being submitted
 	let currentAnswer: string | null = $state(null);
 
-	function getStreakEmoji(streak: number): string {
-		if (streak >= 10) return '🔥🔥🔥';
-		if (streak >= 5) return '🔥🔥';
-		if (streak >= 1) return '🔥';
+	function getStreakCount(streak: number): number {
+		if (streak >= 10) return 3;
+		if (streak >= 5) return 2;
+		if (streak >= 1) return 1;
+		return 0;
+	}
+
+	function getStreakColor(streak: number): string {
+		if (streak >= 10) return 'text-amber-500';
+		if (streak >= 5) return 'text-orange-500';
+		if (streak >= 1) return 'text-yellow-500';
 		return '';
 	}
 </script>
@@ -292,7 +322,7 @@
 					: 'bg-primary/5'} transition-all duration-300"
 			>
 				<Flame class="h-3.5 w-3.5 {showStreakAnimation ? 'text-amber-500' : 'text-primary'}" />
-				<span class="font-medium">Streak: {streak} {getStreakEmoji(streak)}</span>
+				<span class="font-medium">Streak: {streak} </span>
 			</Badge>
 
 			<Badge
@@ -306,30 +336,16 @@
 			</Badge>
 		</div>
 
-		{#if showStreakAnimation && streak >= 3}
-			<div class="mt-2 animate-bounce font-bold text-amber-500">
-				{#if streak >= 10}
-					Amazing streak! 🔥🔥🔥
-				{:else if streak >= 5}
-					Great streak! 🔥🔥
-				{:else}
-					Keep it up! 🔥
-				{/if}
-			</div>
-		{/if}
-
-		{#if showHighScoreMessage}
-			<div class="mt-2 animate-pulse font-bold text-purple-500">🎉 New High Score! 🎉</div>
-		{/if}
+		<!-- Streak and high score notifications now handled by toast -->
 	</div>
 
 	<Card.Root class="mb-6 border-2 shadow-lg">
-		<Card.Header>
-			<Card.Title class="flex items-center justify-center gap-2">
-				<Sparkles class="h-5 w-5 text-primary" />
+		<Card.Header class="px-6 py-5">
+			<Card.Title class="flex items-center justify-center gap-2 text-2xl font-bold">
+				<Sparkles class="h-6 w-6 text-primary" />
 				Test Your Knowledge
 			</Card.Title>
-			<Card.Description class="text-center">
+			<Card.Description class="mt-2 text-center text-base font-medium">
 				Is the statement true or false? How confident are you in your answer?
 			</Card.Description>
 		</Card.Header>
@@ -343,9 +359,7 @@
 				</Alert>
 			{/if}
 
-			{#if showHighScoreMessage}
-				<div class="mt-2 animate-pulse font-bold text-purple-500">🎉 New High Score! 🎉</div>
-			{/if}
+			<!-- High score notifications now handled by toast -->
 
 			<!-- === State 1: Generate a new statement (or show Next button after result) === -->
 			{#if !hasStatement || hasResult}
@@ -408,16 +422,8 @@
 										</div>
 									</div>
 								</Tabs.Content>
-								<Tabs.Content value="about" class="space-y-4 pt-4">
-									<p class="text-sm text-muted-foreground">
-										The Myth Buster Challenge tests your ability to identify true and false
-										statements. Earn points based on your confidence level when you answer
-										correctly.
-									</p>
-									<p class="text-sm text-muted-foreground">
-										The higher your confidence, the more points you'll earn for correct answers.
-										Build a streak by answering multiple questions correctly in a row!
-									</p>
+								<Tabs.Content value="about" class="pt-4">
+									<GameAbout />
 								</Tabs.Content>
 							</Tabs.Root>
 						{/if}
@@ -435,38 +441,38 @@
 							</Button>
 
 							{#if hasResult || hasStatement}
-								<AlertDialog.Root>
-									<AlertDialog.Trigger>
+								<DropdownMenu.Root>
+									<DropdownMenu.Trigger>
 										<Button
 											variant="outline"
 											size="icon"
 											onclick={() => {
-												// Initialize temp values when opening dialog
+												// Initialize temp values when opening dropdown
+												console.log('Settings dropdown opened');
 												tempDifficulty = selectedDifficulty;
 												tempCategory = selectedCategory;
 											}}
 										>
 											<Settings class="h-4 w-4" />
 										</Button>
-									</AlertDialog.Trigger>
-									<AlertDialog.Content>
-										<AlertDialog.Header>
-											<AlertDialog.Title>Game Settings</AlertDialog.Title>
-											<AlertDialog.Description>
-												Adjust difficulty and category for your next questions. Changes will apply
-												after clicking Confirm.
-											</AlertDialog.Description>
-										</AlertDialog.Header>
+									</DropdownMenu.Trigger>
+									<DropdownMenu.Content class="w-64 bg-card text-primary">
+										<DropdownMenu.Label>Game Settings</DropdownMenu.Label>
+										<DropdownMenu.Separator />
 
-										<div class="space-y-4">
+										<div class="space-y-4 p-2">
 											<div class="space-y-2">
 												<Label>Difficulty</Label>
-												<div class="flex gap-2">
+												<div class="flex space-x-2">
 													{#each difficulties as difficulty}
 														<Button
 															variant={tempDifficulty === difficulty.value ? 'default' : 'outline'}
-															onclick={() => (tempDifficulty = difficulty.value)}
+															onclick={() => {
+																console.log(`Difficulty changed to ${difficulty.value}`);
+																tempDifficulty = difficulty.value;
+															}}
 															size="sm"
+															class="bg-background"
 														>
 															{difficulty.label}
 														</Button>
@@ -480,8 +486,12 @@
 													{#each categories as category}
 														<Button
 															variant={tempCategory === category.value ? 'default' : 'outline'}
-															onclick={() => (tempCategory = category.value)}
+															onclick={() => {
+																console.log(`Category changed to ${category.value}`);
+																tempCategory = category.value;
+															}}
 															size="sm"
+															class="bg-background"
 														>
 															{category.label}
 														</Button>
@@ -490,20 +500,20 @@
 											</div>
 										</div>
 
-										<AlertDialog.Footer class="flex justify-between">
-											<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-											<AlertDialog.Action
-												onclick={() => {
-													// Apply changes only when Confirm is clicked
-													updateDifficulty(tempDifficulty);
-													updateCategory(tempCategory);
-												}}
-											>
-												Confirm
-											</AlertDialog.Action>
-										</AlertDialog.Footer>
-									</AlertDialog.Content>
-								</AlertDialog.Root>
+										<DropdownMenu.Separator />
+										<DropdownMenu.Item
+											onclick={() => {
+												console.log('Settings applied:', { tempDifficulty, tempCategory });
+												// Apply changes
+												updateDifficulty(tempDifficulty);
+												updateCategory(tempCategory);
+												toast.success('Settings updated successfully');
+											}}
+										>
+											Apply Settings
+										</DropdownMenu.Item>
+									</DropdownMenu.Content>
+								</DropdownMenu.Root>
 							{/if}
 						</div>
 					</div>
@@ -522,11 +532,7 @@
 						action="?/checkAnswer"
 						use:enhance={(formEl) => {
 							isAnswering = true;
-							// Get the button that was clicked
-							const submitter = document.activeElement as HTMLButtonElement;
-							if (submitter && submitter.name === 'answer') {
-								currentAnswer = submitter.value;
-							}
+
 							return ({ result, update }) => {
 								isAnswering = false;
 								currentAnswer = null;
@@ -552,7 +558,18 @@
 						<div class="mb-8 grid gap-3">
 							<div class="flex flex-col items-center">
 								<div class="w-full max-w-xs space-y-3">
-									<Slider type="single" bind:value={confidence} min={1} max={100} step={1} />
+									<!-- onValueChange={updateConfidence} -->
+									<Slider
+										type="single"
+										bind:value={confidence}
+										onValueCommit={(v) => {
+											console.log('user is done sliding!', v);
+											updateConfidence(v);
+										}}
+										min={1}
+										max={100}
+										step={1}
+									/>
 									<input type="hidden" name="confidence" value={confidence} />
 									<Progress value={confidence} max={100} class="h-2" />
 									<div class="flex justify-between text-sm">
@@ -608,58 +625,63 @@
 			{#if hasResult && form && isCheckAnswerResult(form)}
 				<div
 					class={isCorrect
-						? 'rounded-lg border-2 border-emerald-200 bg-emerald-50 p-6 shadow-md'
-						: 'rounded-lg border-2 border-red-200 bg-red-50 p-6 shadow-md'}
+						? 'rounded-lg border-2 border-emerald-700/30 bg-emerald-950/20 p-6 shadow-md'
+						: 'rounded-lg border-2 border-red-700/30 bg-red-950/20 p-6 shadow-md'}
 				>
 					<div class="mb-6 flex items-center justify-between">
 						<div class="flex items-center gap-2">
 							{#if isCorrect}
-								<div class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
-									<Check class="h-6 w-6 text-emerald-600" />
+								<div
+									class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-800/30"
+								>
+									<Check class="h-6 w-6 text-emerald-400" />
 								</div>
-								<p class="text-lg font-semibold text-emerald-800">Correct!</p>
+								<p class="text-lg font-semibold text-emerald-400">Correct!</p>
 							{:else}
-								<div class="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
-									<X class="h-6 w-6 text-red-600" />
+								<div class="flex h-10 w-10 items-center justify-center rounded-full bg-red-800/30">
+									<X class="h-6 w-6 text-red-400" />
 								</div>
-								<p class="text-lg font-semibold text-red-800">Incorrect!</p>
+								<p class="text-lg font-semibold text-red-400">Incorrect!</p>
 							{/if}
 						</div>
 
 						{#if isCorrect}
-							<Badge variant="outline" class="bg-emerald-100 text-emerald-800">
+							<Badge
+								variant="outline"
+								class="border-emerald-700/50 bg-emerald-800/30 text-emerald-400"
+							>
 								+{form.points} points
 							</Badge>
 						{/if}
 					</div>
 
-					<div class="mb-6 rounded-md bg-white p-4 shadow-sm">
+					<div class="mb-6 rounded-md border border-slate-700/50 bg-slate-900/60 p-4 shadow-sm">
 						<div class="mb-2 flex items-center justify-between">
-							<p class="text-sm font-medium text-muted-foreground">
-								Your Answer: <span class={form.userAnswer ? 'text-emerald-600' : 'text-red-600'}>
+							<p class="text-sm font-medium text-slate-300">
+								Your Answer: <span class={form.userAnswer ? 'text-emerald-400' : 'text-red-400'}>
 									{form.userAnswer ? 'TRUE' : 'FALSE'}
 								</span>
 							</p>
-							<p class="text-sm font-medium text-muted-foreground">
+							<p class="text-sm font-medium text-slate-300">
 								Confidence: <span class={getConfidenceColor(confidence)}>{confidence}%</span>
 							</p>
 						</div>
-						<p class="text-lg font-medium text-primary">
+						<p class="text-lg font-medium text-slate-100">
 							The statement "{form.statement}" is
-							<span class={form.isTrue ? 'font-bold text-emerald-600' : 'font-bold text-red-600'}>
+							<span class={form.isTrue ? 'font-bold text-emerald-400' : 'font-bold text-red-400'}>
 								{form.isTrue ? 'TRUE' : 'FALSE'}
 							</span>
 						</p>
 					</div>
 
 					<div class="mb-6">
-						<h3 class="mb-2 text-base font-semibold">Explanation:</h3>
-						<p class="text-muted-foreground">{form.explanation}</p>
+						<h3 class="mb-2 text-base font-semibold text-slate-200">Explanation:</h3>
+						<p class="text-slate-300">{form.explanation}</p>
 					</div>
 
 					{#if citationsArray.length > 0}
-						<div class="rounded-md bg-slate-50 p-4">
-							<h3 class="mb-2 text-sm font-semibold">Sources:</h3>
+						<div class="rounded-md border border-slate-700/50 bg-slate-800/50 p-4">
+							<h3 class="mb-2 text-sm font-semibold text-slate-200">Sources:</h3>
 							<ul class="list-disc space-y-2 pl-5 text-sm">
 								{#each citationsArray as citation}
 									<li>
@@ -667,7 +689,7 @@
 											href={citation.url || '#'}
 											target="_blank"
 											rel="noopener noreferrer"
-											class="break-words text-primary hover:underline"
+											class="break-words text-blue-400 hover:underline"
 										>
 											{citation.title || citation.url || 'Source link'}
 										</a>
@@ -688,7 +710,16 @@
 		</div>
 		<div>
 			<p class="text-lg font-semibold">Streak</p>
-			<p class="text-2xl font-bold text-primary">{streak} 🔥</p>
+			<p class="flex items-center gap-1 text-2xl font-bold">
+				<span>{streak}</span>
+				{#if streak > 0}
+					<span class="flex">
+						{#each Array(getStreakCount(streak)) as _}
+							<Flame class="h-5 w-5 {getStreakColor(streak)}" />
+						{/each}
+					</span>
+				{/if}
+			</p>
 		</div>
 	</div>
 </div>
