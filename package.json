@@ -58,7 +58,7 @@
 		"lottie-web": "^5.12.2",
 		"lucide-svelte": "^0.507.0",
 		"mini-svg-data-uri": "^1.4.4",
-		"mode-watcher": "^1.0.6",
+		"mode-watcher": "^1.0.7",
 		"runed": "^0.26.0",
 		"svelte-confetti": "^2.3.1",
 		"svelte-motion": "^0.12.2"
