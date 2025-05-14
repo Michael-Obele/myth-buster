@@ -2,7 +2,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Card from '$lib/components/ui/card';
 	import { Brain, Zap, BookOpen } from 'lucide-svelte';
-	
+
 	const stats = $state([
 		{
 			icon: Brain,
@@ -31,20 +31,23 @@
 	]);
 </script>
 
-<section class="py-12 w-full">
-	<div class="max-w-6xl mx-auto px-4">
-		<h2 class="text-3xl font-serif font-bold text-center mb-4">Myth Busting by the Numbers</h2>
-		<p class="text-center text-muted-foreground max-w-2xl mx-auto mb-10">
-			Our AI-powered platform delivers fast, accurate results to help you separate fact from fiction.
+<section class="w-full py-12">
+	<div class="mx-auto max-w-6xl px-4">
+		<h2 class="mb-4 text-center font-underdog text-3xl font-bold">Myth Busting by the Numbers</h2>
+		<p class="mx-auto mb-10 max-w-2xl text-center text-muted-foreground">
+			Our AI-powered platform delivers fast, accurate results to help you separate fact from
+			fiction.
 		</p>
-		
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+		<div class="grid grid-cols-1 gap-6 md:grid-cols-3">
 			{#each stats as stat}
-				<Card.Root class="border border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:scale-105">
+				<Card.Root
+					class="border border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:scale-105"
+				>
 					<Card.Header class="pb-2">
 						<div class="flex items-center justify-between">
 							<Badge class={stat.bgColor + ' ' + stat.color}>{stat.label}</Badge>
-							<div class={stat.bgColor + ' p-2 rounded-full'}>
+							<div class={stat.bgColor + ' rounded-full p-2'}>
 								{#if stat.label === 'Accuracy'}
 									<Brain class={'h-5 w-5 ' + stat.color} />
 								{:else if stat.label === 'Response Time'}

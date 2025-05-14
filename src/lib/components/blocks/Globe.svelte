@@ -68,16 +68,41 @@
 			markerColor: [251 / 255, 100 / 255, 21 / 255],
 			glowColor: [1, 1, 1],
 			markers: [
-				{ location: [14.5995, 120.9842], size: 0.03 },
-				{ location: [19.076, 72.8777], size: 0.03 },
-				{ location: [23.8103, 90.4125], size: 0.05 },
-				{ location: [30.0444, 31.2357], size: 0.07 },
-				{ location: [39.9042, 116.4074], size: 0.08 },
-				{ location: [-23.5505, -46.6333], size: 0.05 },
-				{ location: [19.4326, -99.1332], size: 0.04 },
-				{ location: [40.7128, -74.006], size: 0.1 },
-				{ location: [34.6937, 135.5022], size: 0.05 },
-				{ location: [41.0082, 28.9784], size: 0.06 }
+				// Asia
+				{ location: [14.5995, 120.9842], size: 0.03 }, // Manila, Philippines
+				{ location: [19.076, 72.8777], size: 0.04 }, // Mumbai, India
+				{ location: [23.8103, 90.4125], size: 0.03 }, // Dhaka, Bangladesh
+				{ location: [39.9042, 116.4074], size: 0.08 }, // Beijing, China
+				{ location: [34.6937, 135.5022], size: 0.05 }, // Osaka, Japan
+				{ location: [1.3521, 103.8198], size: 0.04 }, // Singapore
+				{ location: [13.7563, 100.5018], size: 0.04 }, // Bangkok, Thailand
+				{ location: [25.276987, 55.296249], size: 0.06 }, // Dubai, UAE
+				{ location: [37.566535, 126.9779692], size: 0.05 }, // Seoul, South Korea
+
+				// Africa
+				{ location: [30.0444, 31.2357], size: 0.06 }, // Cairo, Egypt
+				{ location: [-1.2921, 36.8219], size: 0.04 }, // Nairobi, Kenya
+				{ location: [6.5244, 3.3792], size: 0.05 }, // Lagos, Nigeria
+				{ location: [-33.9249, 18.4241], size: 0.04 }, // Cape Town, South Africa
+				{ location: [9.0338, 38.75], size: 0.03 }, // Addis Ababa, Ethiopia
+				{ location: [14.6937, -17.4441], size: 0.03 }, // Dakar, Senegal
+				{ location: [-4.4419, 15.2663], size: 0.03 }, // Kinshasa, DRC
+
+				// Americas
+				{ location: [40.7128, -74.006], size: 0.07 }, // New York, USA
+				{ location: [19.4326, -99.1332], size: 0.05 }, // Mexico City, Mexico
+				{ location: [-23.5505, -46.6333], size: 0.05 }, // São Paulo, Brazil
+				{ location: [-34.6037, -58.3816], size: 0.04 }, // Buenos Aires, Argentina
+				{ location: [4.711, -74.0721], size: 0.03 }, // Bogotá, Colombia
+				{ location: [-33.4489, -70.6693], size: 0.03 }, // Santiago, Chile
+				{ location: [43.6532, -79.3832], size: 0.04 }, // Toronto, Canada
+				{ location: [37.7749, -122.4194], size: 0.05 }, // San Francisco, USA
+
+				// Europe
+				{ location: [41.0082, 28.9784], size: 0.05 }, // Istanbul, Turkey
+				{ location: [51.5074, -0.1278], size: 0.06 }, // London, UK
+				{ location: [48.8566, 2.3522], size: 0.05 }, // Paris, France
+				{ location: [55.7558, 37.6173], size: 0.04 } // Moscow, Russia
 			],
 			// onRender: (state) => {
 			//   if (!pointerInteracting) {

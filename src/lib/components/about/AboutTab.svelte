@@ -76,7 +76,9 @@
 				transition={{ duration: 0.7 }}
 			>
 				<div class="relative z-10 text-center" use:motion>
-					<h2 class="mb-4 font-serif text-3xl font-bold tracking-tight md:text-4xl">Our Mission</h2>
+					<h2 class="mb-4 font-underdog text-3xl font-bold tracking-tight md:text-4xl">
+						Our Mission
+					</h2>
 					<p class="mx-auto max-w-2xl text-lg text-muted-foreground">
 						Helping people separate fact from fiction in an engaging way through the power of AI and
 						beautiful design.
@@ -143,14 +145,14 @@
 			>
 				<div class="space-y-4 text-muted-foreground" use:motion>
 					<p>
-						Myth Buster was conceived with a clear purpose: to create a web application where users can
-						input statements to verify their truth. We emphasize detailed debunking for falsehoods,
-						enriched with facts and citations powered by the Perplexity Sonar API.
+						Myth Buster was conceived with a clear purpose: to create a web application where users
+						can input statements to verify their truth. We emphasize detailed debunking for
+						falsehoods, enriched with facts and citations powered by the Perplexity Sonar API.
 					</p>
 					<p>
-						Our primary target audience includes curious users seeking an engaging, interactive way to
-						debunk myths and discover factual information. We believe that uncovering truth can be
-						both informative and enjoyable.
+						Our primary target audience includes curious users seeking an engaging, interactive way
+						to debunk myths and discover factual information. We believe that uncovering truth can
+						be both informative and enjoyable.
 					</p>
 					<p>
 						The tech stack, featuring Svelte 5 and the Sonar API, was chosen for its modern
@@ -183,25 +185,24 @@
 				<div class="space-y-4 text-muted-foreground" use:motion>
 					<p>
 						We prioritized features that deliver the core value proposition: a reliable myth
-						verification interface, engaging visual cues, and robust Sonar API integration. This focus
-						ensures a polished and impactful user experience from the outset.
+						verification interface, engaging visual cues, and robust Sonar API integration. This
+						focus ensures a polished and impactful user experience from the outset.
 					</p>
 					<p>Our strategic approach to development is driven by several factors:</p>
 					<ul class="list-disc space-y-2 pl-5">
 						<li>
-							<strong>Technical Feasibility & Innovation:</strong> Leveraging modern tools like Svelte 5
-							allows for rapid development of high-quality features while carefully managing
-							complexity to ensure a stable and reliable application.
+							<strong>Technical Feasibility & Innovation:</strong> Leveraging modern tools like Svelte
+							5 allows for rapid development of high-quality features while carefully managing complexity
+							to ensure a stable and reliable application.
 						</li>
 						<li>
 							<strong>User Experience Quality:</strong> A focused feature set enables meticulous attention
-							to detail in design and interaction, creating a delightful and intuitive user
-							experience.
+							to detail in design and interaction, creating a delightful and intuitive user experience.
 						</li>
 						<li>
-							<strong>Expandable Foundation:</strong> We are building a solid, extensible foundation. The
-							core features are designed to be robust, allowing for easier integration of more
-							advanced functionalities as the project evolves.
+							<strong>Expandable Foundation:</strong> We are building a solid, extensible foundation.
+							The core features are designed to be robust, allowing for easier integration of more advanced
+							functionalities as the project evolves.
 						</li>
 					</ul>
 					<p>

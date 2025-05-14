@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
+	import { GradientImage } from '$lib/components/ui/gradient-image';
 
 	type Props = {
 		title: string;
@@ -10,40 +11,36 @@
 		className?: string;
 		children?: any;
 	};
-	
+
 	// Use a single props() call in Svelte 5
-	let { 
-		title, 
-		description, 
-		imgSrc, 
+	let {
+		title,
+		description,
+		imgSrc,
 		imgAlt = 'Feature illustration',
 		reversed = false,
 		className = '',
-		children 
+		children
 	} = $props();
 </script>
 
-<section class={cn('py-16 w-full max-w-7xl mx-auto px-4', className)}>
-	<div class={cn('grid grid-cols-1 md:grid-cols-2 gap-10 items-center', reversed && 'md:flex-row-reverse')}>
+<section class={cn('mx-auto w-full max-w-7xl px-4 py-16', className)}>
+	<div
+		class={cn(
+			'grid grid-cols-1 items-center gap-10 md:grid-cols-2',
+			reversed && 'md:flex-row-reverse'
+		)}
+	>
 		<div class={cn('flex flex-col gap-5', reversed ? 'md:order-2' : 'md:order-1')}>
-			<h2 class="text-3xl font-bold font-serif tracking-tight">{title}</h2>
-			<p class="text-lg text-muted-foreground leading-relaxed">{description}</p>
+			<h2 class="font-underdog text-3xl font-bold tracking-tight">{title}</h2>
+			<p class="text-lg leading-relaxed text-muted-foreground">{description}</p>
 			{#if children}
 				<div class="mt-4">
 					{@render children()}
 				</div>
 			{/if}
 		</div>
-		<div class={cn('relative', reversed ? 'md:order-1' : 'md:order-2')}>
-			<div class="w-full shadow-lg rounded-lg overflow-hidden">
-				<div class="relative pb-[56.25%] bg-muted/30"> <!-- 16:9 aspect ratio -->
-					<img 
-						src={imgSrc} 
-						alt={imgAlt} 
-						class="absolute inset-0 w-full h-full object-cover transition-all duration-300 hover:scale-105"
-					/>
-				</div>
-			</div>
-		</div>
+
+		<GradientImage src={imgSrc} alt={imgAlt} class="rounded-lg" />
 	</div>
 </section>

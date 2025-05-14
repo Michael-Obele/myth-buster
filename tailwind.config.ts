@@ -94,7 +94,9 @@ const config: Config = {
 				sm: "calc(var(--radius) - 4px)"
 			},
 			fontFamily: {
-				sans: [...fontFamily.sans]
+				sans: [...fontFamily.sans],
+				play: ["Playwrite DK Loopet", "cursive"],
+				underdog:["Underdog", "system-ui"]
 			},
 			keyframes: {
 				"accordion-down": {

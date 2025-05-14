@@ -75,7 +75,6 @@
 			linkedin: 'https://www.linkedin.com/in/dev-obele'
 		}
 	];
-
 </script>
 
 <!-- Animated background with grid pattern -->
@@ -101,7 +100,7 @@
 					<Flame class="size-8 animate-pulse text-primary md:size-12" />
 					<SparklesText
 						text="About Myth Buster"
-						class="font-serif text-5xl font-bold tracking-tight text-primary md:text-6xl"
+						class="font-underdog text-5xl font-bold tracking-tight text-primary md:text-6xl"
 					/>
 
 					<Badge class="bg-primary/20 text-primary">AI Powered</Badge>
@@ -142,7 +141,7 @@
 					</Tabs.Content>
 
 					<Tabs.Content value="features">
-						<FeaturesTab features={features} />
+						<FeaturesTab {features} />
 					</Tabs.Content>
 
 					<Tabs.Content value="tech">

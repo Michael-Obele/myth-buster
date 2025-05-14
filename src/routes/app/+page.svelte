@@ -160,7 +160,7 @@
 	>
 		<Card.Header>
 			<div class="flex items-center justify-between">
-				<Card.Title class="flex items-center gap-2 font-serif text-3xl">
+				<Card.Title class="flex items-center gap-2 font-underdog text-3xl">
 					<Flame class="h-7 w-7 text-primary" />
 					<span class="font-bold text-white"> Myth Buster </span>
 					<Badge class="ml-2 bg-primary/20 text-primary">AI Powered</Badge>

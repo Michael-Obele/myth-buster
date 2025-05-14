@@ -39,7 +39,7 @@
 		<div class="flex items-center gap-2">
 			<a href="/" class="flex items-center gap-2 text-primary">
 				<Flame class="h-6 w-6" />
-				<span class="font-serif text-xl font-bold tracking-tight">Myth Buster</span>
+				<span class="font-underdog text-xl font-bold tracking-tight">Myth Buster</span>
 			</a>
 			<Badge class="bg-primary/20 text-primary">AI Powered</Badge>
 		</div>

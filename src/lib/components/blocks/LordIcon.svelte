@@ -1,5 +1,37 @@
+<!--
+@component
+A wrapper for Lord Icon animated icons.
+
+Props:
+- `src`: URL to the JSON file for the icon
+- `trigger`: How the icon animation is triggered ('in', 'click', 'hover', 'loop', 'loop-on-hover', 'morph', 'boomerang', 'sequence')
+- `stroke`: Line thickness ('light', 'regular', 'bold', 'thick')
+- `target`: Query selector for elements that will trigger the animation
+- `state`: Specific animation state to use
+- `class`: CSS classes to apply
+- `colors`: Color definitions in format "primary:color,secondary:color"
+- `loading`: Loading strategy ('lazy', 'interaction')
+- `icon`: Icon name for predefined icons
+- `style`: Inline CSS styles
+- `delay`: Pause between animation cycles in ms
+- `mobileLoop`: If true, renders two icons - one with loop trigger for mobile and one with loop-on-hover for desktop
+
+Usage:
+```svelte
+<LordIcon
+  src="https://cdn.lordicon.com/lewtedlh.json"
+  trigger="loop-on-hover"
+  stroke="light"
+  colors="primary:#3080e8,secondary:#b4b4b4"
+  style="width: 150px; height: 150px;"
+  mobileLoop = false,
+/>
+```
+-->
+
 <script lang="ts">
 	// Type definitions for LordIcon props
+
 	type TriggerType =
 		| 'in'
 		| 'click'
@@ -26,12 +58,12 @@
 		 * @values 'in', 'click', 'hover', 'loop', 'loop-on-hover', 'morph', 'boomerang', 'sequence'
 		 */
 		trigger?: TriggerType;
-		/** 
-     * Stroke thickness for supported icons
-     * @type {StrokeType}
-     * @description Controls the line thickness in the icon
-     * @values 'light', 'regular', 'bold', 'thick'
-     */
+		/**
+		 * Stroke thickness for supported icons
+		 * @type {StrokeType}
+		 * @description Controls the line thickness in the icon
+		 * @values 'light', 'regular', 'bold', 'thick'
+		 */
 		stroke?: StrokeType;
 		/**
 		 * Query selector for the element on which events will be listened
@@ -83,6 +115,18 @@
 		 * @example 1000 - Waits 1 second between loops
 		 */
 		delay?: number | string;
+		/**
+		 * Inline CSS styles
+		 * @type {string}
+		 * @description CSS inline styles to apply to the icon element
+		 * @example "width: 100px; height: 100px;"
+		 */
+		style?: string;
+		/**
+		 * If true, renders two icons - one with loop trigger for mobile and one with loop-on-hover for desktop
+		 * @type {boolean}
+		 */
+		mobileLoop?: boolean;
 	}
 
 	// Props with defaults
@@ -96,19 +140,54 @@
 		colors = 'primary:white;secondary:green',
 		loading,
 		icon,
+		style = '',
+		mobileLoop = false,
 		delay
 	}: LordIconProps = $props();
 </script>
 
-<lord-icon
-	{src}
-	{trigger}
-	{stroke}
-	target={target || null}
-	state={state || null}
-	class={className}
-	{colors}
-	{delay}
-	{loading}
-	{icon}
-></lord-icon>
+{#if mobileLoop}
+	<!-- Mobile version with loop trigger -->
+	<lord-icon
+		{src}
+		trigger="loop"
+		{stroke}
+		target={target || null}
+		state={state || null}
+		class={`${className} md:hidden`}
+		{colors}
+		{delay}
+		{loading}
+		{icon}
+		{style}
+	></lord-icon>
+
+	<!-- Desktop version with loop-on-hover trigger -->
+	<lord-icon
+		{src}
+		trigger="loop-on-hover"
+		{stroke}
+		target={target || null}
+		state={state || null}
+		class={`${className} hidden md:inline-block`}
+		{colors}
+		{delay}
+		{loading}
+		{icon}
+		{style}
+	></lord-icon>
+{:else}
+	<lord-icon
+		{src}
+		{trigger}
+		{stroke}
+		target={target || null}
+		state={state || null}
+		class={className}
+		{colors}
+		{delay}
+		{loading}
+		{icon}
+		{style}
+	></lord-icon>
+{/if}
