@@ -110,4 +110,11 @@
 		/* Add padding below the text to make space for the underline */
 		padding-bottom: 10px;
 	}
+
+	.floating-particle {
+		animation-name: float;
+		animation-timing-function: ease-in-out;
+		animation-iteration-count: infinite;
+		position: absolute;
+	}
 </style>
