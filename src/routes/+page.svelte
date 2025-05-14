@@ -7,9 +7,8 @@
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
 	import SparklesText from '$lib/components/blocks/SparklesText.svelte';
 	import BackgroundBoxes from '$lib/components/blocks/BackgroundBoxes.svelte';
-	import GridBeam from '$lib/components/blocks/GridBeam.svelte';
-	const swipe = '/lottie/swipe.json';
 	const attention = '/lottie/attention.json';
+	const flame = '/lottie/flame.json';
 
 	// Reactive state for animations
 	let hoverState = $state({
@@ -147,20 +146,28 @@
 			class="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 py-16 text-foreground"
 		>
 			<!-- Hero section -->
-			<div class="mb-16 flex flex-col items-center text-center">
-				<section class="flex items-end">
-					<LordIcon
-						src={attention}
-						trigger="loop"
-						stroke="thick"
-						target="section"
-						state="hover-draw"
-						class="relative top-10 mb-10 size-20 text-muted-foreground transition-colors hover:text-primary sm:mx-2"
-						colors="primary:white"
-					/>
-
+			<section class="mb-16 flex flex-col items-center text-center">
+				<div class="flex items-end">
 					<div class="mb-6 flex items-center gap-3">
-						<Flame class="size-14 animate-pulse text-primary" />
+						<LordIcon
+							src={attention}
+							trigger="loop"
+							stroke="thick"
+							target="section"
+							state="hover-draw"
+							class="relative top-10 mb-10 size-20 text-muted-foreground transition-colors hover:text-primary sm:mx-2"
+							colors="primary:white"
+						/>
+
+						<LordIcon
+							src={flame}
+							trigger="loop-on-hover"
+							stroke="thick"
+							target="div"
+							class="size-16 font-extrabold text-primary sm:mx-2"
+							state="hover-draw"
+							colors="primary:#10B981,secondary:white"
+						/>
 						<a href="/app">
 							<SparklesText
 								text="Myth Buster"
@@ -170,7 +177,7 @@
 
 						<Badge class="bg-primary/20 text-primary hover:text-white">AI Powered</Badge>
 					</div>
-				</section>
+				</div>
 
 				<p class="mb-8 max-w-2xl text-center text-xl leading-loose text-muted-foreground">
 					<span class="text-2xl font-semibold text-primary">Uncover</span>
@@ -208,7 +215,7 @@
 						<ArrowRight class="h-5 w-5" />
 					</Button>
 				</div>
-			</div>
+			</section>
 
 			<!-- Feature cards -->
 
