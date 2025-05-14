@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import GridBeam from './GridBeam.svelte';
+	import GridBeam from '$lib/components/blocks/GridBeam.svelte';
 
 	let {
 		className = '',
