@@ -2,8 +2,8 @@
 	import * as Card from '$lib/components/ui/card';
 	import { ArrowRight, Zap, Shield, BookOpen, Github, Linkedin, Twitter } from 'lucide-svelte';
 	import { Motion } from 'svelte-motion';
-	import GridBeam from '$lib/components/GridBeam.svelte';
-	import BackgroundBoxes from '$lib/components/BackgroundBoxes.svelte';
+	import GridBeam from '$lib/components/blocks/GridBeam.svelte';
+	import BackgroundBoxes from '$lib/components/blocks/BackgroundBoxes.svelte';
 	import type { ComponentType } from 'svelte';
 
 	// Define prop types

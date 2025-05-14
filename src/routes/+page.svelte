@@ -4,9 +4,10 @@
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { Flame, Check, X, BookOpen, ArrowRight } from 'lucide-svelte';
-	import SparklesText from '$lib/components/SparklesText.svelte';
-	import BackgroundBoxes from '$lib/components/BackgroundBoxes.svelte';
-	import GridBeam from '$lib/components/GridBeam.svelte';
+	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
+	import SparklesText from '$lib/components/blocks/SparklesText.svelte';
+	import BackgroundBoxes from '$lib/components/blocks/BackgroundBoxes.svelte';
+	import GridBeam from '$lib/components/blocks/GridBeam.svelte';
 	const swipe = '/lottie/swipe.json';
 	const attention = '/lottie/attention.json';
 
@@ -87,7 +88,8 @@
 			iconBg: 'bg-purple-500/20',
 			iconColor: 'text-purple-500',
 			title: 'Explore Origins',
-			description: 'If available, learn where myths originated and how they became part of popular culture, supported by sources.',
+			description:
+				'If available, learn where myths originated and how they became part of popular culture, supported by sources.',
 			samplePrefix: 'Origin:',
 			samplePrefixColor: 'text-purple-500',
 			sampleText:
@@ -112,7 +114,8 @@
 			ring: 'ring-white dark:ring-gray-900',
 			iconBg: 'bg-purple-500 dark:bg-blue-900',
 			titleColor: 'text-purple-500',
-			description: 'Our AI, powered by the Sonar API, analyzes the statement using advanced research and reliable sources.'
+			description:
+				'Our AI, powered by the Sonar API, analyzes the statement using advanced research and reliable sources.'
 		},
 		{
 			number: 3,
@@ -121,7 +124,8 @@
 			ring: 'ring-white dark:ring-gray-900',
 			iconBg: 'bg-emerald-500 dark:bg-blue-900',
 			titleColor: 'text-emerald-500',
-			description: 'Receive a detailed verdict (True/False/Inconclusive) with explanations and verifiable citations.'
+			description:
+				'Receive a detailed verdict (True/False/Inconclusive) with explanations and verifiable citations.'
 		}
 	];
 </script>
@@ -145,7 +149,7 @@
 			<!-- Hero section -->
 			<div class="mb-16 flex flex-col items-center text-center">
 				<section class="flex items-end">
-					<lord-icon
+					<LordIcon
 						src={attention}
 						trigger="loop"
 						stroke="thick"
@@ -153,7 +157,7 @@
 						state="hover-draw"
 						class="relative top-10 mb-10 size-20 text-muted-foreground transition-colors hover:text-primary sm:mx-2"
 						colors="primary:white"
-					></lord-icon>
+					/>
 
 					<div class="mb-6 flex items-center gap-3">
 						<Flame class="size-14 animate-pulse text-primary" />
