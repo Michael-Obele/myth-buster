@@ -7,6 +7,15 @@
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
 	import SparklesText from '$lib/components/blocks/SparklesText.svelte';
 	import BackgroundBoxes from '$lib/components/blocks/BackgroundBoxes.svelte';
+
+	// Import our new landing page components
+	import EnhancedHero from '$lib/components/landing-page/EnhancedHero.svelte';
+	import AlternatingFeature from '$lib/components/landing-page/AlternatingFeature.svelte';
+	import GamePreview from '$lib/components/landing-page/GamePreview.svelte';
+	import HowItWorks from '$lib/components/landing-page/HowItWorks.svelte';
+	import StatsHighlight from '$lib/components/landing-page/StatsHighlight.svelte';
+	import Globe from '$lib/components/blocks/Globe.svelte';
+
 	const attention = '/lottie/attention.json';
 	const flame = '/lottie/flame.json';
 
@@ -36,6 +45,28 @@
 			delay: -Math.random() * 15
 		}))
 	);
+
+	// Content for alternating features
+	const featureContent = $state([
+		{
+			title: 'Verify Any Claim Instantly',
+			description:
+				"Our AI-powered analysis can verify any statement in seconds, providing a definitive verdict with supporting evidence. Whether it's a viral social media post or a surprising 'fact' you heard, we've got you covered.",
+			imgSrc:
+				'https://images.unsplash.com/photo-1661956602944-249bcd04b63f?q=80&w=1470&auto=format&fit=crop',
+			imgAlt: 'AI analyzing data visualization',
+			reversed: false
+		},
+		{
+			title: 'Learn the Origins of Common Myths',
+			description:
+				'Beyond just fact-checking, discover where popular myths originated and how they became widespread. Understanding the history of misinformation helps prevent its future spread.',
+			imgSrc:
+				'https://images.unsplash.com/photo-1616526596850-1285b9f0e9b8?q=80&w=1528&auto=format&fit=crop',
+			imgAlt: 'Ancient myths depicted in art',
+			reversed: true
+		}
+	]);
 
 	const featureCards: {
 		hoverKey: Key;
@@ -145,95 +176,25 @@
 		<main
 			class="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 py-16 text-foreground"
 		>
-			<!-- Hero section -->
-			<section class="mb-16 flex flex-col items-center text-center">
-				<div class="flex items-end">
-					<div class="mb-6 flex items-center gap-3">
-						<LordIcon
-							src={attention}
-							trigger="loop"
-							stroke="thick"
-							target="section"
-							state="hover-draw"
-							class="relative top-10 mb-10 size-20 text-muted-foreground transition-colors hover:text-primary sm:mx-2"
-							colors="primary:white"
-						/>
+			<!-- Enhanced Hero Section (using component) -->
+			<EnhancedHero />
 
-						<LordIcon
-							src={flame}
-							trigger="loop-on-hover"
-							stroke="thick"
-							target="div"
-							class="size-16 font-extrabold text-primary sm:mx-2"
-							state="hover-draw"
-							colors="primary:#10B981,secondary:white"
-						/>
-						<a href="/app">
-							<SparklesText
-								text="Myth Buster"
-								class="font-serif text-5xl font-bold tracking-tight text-primary md:text-6xl"
-							/>
-						</a>
-
-						<Badge class="bg-primary/20 text-primary hover:text-white">AI Powered</Badge>
-					</div>
-				</div>
-
-				<p class="mb-8 max-w-2xl text-center text-xl leading-loose text-muted-foreground">
-					<span class="text-2xl font-semibold text-primary">Uncover</span>
-					the
-					<span class="handwritten-underline relative z-10 text-2xl font-semibold text-primary"
-						>truth</span
-					>
-					behind common
-					<span
-						class="mx-2 bg-gradient-to-r from-purple-500 to-emerald-500 bg-clip-text text-2xl font-semibold tracking-wide text-transparent"
-						>myths</span
-					>
-					and misconceptions with our AI-powered myth-busting tool. Leveraging the Sonar API, we provide
-					detailed explanations, reliable sources, and aim to help you separate fact from fiction.
-				</p>
-
-				<!-- Animated CTA button wrapper -->
-				<div
-					class="relative"
-					tabindex="0"
-					role="button"
-					onmouseenter={() => toggleHover('cta', true)}
-					onmouseleave={() => toggleHover('cta', false)}
-				>
-					<div
-						class="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-purple-600 via-primary to-emerald-600 opacity-70 blur transition duration-1000"
-						class:opacity-100={hoverState.cta}
-						class:scale-105={hoverState.cta}
-					></div>
-					<Button
-						href="/app"
-						class="relative flex items-center gap-2 rounded-lg px-8 py-6 text-lg font-medium transition-all duration-300 hover:scale-105"
-					>
-						Start Busting Myths
-						<ArrowRight class="h-5 w-5" />
-					</Button>
-				</div>
-			</section>
-
-			<!-- Feature cards -->
+			<!-- Stats Highlight Section -->
+			<StatsHighlight />
 
 			<!-- Mobile Timeline (visible on mobile only) -->
 			<ol class="relative block border-s border-gray-200 dark:border-gray-700 md:hidden">
 				{#each featureCards as card (card.title)}
 					<li class="mb-10 ms-6">
 						<span
-							class="absolute flex h-6 w-6 items-center justify-center {card.iconBg} -start-3 rounded-full ring-8 ring-white dark:ring-gray-900"
+							class="absolute -start-3 mt-1.5 flex h-10 w-10 items-center justify-center rounded-full shadow-md {card.iconBg}"
 						>
 							{#if card.icon}
-								<card.icon class="h-2.5 w-2.5 {card.iconColor}" />
+								<svelte:component this={card.icon} class={`h-4 w-4 ${card.iconColor}`} />
 							{/if}
 						</span>
-						<h3 class="mb-1 flex items-center text-lg font-semibold text-gray-900 dark:text-white">
-							{card.title}
-						</h3>
-						<p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">
+						<h3 class="mb-1 text-lg font-semibold">{card.title}</h3>
+						<p class="mb-4 text-base font-normal text-muted-foreground">
 							{card.description}
 						</p>
 						<div class="rounded-lg bg-muted/50 p-3 text-sm">
@@ -250,22 +211,25 @@
 					<div
 						class="group relative transition-all duration-300 hover:scale-105"
 						role="group"
-						onmouseenter={() => toggleHover(card.hoverKey, true)}
-						onmouseleave={() => toggleHover(card.hoverKey, false)}
+						on:mouseenter={() => toggleHover(card.hoverKey, true)}
+						on:mouseleave={() => toggleHover(card.hoverKey, false)}
 					>
+						<!-- Gradient backdrop (visible on hover) -->
 						<div
-							class={`absolute -inset-0.5 rounded-xl ${card.gradient} opacity-0 blur transition duration-300 group-hover:opacity-70`}
-							class:opacity-50={hoverState[card.hoverKey]}
+							class="absolute inset-0 -z-10 rounded-xl opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-70 {card.gradient}"
 						></div>
+
 						<Card.Root
-							class={`relative h-full overflow-hidden rounded-xl border-2 ${card.border} bg-background/80 backdrop-blur`}
+							class={`h-full border transition-all duration-300 ${
+								hoverState[card.hoverKey] ? card.border : 'border-border/50'
+							}`}
 						>
-							<Card.Header class="pb-4">
+							<Card.Header>
 								<div
-									class={`mb-2 flex h-12 w-12 items-center justify-center rounded-full ${card.iconBg}`}
+									class={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg shadow-sm ${card.iconBg}`}
 								>
 									{#if card.icon}
-										<card.icon class={`h-6 w-6 ${card.iconColor}`} />
+										<svelte:component this={card.icon} class={`h-6 w-6 ${card.iconColor}`} />
 									{/if}
 								</div>
 								<Card.Title class="text-xl font-bold">{card.title}</Card.Title>
@@ -284,61 +248,43 @@
 				{/each}
 			</div>
 
-			<!-- How it works section -->
+			<!-- First Alternating Feature Section -->
+			{#each featureContent as content, index}
+				<AlternatingFeature
+					title={content.title}
+					description={content.description}
+					imgSrc={content.imgSrc}
+					imgAlt={content.imgAlt}
+					reversed={content.reversed}
+					className="mt-24"
+				>
+					{#if index === 0}
+						<Button href="/app" variant="outline" class="mt-4 border-primary text-primary">
+							Try it yourself <ArrowRight class="ml-2 h-4 w-4" />
+						</Button>
+					{/if}
+				</AlternatingFeature>
+			{/each}
 
-			<div id="how-it-works" class="mt-20 w-full max-w-4xl scroll-mt-14">
-				<h2 class="mb-8 text-center font-serif text-3xl font-bold">How It Works</h2>
+			<!-- Game Preview Section -->
+			<GamePreview />
 
-				<!-- Mobile Timeline (block md:hidden) -->
-				<ol class="relative block border-s border-gray-200 dark:border-gray-700 md:hidden">
-					{#each howItWorksSteps as step}
-						<li class="mb-10 ms-6">
-							<span
-								class={`absolute flex h-6 w-6 items-center justify-center ${step.iconBg} -start-3 rounded-full ${step.ring} ${step.color}`}
-							>
-								<span class="font-bold">{step.number}</span>
-							</span>
-							<h3 class={`mb-1 text-lg font-semibold dark:text-white ${step.titleColor}`}>
-								{step.title}
-							</h3>
-							<p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">
-								{step.description}
-							</p>
-						</li>
-					{/each}
-				</ol>
+			<!-- New How It Works Section with Resizable Component -->
+			<HowItWorks />
 
-				<!-- Desktop Timeline (hidden on mobile) -->
-				<div class="relative hidden md:block">
-					<!-- Timeline line -->
+			<div class="flex h-[80vh] w-full items-center justify-center">
+				<div
+					class="relative flex h-fit w-full max-w-[32rem] items-center justify-center overflow-hidden rounded-lg border bg-background px-40 pb-40 pt-8 md:pb-60 md:shadow-xl"
+				>
+					<span
+						class="pointer-events-none select-none whitespace-pre-wrap bg-gradient-to-b from-black to-gray-300/80 bg-clip-text text-center text-8xl font-semibold leading-none text-transparent dark:from-white dark:to-slate-900/10"
+					>
+						Globe
+					</span>
+					<Globe class="top-28" />
 					<div
-						class="absolute left-1/2 top-0 h-full w-0.5 bg-gradient-to-b from-primary via-purple-500 to-emerald-500"
+						class="pointer-events-none absolute inset-0 h-full bg-[radial-gradient(circle_at_50%_200%,rgba(0,0,0,0.2),rgba(255,255,255,0))]"
 					></div>
-					{#each howItWorksSteps as step, i}
-						<div class="relative mb-12 flex flex-col md:flex-row">
-							<div class={`flex-1 pb-8 ${i % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:pl-12'}`}>
-								{#if i % 2 === 0}
-									<h3 class={`mb-2 text-xl font-bold ${step.titleColor}`}>
-										{step.number}. {step.title}
-									</h3>
-									<p class="text-muted-foreground">{step.description}</p>
-								{/if}
-							</div>
-							<div
-								class="absolute left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full {step.color}"
-							>
-								{step.number}
-							</div>
-							<div class={`flex-1 pb-8 ${i % 2 === 0 ? 'md:pl-12' : 'md:pr-12 md:text-right'}`}>
-								{#if i % 2 !== 0}
-									<h3 class={`mb-2 text-xl font-bold ${step.titleColor}`}>
-										{step.number}. {step.title}
-									</h3>
-									<p class="text-muted-foreground">{step.description}</p>
-								{/if}
-							</div>
-						</div>
-					{/each}
 				</div>
 			</div>
 
