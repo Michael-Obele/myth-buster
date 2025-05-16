@@ -21,7 +21,7 @@
 	}
 </script>
 
-<section class="mx-auto flex max-w-4xl flex-col items-center py-16 text-center">
+<section id="hero" class="mx-auto flex max-w-4xl flex-col items-center py-16 text-center">
 	<div class="flex items-end">
 		<div class="mb-3 flex items-center gap-3 md:mb-6">
 			<LordIcon
@@ -37,7 +37,7 @@
 					src={flame}
 					trigger="loop"
 					stroke="thick"
-					target="div"
+					target="#hero"
 					colors="primary:#10B981,secondary:#10b981"
 					mobileLoop={true}
 					class="size-8 shrink-0 md:block md:size-12"

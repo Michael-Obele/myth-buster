@@ -5,16 +5,15 @@ A component that displays an image with a gradient background using the AspectRa
 Props:
 - `src`: URL to the image
 - `alt`: Alt text for the image
-- `ratio`: Aspect ratio (default: 16/9)
 - `class`: Additional CSS classes
-- `hoverEffect`: Whether to add a hover scale effect (default: true)
+- `hoverEffect`: Whether to add a hover scale effect (default: false)
 
 Usage:
 ```svelte
 <GradientImage
   src="/path/to/image.jpg"
   alt="Feature illustration"
-  ratio={16/9}
+
   class="rounded-lg"
 />
 ```
@@ -22,18 +21,15 @@ Usage:
 
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import { AspectRatio } from '$lib/components/ui/aspect-ratio';
 
 	let {
 		src,
 		alt = 'Image',
-		ratio = 16 / 9,
 		class: className = '',
-		hoverEffect = true
+		hoverEffect = false
 	} = $props<{
 		src: string;
 		alt?: string;
-		ratio?: number;
 		class?: string;
 		hoverEffect?: boolean;
 	}>();

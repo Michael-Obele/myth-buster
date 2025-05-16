@@ -2,28 +2,36 @@
 	import { Check, Search, FileText } from 'lucide-svelte';
 	import FeatureCard from '$lib/components/blocks/FeatureCard.svelte';
 
+	const attention = '/lottie/attention.json';
+	const cycle = '/lottie/cycle.json';
+	const press = '/lottie/press.json';
+	const privacy = '/lottie/privacy.json';
+
 	// Using $state for reactivity in Svelte 5
 	const howItWorksData = $state([
 		{
 			id: 1,
-			title: '1. Enter Your Myth',
+			title: 'Enter Your Myth',
 			content: 'Type in any statement, claim, or myth you want to verify into the input field.',
-			image: 'https://i.pinimg.com/736x/ca/aa/49/caaa49d386d84f2d037d0abcc919778f.jpg',
+			// image: 'https://i.pinimg.com/736x/ca/aa/49/caaa49d386d84f2d037d0abcc919778f.jpg',
+			image: press,
 			icon: Search
 		},
 		{
 			id: 2,
-			title: '2. AI Analysis',
+			title: 'AI Analysis',
 			content: 'Our AI analyzes the statement using advanced research and reliable sources.',
-			image: 'https://i.pinimg.com/736x/a5/dc/0a/a5dc0af50d185b7f9111949b17e17e1a.jpg',
+			// image: 'https://i.pinimg.com/736x/a5/dc/0a/a5dc0af50d185b7f9111949b17e17e1a.jpg',
+			image: cycle,
 			icon: FileText
 		},
 		{
 			id: 3,
-			title: '3. Get Results',
+			title: 'Get Results',
 			content:
 				'Receive a detailed verdict (True/False/Inconclusive) with explanations and verifiable citations.',
-			image: 'https://i.pinimg.com/736x/b1/b9/c2/b1b9c230143fb0d8540eabe5b74adf27.jpg',
+			// image: 'https://i.pinimg.com/736x/b1/b9/c2/b1b9c230143fb0d8540eabe5b74adf27.jpg',
+			image: privacy,
 			icon: Check
 		}
 	]);
@@ -55,7 +63,7 @@
 		</div>
 
 		<!-- Desktop view: horizontal connected steps -->
-		<div class="hidden grid-cols-3 gap-4 md:grid">
+		<div class="hidden grid-cols-3 gap-4">
 			{#each howItWorksData as step, i}
 				<div class="relative rounded-lg border bg-card p-6">
 					{#if i > 0}
@@ -81,11 +89,11 @@
 			{/each}
 
 			<!-- Connection line between steps -->
-			<div class="relative mt-8 hidden md:block">
+			<!-- <div class="relative mt-8 hidden md:block">
 				<div
 					class="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-primary via-purple-500 to-emerald-500"
 				></div>
-			</div>
+			</div> -->
 		</div>
 	</div>
 </section>
