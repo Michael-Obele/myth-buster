@@ -55,6 +55,7 @@
 	},
 	"dependencies": {
 		"@lordicon/element": "^1.11.0",
+		"@sveltejs/enhanced-img": "^0.6.0",
 		"animejs": "^4.0.2",
 		"cobe": "^0.6.3",
 		"lottie-web": "^5.12.2",

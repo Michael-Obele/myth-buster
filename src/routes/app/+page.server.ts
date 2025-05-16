@@ -261,8 +261,8 @@ export const actions: Actions = {
     }
   },
   
-  // Add a reset action to clear the form data
-  reset: () => {
+  // Reset action to clear the form data (now using POST)
+  reset: async () => {
     console.log('Reset action called - clearing form data');
     return { success: true };
   },
