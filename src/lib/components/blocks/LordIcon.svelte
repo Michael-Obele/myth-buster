@@ -30,6 +30,7 @@ Usage:
 -->
 
 <script lang="ts">
+	import { cn } from '$lib/utils';
 	// Type definitions for LordIcon props
 
 	type TriggerType =
@@ -144,6 +145,8 @@ Usage:
 		mobileLoop = false,
 		delay
 	}: LordIconProps = $props();
+
+	let defaultClass = '';
 </script>
 
 {#if mobileLoop}
@@ -154,7 +157,7 @@ Usage:
 		{stroke}
 		target={target || null}
 		state={state || null}
-		class={`${className} md:hidden`}
+		class={cn(`${className} md:hidden`, defaultClass)}
 		{colors}
 		{delay}
 		{loading}
@@ -169,7 +172,7 @@ Usage:
 		{stroke}
 		target={target || null}
 		state={state || null}
-		class={`${className} hidden md:inline-block`}
+		class={cn(`${className} hidden md:inline-block`, defaultClass)}
 		{colors}
 		{delay}
 		{loading}
@@ -183,7 +186,7 @@ Usage:
 		{stroke}
 		target={target || null}
 		state={state || null}
-		class={className}
+		class={cn(className, defaultClass)}
 		{colors}
 		{delay}
 		{loading}

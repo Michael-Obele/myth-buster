@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import LordIcon from './LordIcon.svelte';
 
 	interface Props {
 		// Svelte 5 Code : https://svelte.dev/playground/39866a136f0d4268821e5ae901dce47f?version=5.0.5
@@ -12,6 +13,7 @@
 			content: string;
 			image?: string;
 			video?: string;
+			lottie?: string;
 			icon?: any;
 		}>;
 	}
@@ -129,11 +131,22 @@
 
 				<div class="h-[350px] min-h-[200px] w-auto {ltr && 'lg:order-1'}">
 					{#if data[currentIndex]?.image}
-						<img
+						<!-- <img
 							src={data[currentIndex].image}
 							alt="feature"
 							class="aspect-auto size-full rounded-xl border border-neutral-300/50 object-cover object-left-top p-1 shadow-lg"
-						/>
+						/> -->
+						<div>
+							<LordIcon
+								src={data[currentIndex].image}
+								trigger="loop"
+								stroke="thick"
+								target="#hero"
+								colors="primary:#10B981,secondary:#10b981"
+								mobileLoop={false}
+								class="size-96"
+							/>
+						</div>
 					{:else if data[currentIndex]?.video}
 						<video
 							preload="auto"
@@ -143,6 +156,18 @@
 							loop
 							muted
 						></video>
+					{:else if data[currentIndex]?.lottie}
+						<div>
+							<LordIcon
+								src={data[currentIndex].image}
+								trigger="loop"
+								stroke="thick"
+								target="#hero"
+								colors="primary:#10B981,secondary:#10b981"
+								mobileLoop={false}
+								class="size-96"
+							/>
+						</div>
 					{:else}
 						<div
 							class="aspect-auto size-full rounded-xl border border-neutral-300/50 bg-gray-200 p-1"
@@ -176,11 +201,14 @@
 						<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 
 						<li
-							class="card_code relative mr-8 grid h-full max-w-full shrink-0 items-start justify-center pl-2 last:mr-0"
+							class="card_code relative mr-2 grid h-full max-w-full shrink-0 cursor-pointer items-start justify-center pl-2 last:mr-0"
 							onclick={() => (currentIndex = index)}
 							style="scroll-snap-align: center;"
 						>
-							<h2 class="text-xl font-bold">{item.title}</h2>
+							<span class="flex items-center gap-2">
+								<p>{index + 1}</p>
+								<h2 class="text-xl font-bold">{item.title}</h2>
+							</span>
 							<p class="mx-0 max-w-sm text-balance text-sm">{item.content}</p>
 						</li>
 					{/each}

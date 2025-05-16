@@ -61,20 +61,6 @@
 		}
 	];
 
-	interface FeatureCard {
-		title: string;
-		description: string;
-		icon?: any;
-		iconBg?: string;
-		iconColor?: string;
-		samplePrefixColor?: string;
-		samplePrefix?: string;
-		sampleText?: string;
-		hoverKey?: string;
-		gradient?: string;
-		border?: string;
-	}
-
 	type Key = 'cta' | 'card1' | 'card2' | 'card3';
 	function isKey(key: unknown): key is Key {
 		return key === 'cta' || key === 'card1' || key === 'card2' || key === 'card3';
