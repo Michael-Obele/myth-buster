@@ -1,6 +1,9 @@
 <script lang="ts">
-import { Button } from '$lib/components/ui/button';
-import Globe from '$lib/components/blocks/Globe.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import Globe from '$lib/components/blocks/Globe.svelte';
+	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
+
+	const attention2 = '/lottie/attention2.json';
 </script>
 
 <section class="relative my-16 py-16">
@@ -30,12 +33,21 @@ import Globe from '$lib/components/blocks/Globe.svelte';
 			></div>
 		</div>
 
-		<div class="mt-8 text-center">
+		<div class="relaive mt-8 text-center">
 			<p class="mx-auto max-w-2xl text-lg">
 				Join our worldwide community of myth busters who are committed to spreading truth and
 				challenging misinformation everywhere.
 			</p>
-			<Button href="/join" variant="default" size="lg" class="mt-6">Join the Movement</Button>
+			<span class="mx-auto">
+				<Button href="/join" variant="default" size="lg" class="mt-6">Join the Movement</Button>
+				<LordIcon
+					src={attention2}
+					trigger="loop"
+					stroke="thick"
+					colors="primary:#10B981,secondary:#10b981"
+					class="relative top-[1.2rem] size-14 shrink-0 md:top-[1.3rem] md:size-20"
+				/>
+			</span>
 		</div>
 	</div>
 </section>

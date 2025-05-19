@@ -2,15 +2,27 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Card from '$lib/components/ui/card';
 	import { Brain, Zap, BookOpen } from 'lucide-svelte';
+	import NumberTicker from '$lib/components/blocks/NumberTicker.svelte';
 
-	const stats = $state([
+	interface Stat {
+		icon: any;
+		value: string;
+		label: string;
+		description: string;
+		color: string;
+		bgColor: string;
+		direction: 'up' | 'down';
+	}
+
+	const stats: Stat[] = $state([
 		{
 			icon: Brain,
 			value: '100%',
 			label: 'Accuracy',
 			description: 'Every myth is verified with reliable sources',
-			color: 'text-emerald-500',
-			bgColor: 'bg-emerald-500/10'
+			color: 'text-purple-500',
+			bgColor: 'bg-purple-500/10',
+			direction: 'up'
 		},
 		{
 			icon: Zap,
@@ -18,15 +30,17 @@
 			label: 'Response Time',
 			description: 'Get answers almost instantly',
 			color: 'text-primary',
-			bgColor: 'bg-primary/10'
+			bgColor: 'bg-primary/10',
+			direction: 'down'
 		},
 		{
 			icon: BookOpen,
 			value: '1000+',
 			label: 'Myths Debunked',
 			description: 'And growing every day with user contributions',
-			color: 'text-purple-500',
-			bgColor: 'bg-purple-500/10'
+			color: 'text-red-500',
+			bgColor: 'bg-red-500/10',
+			direction: 'up'
 		}
 	]);
 </script>
@@ -60,7 +74,11 @@
 					</Card.Header>
 					<Card.Content>
 						<div class="flex flex-col gap-1">
-							<span class="text-4xl font-bold tracking-tight">{stat.value}</span>
+							<NumberTicker
+								class="text-4xl font-bold tracking-tight"
+								direction={stat.direction}
+								value={stat.value}
+							/>
 							<p class="text-sm text-muted-foreground">{stat.description}</p>
 						</div>
 					</Card.Content>
