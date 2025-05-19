@@ -149,7 +149,7 @@ Usage:
 	let defaultClass = '';
 </script>
 
-{#if mobileLoop}
+{#if mobileLoop === true}
 	<!-- Mobile version with loop trigger -->
 	<lord-icon
 		{src}
