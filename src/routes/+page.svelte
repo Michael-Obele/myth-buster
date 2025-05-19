@@ -1,25 +1,14 @@
 <script lang="ts">
 	import FeatureCardGrid from '$lib/components/blocks/FeatureCardGrid.svelte';
-	import AlternatingFeatureSection from '$lib/components/landing-page/AlternatingFeatureSection.svelte';
-	import GlobalImpactSection from '$lib/components/landing-page/GlobalImpactSection.svelte';
-	import { Button } from '$lib/components/ui/button';
-	import {
-		Search,
-		Brain,
-		CheckCircle,
-		ArrowRight,
-		Eye,
-		PackageSearch,
-		Settings
-	} from 'lucide-svelte';
-
 	import BackgroundBoxes from '$lib/components/blocks/BackgroundBoxes.svelte';
 
-	// Import our new landing page components
+	// Import landing page components
 	import EnhancedHero from '$lib/components/landing-page/EnhancedHero.svelte';
 	import GamePreview from '$lib/components/landing-page/GamePreview.svelte';
 	import HowItWorks from '$lib/components/landing-page/HowItWorks.svelte';
 	import StatsHighlight from '$lib/components/landing-page/StatsHighlight.svelte';
+	import GlobalImpactSection from '$lib/components/landing-page/GlobalImpactSection.svelte';
+	import AlternatingFeatureSection from '$lib/components/landing-page/AlternatingFeatureSection.svelte';
 </script>
 
 <!-- Animated background with grid pattern -->
@@ -71,12 +60,5 @@
 		100% {
 			transform: translateY(0) translateX(0);
 		}
-	}
-
-	.floating-particle {
-		animation-name: float;
-		animation-timing-function: ease-in-out;
-		animation-iteration-count: infinite;
-		position: absolute;
 	}
 </style>

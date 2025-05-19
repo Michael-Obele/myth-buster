@@ -4,14 +4,22 @@
 	import { Check, X, HelpCircle, Share2 } from 'lucide-svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
+	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
+	import ShareOptions from './ShareOptions.svelte';
+
+	const wrong = '/lottie/wrong.json';
+	const right = '/lottie/right.json';
+	const unsure = '/lottie/unsure.json';
 
 	// Props using Svelte 5 syntax
 	let {
 		verdict = '',
-		myth = ''
+		myth = '',
+		explanation = ''
 	}: {
 		verdict: string;
-		myth: string;
+		myth: string | undefined;
+		explanation: string;
 	} = $props();
 
 	// Reactive state
@@ -89,11 +97,32 @@
 				class="flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg {verdictColor}"
 			>
 				{#if verdict === 'true'}
-					<Check class="h-6 w-6" />
+					<LordIcon
+						src={right}
+						trigger="loop"
+						stroke="thick"
+						target="#hero"
+						colors="primary:#10B981,secondary:#10b981"
+						class="size-8 shrink-0 md:block md:size-12"
+					/>
 				{:else if verdict === 'false'}
-					<X class="h-6 w-6" />
+					<LordIcon
+						src={wrong}
+						trigger="loop"
+						stroke="thick"
+						target="#hero"
+						colors="primary:#10B981,secondary:#10b981"
+						class="size-8 shrink-0 md:block md:size-12"
+					/>
 				{:else}
-					<HelpCircle class="h-6 w-6" />
+					<LordIcon
+						src={unsure}
+						trigger="loop"
+						stroke="thick"
+						target="#hero"
+						colors="primary:#10B981,secondary:#10b981"
+						class="size-8 shrink-0 md:block md:size-12"
+					/>
 				{/if}
 			</div>
 			<h2 class="text-3xl font-bold text-white">
@@ -103,14 +132,7 @@
 
 		<div class="mt-4 flex flex-wrap items-center justify-between gap-2">
 			<div class="flex items-center gap-2">
-				<Button
-					variant="ghost"
-					size="sm"
-					class="gap-2 text-sm text-muted-foreground hover:text-primary"
-				>
-					<Share2 class="h-4 w-4" />
-					Share
-				</Button>
+				<ShareOptions {verdict} {myth} {explanation} />
 			</div>
 		</div>
 	</div>

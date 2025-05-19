@@ -42,17 +42,6 @@
 		};
 	};
 
-	// Toggle voice recording (placeholder functionality)
-	function toggleRecording() {
-		isRecording = !isRecording;
-		if (isRecording) {
-			// Here you would implement actual voice recording functionality
-			setTimeout(() => {
-				isRecording = false;
-			}, 3000);
-		}
-	}
-
 	// Animate input on mount
 	function animateInput(node: HTMLElement) {
 		animate(node, { y: [20, 0], opacity: [0, 1] } as any, { duration: 0.5, delay: 0.2 });
@@ -62,7 +51,7 @@
 </script>
 
 <form
-	class="w-full space-y-4"
+	class="w-full max-w-3xl space-y-4"
 	method="POST"
 	action="?/verifyMyth"
 	use:enhance={handleSubmit}
@@ -78,13 +67,6 @@
 		/>
 		<div class="mt-1 flex justify-between text-xs text-muted-foreground">
 			<span>Characters: {characterCount}/{maxLength}</span>
-			<button
-				type="button"
-				class="rounded-full p-1 transition-colors hover:bg-muted"
-				onclick={toggleRecording}
-			>
-				<Mic class=" {isRecording ? 'text-destructive' : '' + 'h-4 w-4'}" />
-			</button>
 		</div>
 	</div>
 	<Button

@@ -10,7 +10,9 @@
 		{ href: '/', label: 'Home' },
 		{ href: '/app', label: 'Verify Myths' },
 		{ href: '/game', label: 'Game' },
-		{ href: '/about', label: 'About' }
+		{ href: '/about', label: 'About' },
+		{ href: '/signin', label: 'Sign In' },
+		{ href: '/signup', label: 'Sign Up' }
 	];
 
 	let isMenuOpen: boolean = $state(false);
@@ -41,7 +43,6 @@
 				<Flame class="h-6 w-6" />
 				<span class="font-underdog text-xl font-bold tracking-tight">Myth Buster</span>
 			</a>
-			<Badge class="bg-primary/20 text-primary">AI Powered</Badge>
 		</div>
 
 		<!-- Desktop navigation -->

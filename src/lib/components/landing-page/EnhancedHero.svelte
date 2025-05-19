@@ -39,7 +39,7 @@
 					stroke="thick"
 					target="#hero"
 					colors="primary:#10B981,secondary:#10b981"
-					mobileLoop={true}
+					mobileLoop={false}
 					class="size-8 shrink-0 md:block md:size-12"
 				/>
 				<SparklesText
