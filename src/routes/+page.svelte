@@ -9,15 +9,12 @@
 	import StatsHighlight from '$lib/components/landing-page/StatsHighlight.svelte';
 	import GlobalImpactSection from '$lib/components/landing-page/GlobalImpactSection.svelte';
 	import AlternatingFeatureSection from '$lib/components/landing-page/AlternatingFeatureSection.svelte';
-	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
-
-	const wrong = '/lottie/wrong.json';
 </script>
 
 <!-- Animated background with grid pattern -->
 <div class="min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800">
 	<!-- Grid pattern overlay -->
-	<div class="absolute inset-0 bg-grid-black/[0.07] dark:bg-grid-white/[0.05]"></div>
+	<div class="bg-grid-black/[0.07] dark:bg-grid-white/[0.05] absolute inset-0"></div>
 	<!-- Background boxes for additional visual effect -->
 	<BackgroundBoxes
 		className="opacity-50"
@@ -28,7 +25,7 @@
 	>
 		<!-- Main content -->
 		<main
-			class="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 py-16 text-foreground"
+			class="text-foreground relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 py-16"
 		>
 			<!-- Enhanced Hero Section (using component) -->
 			<EnhancedHero />
