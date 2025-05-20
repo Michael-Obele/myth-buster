@@ -15,6 +15,6 @@
 
 <Navbar />
 <!-- Spacer to prevent content from being hidden under the navbar -->
-<div class="bg-gradient-to-br from-slate-900 to-slate-800 pt-14">
+<div class="pt-14">
 	{@render children()}
 </div>

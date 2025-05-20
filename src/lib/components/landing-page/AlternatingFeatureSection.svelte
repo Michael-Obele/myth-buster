@@ -2,10 +2,13 @@
 	import AlternatingFeature from './AlternatingFeature.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { ArrowRight } from 'lucide-svelte';
-
+	// @ts-expect-error
 	import Approval from '$lib/img/Approval.png?enhanced';
+	// @ts-expect-error
 	import Busy from '$lib/img/Busy.png?enhanced';
+	// @ts-expect-error
 	import Myth from '$lib/img/Myth1.jpg?enhanced';
+	// @ts-expect-error
 	import AI from '$lib/img/AI1.jpg?enhanced';
 
 	const featureContent = $state([

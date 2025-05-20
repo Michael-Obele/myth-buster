@@ -9,6 +9,9 @@
 	import StatsHighlight from '$lib/components/landing-page/StatsHighlight.svelte';
 	import GlobalImpactSection from '$lib/components/landing-page/GlobalImpactSection.svelte';
 	import AlternatingFeatureSection from '$lib/components/landing-page/AlternatingFeatureSection.svelte';
+	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
+
+	const wrong = '/lottie/wrong.json';
 </script>
 
 <!-- Animated background with grid pattern -->

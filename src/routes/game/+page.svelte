@@ -19,15 +19,18 @@
 		Sparkles,
 		LoaderCircle,
 		Settings,
-		ChevronDown
+		ChevronDown,
+		Info
 	} from 'lucide-svelte';
 	import { onMount, onDestroy } from 'svelte';
-	import type { PageProps, ActionData } from './$types';
+	import type { PageData, ActionData } from './$types';
 	import { Label } from '$lib/components/ui/label';
 	import { Confetti } from 'svelte-confetti';
 	import { PersistedState } from 'runed';
 	import { toast } from 'svelte-sonner';
 	import GameAbout from './GameAbout.svelte';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+
 	// Import types from server
 	interface Citation {
 		url: string;
@@ -63,7 +66,7 @@
 	type FormDataType = GenerateActionResult | CheckAnswerActionResult;
 
 	// Get props from page data
-	let { data, form }: PageProps = $props();
+	let { data, form }: { data: PageData; form: FormDataType } = $props();
 
 	// --- State Management with Svelte 5 Runes and PersistedState ---
 
@@ -344,6 +347,15 @@
 			<Card.Title class="flex items-center justify-center gap-2 text-2xl font-bold">
 				<Sparkles class="h-6 w-6 text-primary" />
 				Test Your Knowledge
+
+				<Dialog.Root>
+					<Dialog.Trigger>
+						<Info />
+					</Dialog.Trigger>
+					<Dialog.Content>
+						<GameAbout />
+					</Dialog.Content>
+				</Dialog.Root>
 			</Card.Title>
 			<Card.Description class="mt-2 text-center text-base font-medium">
 				Is the statement true or false? How confident are you in your answer?
@@ -539,7 +551,17 @@
 
 								// Process the answer result (updates score, streak, and animations)
 								if (result.type === 'success') {
-									processFormResult(result.data);
+									if (result?.data?.result === 'correct') {
+										updateScore(score + (result?.data?.points as any));
+										updateStreak(streak + 1);
+									} else {
+										let deduction = Math.min(confidence * 10, score);
+										updateScore(score - deduction);
+										updateStreak(0);
+										toast.error(`-${deduction} points`, {
+											description: 'Incorrect answer deduction'
+										});
+									}
 								}
 
 								update({ reset: false });

@@ -38,6 +38,13 @@ export interface CheckAnswerActionResult {
   error?: string;
 }
 
+export interface AnswerResult {
+  result: 'correct' | 'incorrect';
+  points: number;
+  explanation: string;
+  citations: Citation[];
+}
+
 // System prompt for the AI to generate game statements
 const GAME_SYSTEM_PROMPT = `You are an AI that generates interesting and verifiable statements for a myth-busting game.
 For each request, provide a single statement that is definitively true or false.

@@ -42,15 +42,17 @@
 					target="#hero"
 					colors="primary:#10B981,secondary:#10b981"
 					mobileLoop={false}
-					class="size-8 shrink-0 md:block md:size-12"
+					class="size-8 shrink-0 pr-10 md:m-0 md:block md:size-12"
 				/>
 				<SparklesText
 					text="Myth Buster"
-					class="font-underdog text-2xl font-bold tracking-tight text-primary md:text-5xl"
+					class=" font-underdog text-4xl font-bold tracking-tight text-primary md:text-6xl"
 				/>
 			</a>
 
-			<Badge class="bg-primary/20 text-primary hover:text-white">AI Powered</Badge>
+			<Badge class="hidden bg-primary/20 text-xs text-primary hover:text-white md:block"
+				>AI Powered</Badge
+			>
 		</div>
 	</div>
 

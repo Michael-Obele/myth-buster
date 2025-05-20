@@ -98,17 +98,18 @@
 			>
 				{#if verdict === 'true'}
 					<LordIcon
-						src={right}
+						src={wrong}
+						state="hover-up"
 						trigger="loop"
 						stroke="thick"
-						target="#hero"
 						colors="primary:#10B981,secondary:#10b981"
-						class="size-8 shrink-0 md:block md:size-12"
+						class="absolute bottom-0 left-0 z-0 size-20"
 					/>
 				{:else if verdict === 'false'}
 					<LordIcon
 						src={wrong}
 						trigger="loop"
+						state="in-reveal"
 						stroke="thick"
 						target="#hero"
 						colors="primary:#10B981,secondary:#10b981"
