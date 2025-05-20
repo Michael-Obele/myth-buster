@@ -3,6 +3,8 @@
 	import * as Card from '$lib/components/ui/card';
 	import { ArrowRight, Trophy, Brain, Zap } from 'lucide-svelte';
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
+	import InteractiveHover from '../blocks/InteractiveHover.svelte';
+	import { goto } from '$app/navigation';
 
 	type GameFeature = {
 		title: string;
@@ -100,14 +102,19 @@
 				{/each}
 
 				<div class="pt-4">
-					<Button
+					<!-- <Button
 						href="/game"
 						variant="outline"
 						class="border-primary text-primary hover:bg-primary/20 hover:text-white"
 					>
 						Explore the Game
 						<ArrowRight class="ml-2 h-4 w-4" />
-					</Button>
+					</Button> -->
+					<InteractiveHover
+						onclick={() => goto('/game')}
+						class="w-72 transition-all duration-300"
+						text="Explore the Game"
+					/>
 				</div>
 			</div>
 		</div>

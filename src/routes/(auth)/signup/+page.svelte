@@ -7,9 +7,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import { Eye, EyeOff } from 'lucide-svelte';
-	import { AlertCircle } from 'lucide-svelte';
-	import PasswordInput from '$lib/components/ui/password-input';
+	import { Eye, EyeOff, AlertCircle } from 'lucide-svelte';
 	import {
 		Card,
 		CardContent,
@@ -17,10 +15,9 @@
 		CardTitle,
 		CardDescription
 	} from '$lib/components/ui/card';
-	import { toast } from 'svelte-sonner';
 
 	// Get the form data from props
-	let { data, form }: PageProps = $props();
+	let { form }: PageProps = $props();
 
 	// State management using $state
 	let username: string = $state('');
@@ -51,7 +48,7 @@
 			<form
 				method="POST"
 				class="space-y-4"
-				use:enhance={({ formElement, formData }) => {
+				use:enhance={() => {
 					// Set loading state to true when form is being submitted
 					isLoading = true;
 

@@ -5,6 +5,7 @@
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { animate } from 'svelte-motion';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
 	// Use $state for reactive variables
 	let myth: string = $state('');
@@ -48,6 +49,15 @@
 
 		setupPlaceholderRotation();
 	}
+
+	let formElement: HTMLFormElement | undefined = $state();
+
+	function handleKeyDown(event: KeyboardEvent) {
+		if (event.ctrlKey && event.key === 'Enter' && isValid) {
+			event.preventDefault();
+			formElement?.requestSubmit();
+		}
+	}
 </script>
 
 <form
@@ -56,17 +66,29 @@
 	action="?/verifyMyth"
 	use:enhance={handleSubmit}
 	use:animateInput
+	bind:this={formElement}
 >
 	<div class="relative">
 		<Textarea
 			name="myth"
 			bind:value={myth}
 			placeholder={placeholders[currentPlaceholder]}
-			class="min-h-32 border-primary/20 text-base transition-all duration-300 focus-visible:ring-primary"
+			class="min-h-32 border-primary/90 text-base transition-all duration-300 focus-visible:ring-primary"
 			maxlength={maxLength}
+			onkeydown={handleKeyDown}
 		/>
-		<div class="mt-1 flex justify-between text-xs text-muted-foreground">
+		<div class="mt-1 flex justify-between text-xs text-white">
 			<span>Characters: {characterCount}/{maxLength}</span>
+			<Tooltip.Provider>
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						<span class="text-white">Press Ctrl+Enter to submit</span>
+					</Tooltip.Trigger>
+					<Tooltip.Content class="bg-background text-xs">
+						<p>Quick submit shortcut</p>
+					</Tooltip.Content>
+				</Tooltip.Root>
+			</Tooltip.Provider>
 		</div>
 	</div>
 	<Button

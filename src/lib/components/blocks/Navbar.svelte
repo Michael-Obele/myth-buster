@@ -15,10 +15,7 @@
 	let authLinks = $derived(
 		user
 			? [] // No auth links needed if user is logged in
-			: [
-					{ href: '/signin', label: 'Sign In' },
-					{ href: '/signup', label: 'Sign Up' }
-				]
+			: [{ href: '/signin', label: 'Sign In' }]
 	);
 
 	// Base nav links
@@ -26,6 +23,7 @@
 		{ href: '/', label: 'Home' },
 		{ href: '/app', label: 'Verify Myths' },
 		{ href: '/game', label: 'Game' },
+		{ href: '/community', label: 'Community' },
 		{ href: '/about', label: 'About' }
 	];
 

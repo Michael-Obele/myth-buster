@@ -4,6 +4,8 @@
 	import { ArrowRight } from 'lucide-svelte';
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
 	import SparklesText from '$lib/components/blocks/SparklesText.svelte';
+	import InteractiveHover from '$lib/components/blocks/InteractiveHover.svelte';
+	import { goto } from '$app/navigation';
 
 	const attention = '/lottie/attention.json';
 	const flame = '/lottie/flame.json';
@@ -79,7 +81,7 @@
 			{/each}
 		</div>
 
-		<Button
+		<!-- <Button
 			href="/app"
 			size="lg"
 			class="relative flex items-center gap-2 rounded-lg px-8 py-6 text-lg font-medium transition-all duration-300 hover:scale-105"
@@ -88,7 +90,13 @@
 		>
 			Start Busting Myths
 			<ArrowRight class="h-5 w-5" />
-		</Button>
+		</Button> -->
+
+		<InteractiveHover
+			onclick={() => goto('/app')}
+			class="round w-80 transition-all duration-300"
+			text="Start Busting Myths"
+		/>
 
 		<p class="mt-4 max-w-md text-sm text-muted-foreground">
 			Join thousands of educators, students, and curious minds in the quest for factual accuracy.

@@ -1,5 +1,7 @@
 # Myth Buster Web App
 
+**License**: Proprietary 2025 MiniApps. All rights reserved.
+
 Myth Buster is a creative, interactive web app that helps users verify the truth of statements and debunk myths with detailed, sourced answers. Built with Svelte 5, shadcn-svelte, lucide-svelte, Tailwind CSS, and powered by the Perplexity Sonar API, it delivers an engaging myth-busting experience with rich visual and audio cues.
 
 **Live Demo:** [https://myth-buster.netlify.app/](https://myth-buster.netlify.app/)
