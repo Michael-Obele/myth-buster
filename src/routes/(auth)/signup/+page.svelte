@@ -1,109 +1,188 @@
 <script lang="ts">
-	import { superForm } from 'sveltekit-superforms/client';
+	import { enhance, applyAction, deserialize } from '$app/forms';
+	import { goto, invalidateAll } from '$app/navigation';
+	import type { PageProps } from './$types';
+	import type { ActionResult } from '@sveltejs/kit';
 	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import { Alert, AlertDescription } from '$lib/components/ui/alert';
+	import { Eye, EyeOff } from 'lucide-svelte';
+	import { AlertCircle } from 'lucide-svelte';
+	import PasswordInput from '$lib/components/ui/password-input';
 	import {
 		Card,
 		CardContent,
-		CardDescription,
 		CardHeader,
-		CardTitle
+		CardTitle,
+		CardDescription
 	} from '$lib/components/ui/card';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
 	import { toast } from 'svelte-sonner';
 
-	// Get the form from the server
-	export let data;
+	// Get the form data from props
+	let { data, form }: PageProps = $props();
 
-	// Create the form using superForm
-	const { form, errors, enhance, submitting } = superForm(data.form, {
-		onSubmit: () => {
-			return ({ result }: any) => {
-				if (result.type === 'failure') {
-					toast.error('Sign up failed');
-				}
-			};
-		}
-	});
+	// State management using $state
+	let username: string = $state('');
+	let email: string = $state('');
+	let password: string = $state('');
+	let confirmPassword: string = $state('');
+	let showPassword: boolean = $state(false);
+	let showConfirmPassword: boolean = $state(false);
+	let isLoading: boolean = $state(false);
+
+	// Show server errors if present
+	let serverErrors: Record<string, string[]> = $derived.by(() => form?.form?.errors || {});
+	let serverMessage: string = $derived.by(() => serverErrors?.error?.[0] ?? '');
 </script>
+
+<svelte:head>
+	<title>Sign Up | Myth Buster</title>
+	<meta name="description" content="Create your Myth Buster account" />
+</svelte:head>
 
 <div class="flex min-h-screen items-center justify-center">
 	<Card class="w-[350px]">
 		<CardHeader>
 			<CardTitle>Sign Up</CardTitle>
-			<CardDescription>Create a new account.</CardDescription>
+			<CardDescription>Create your Myth Buster account</CardDescription>
 		</CardHeader>
 		<CardContent>
-			<form method="POST" use:enhance>
-				<div class="grid w-full items-center gap-4">
-					<div class="flex flex-col space-y-1.5">
-						<Label for="username">Username</Label>
-						<Input
-							id="username"
-							name="username"
-							type="text"
-							placeholder="Enter your username"
-							bind:value={$form.username}
-							required
-							aria-invalid={$errors.username ? 'true' : undefined}
-						/>
-						{#if $errors.username}
-							<p class="text-sm text-red-500">{$errors.username}</p>
-						{/if}
-					</div>
-					<div class="flex flex-col space-y-1.5">
-						<Label for="email">Email</Label>
-						<Input
-							id="email"
-							name="email"
-							type="email"
-							placeholder="Enter your email"
-							bind:value={$form.email}
-							required
-							aria-invalid={$errors.email ? 'true' : undefined}
-						/>
-						{#if $errors.email}
-							<p class="text-sm text-red-500">{$errors.email}</p>
-						{/if}
-					</div>
-					<div class="flex flex-col space-y-1.5">
-						<Label for="password">Password</Label>
+			<form
+				method="POST"
+				class="space-y-4"
+				use:enhance={({ formElement, formData }) => {
+					// Set loading state to true when form is being submitted
+					isLoading = true;
+
+					return async ({ result }) => {
+						console.log('Form submission result:', result);
+
+						if (result.type === 'redirect') {
+							// Wait for 100ms to ensure session is set properly
+							await new Promise((resolve) => setTimeout(resolve, 100));
+							// Navigate to the redirected location
+							goto(result.location);
+						} else {
+							// Only reset loading state if not redirecting
+							isLoading = false;
+							// Apply the result (errors, etc.)
+							await applyAction(result);
+						}
+					};
+				}}
+			>
+				{#if serverMessage}
+					<Alert variant="destructive">
+						<AlertCircle class="h-4 w-4" />
+						<AlertDescription>{serverMessage}</AlertDescription>
+					</Alert>
+				{/if}
+
+				<div class="grid gap-2">
+					<Label for="username">Username</Label>
+					<Input
+						id="username"
+						name="username"
+						type="text"
+						bind:value={username}
+						required
+						placeholder="Enter your username"
+					/>
+					{#if serverErrors?.username}
+						<p class="text-sm text-red-500">{serverErrors.username?.[0]}</p>
+					{/if}
+				</div>
+
+				<div class="grid gap-2">
+					<Label for="email">Email</Label>
+					<Input
+						id="email"
+						name="email"
+						type="email"
+						bind:value={email}
+						required
+						placeholder="Enter your email"
+					/>
+					{#if serverErrors?.email}
+						<p class="text-sm text-red-500">{serverErrors.email?.[0]}</p>
+					{/if}
+				</div>
+
+				<div class="grid gap-2">
+					<Label for="password">Password</Label>
+					<div class="relative">
 						<Input
 							id="password"
 							name="password"
-							type="password"
-							placeholder="Enter your password"
-							bind:value={$form.password}
+							type={showPassword ? 'text' : 'password'}
+							bind:value={password}
 							required
-							aria-invalid={$errors.password ? 'true' : undefined}
+							placeholder="Enter your password"
+							class="w-full"
 						/>
-						{#if $errors.password}
-							<p class="text-sm text-red-500">{$errors.password}</p>
-						{/if}
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon"
+							class="absolute right-0 top-0 h-full px-3 py-2"
+							onclick={() => (showPassword = !showPassword)}
+						>
+							{#if showPassword}
+								<EyeOff class="h-4 w-4" />
+							{:else}
+								<Eye class="h-4 w-4" />
+							{/if}
+						</Button>
 					</div>
-					<div class="flex flex-col space-y-1.5">
-						<Label for="confirmPassword">Confirm Password</Label>
+					{#if serverErrors?.password}
+						<p class="text-sm text-red-500">{serverErrors.password?.[0]}</p>
+					{/if}
+				</div>
+
+				<div class="grid gap-2">
+					<Label for="confirmPassword">Confirm Password</Label>
+					<div class="relative">
 						<Input
 							id="confirmPassword"
 							name="confirmPassword"
-							type="password"
-							placeholder="Confirm your password"
-							bind:value={$form.confirmPassword}
+							type={showConfirmPassword ? 'text' : 'password'}
+							bind:value={confirmPassword}
 							required
-							aria-invalid={$errors.confirmPassword ? 'true' : undefined}
+							placeholder="Confirm your password"
+							class="w-full"
 						/>
-						{#if $errors.confirmPassword}
-							<p class="text-sm text-red-500">{$errors.confirmPassword}</p>
-						{/if}
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon"
+							class="absolute right-0 top-0 h-full px-3 py-2"
+							onclick={() => (showConfirmPassword = !showConfirmPassword)}
+						>
+							{#if showConfirmPassword}
+								<EyeOff class="h-4 w-4" />
+							{:else}
+								<Eye class="h-4 w-4" />
+							{/if}
+						</Button>
 					</div>
+					{#if serverErrors?.confirmPassword}
+						<p class="text-sm text-red-500">{serverErrors.confirmPassword?.[0]}</p>
+					{/if}
 				</div>
-				<Button type="submit" class="mt-6 w-full" disabled={$submitting}>
-					{$submitting ? 'Signing up...' : 'Sign Up'}
+
+				<Button type="submit" class="w-full" disabled={isLoading}>
+					{#if isLoading}
+						Creating account...
+					{:else}
+						Sign Up
+					{/if}
 				</Button>
 			</form>
-			<p class="mt-4 text-center text-sm text-gray-600">
-				Already have an account? <a href="/signin" class="text-blue-600 hover:underline"
-					>Sign in here.</a
+			<p class="mt-4 text-center text-sm text-muted-foreground">
+				Already have an account? <a
+					href="/signin"
+					class="hover:text-brand underline underline-offset-4">Sign in here</a
 				>
 			</p>
 		</CardContent>

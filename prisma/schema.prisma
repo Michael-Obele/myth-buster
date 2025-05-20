@@ -27,3 +27,10 @@ model Session {
   expiresAt DateTime
   user      User     @relation(fields: [userId], references: [id])
 }
+
+model CommunitySignup {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+}

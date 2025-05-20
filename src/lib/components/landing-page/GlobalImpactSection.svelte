@@ -2,8 +2,65 @@
 	import { Button } from '$lib/components/ui/button';
 	import Globe from '$lib/components/blocks/Globe.svelte';
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import { toast } from 'svelte-sonner';
 
 	const attention2 = '/lottie/attention2.json';
+
+	let name = $state('');
+	let email = $state('');
+	let open = $state(false);
+	let isSubmitting = $state(false);
+
+	async function handleSubmit() {
+		if (!name || !email) return;
+
+		// Basic email validation
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email)) {
+			toast.error('Please enter a valid email address');
+			return;
+		}
+
+		try {
+			isSubmitting = true;
+
+			// Submit to API
+			const response = await fetch('/api/community/signup', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ name, email })
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				// Close the dialog
+				open = false;
+
+				// Show success toast notification
+				toast.success('Thank you for joining!', {
+					description: "We'll notify you when our community Discord goes live."
+				});
+
+				// Reset form
+				name = '';
+				email = '';
+			} else {
+				// Show error toast
+				toast.error(result.error || 'Failed to sign up. Please try again.');
+			}
+		} catch (error) {
+			console.error('Error submitting form:', error);
+			toast.error('Something went wrong. Please try again later.');
+		} finally {
+			isSubmitting = false;
+		}
+	}
 </script>
 
 <section class="relative my-16 py-16">
@@ -38,8 +95,36 @@
 				Join our worldwide community of myth busters who are committed to spreading truth and
 				challenging misinformation everywhere.
 			</p>
-			<span class="mx-auto">
-				<Button href="/join" variant="default" size="lg" class="mt-6">Join the Movement</Button>
+			<span class="relative mx-auto ml-20">
+				<AlertDialog.Root bind:open>
+					<AlertDialog.Trigger>
+						<Button variant="default" size="lg" class="mt-6">Join the Movement</Button>
+					</AlertDialog.Trigger>
+					<AlertDialog.Content>
+						<AlertDialog.Header>
+							<AlertDialog.Title>Join our Community</AlertDialog.Title>
+							<AlertDialog.Description>
+								Enter your details to be notified when our community Discord goes live.
+							</AlertDialog.Description>
+						</AlertDialog.Header>
+						<div class="grid gap-4 py-4">
+							<div class="grid grid-cols-4 items-center gap-4">
+								<Label for="name" class="text-right">Name</Label>
+								<Input id="name" bind:value={name} class="col-span-3" />
+							</div>
+							<div class="grid grid-cols-4 items-center gap-4">
+								<Label for="email" class="text-right">Email</Label>
+								<Input id="email" type="email" bind:value={email} class="col-span-3" />
+							</div>
+						</div>
+						<AlertDialog.Footer>
+							<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+							<AlertDialog.Action onclick={handleSubmit} disabled={isSubmitting}>
+								{isSubmitting ? 'Submitting...' : 'Submit'}
+							</AlertDialog.Action>
+						</AlertDialog.Footer>
+					</AlertDialog.Content>
+				</AlertDialog.Root>
 				<LordIcon
 					src={attention2}
 					trigger="loop"

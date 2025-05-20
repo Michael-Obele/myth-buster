@@ -16,15 +16,20 @@ export function generateSessionToken(): string {
 
 export async function createSession(token: string, userId: string): Promise<Session> {
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-  const session: Session = {
+  const sessionData = {
     id: sessionId,
     userId,
     expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30) // 30 days
   };
-  await prisma.session.create({
-    data: session
+  
+  const createdSession = await prisma.session.create({
+    data: sessionData,
+    include: {
+      user: true
+    }
   });
-  return session;
+  
+  return createdSession;
 }
 
 export async function validateSessionToken(token: string): Promise<SessionValidationResult> {
