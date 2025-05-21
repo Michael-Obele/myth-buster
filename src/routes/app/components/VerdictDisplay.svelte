@@ -103,7 +103,7 @@
 						trigger="loop"
 						stroke="thick"
 						colors="primary:#10B981,secondary:#10b981"
-						class="absolute bottom-0 left-0 z-0 size-20"
+						class="size-8 shrink-0 md:block md:size-12"
 					/>
 				{:else if verdict === 'false'}
 					<LordIcon

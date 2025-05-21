@@ -1,6 +1,7 @@
 // myth-buster/src/routes/game/+page.server.ts
 import { fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
+// @ts-ignore
 import { PERPLEXITY_API_KEY } from '$env/static/private';
 import { building } from '$app/environment';
 

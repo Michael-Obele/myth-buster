@@ -41,9 +41,9 @@
 		twitterTitle,
 		twitterDescription,
 		twitterImage,
-		ogSiteName='',
-		ogLocale='en_US',
-		twitterImageAlt='',
+		ogSiteName = '',
+		ogLocale = 'en_US',
+		twitterImageAlt = '',
 		canonicalUrl,
 		robots = 'index, follow',
 		themeColor = '#1A202C' // Default theme color (dark)
@@ -63,12 +63,14 @@
 		if (Array.isArray(keywords)) {
 			return keywords.join(', ');
 		}
-		return keywords || 'myth busting, fact checking, AI, truth, verification, common misconceptions';
+		return (
+			keywords || 'myth busting, fact checking, AI, truth, verification, common misconceptions'
+		);
 	});
 </script>
 
+<!-- Basic SEO -->
 <svelte:head>
-	<!-- Basic SEO -->
 	<title>{title}</title>
 	<meta name="description" content={description} />
 	<meta name="keywords" content={keywordsString} />
@@ -112,4 +114,5 @@
 		{#if twitterImage && twitterImageAlt}
 			<meta name="twitter:image:alt" content={twitterImageAlt} />
 		{/if}
+	{/if}
 </svelte:head>

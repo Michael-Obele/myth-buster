@@ -9,11 +9,12 @@
 
 	// Use $state for reactive variables
 	let myth: string = $state('');
-	let isRecording: boolean = $state(false);
-	let loading: boolean = $state(false);
+	// let loading: boolean = $state(false);
 	let characterCount = $derived(myth.length);
 	let maxLength = 500;
 	let isValid = $derived(myth.trim().length > 0);
+
+	let { handleSubmit, loading } = $props();
 
 	// Placeholder suggestions that will rotate
 	const placeholders: string[] = [
@@ -35,13 +36,13 @@
 	}
 
 	// Handle form submission
-	const handleSubmit: SubmitFunction = () => {
-		loading = true;
-		return async ({ update }) => {
-			loading = false;
-			await update();
-		};
-	};
+	// const handleSubmit: SubmitFunction = () => {
+	// 	loading = true;
+	// 	return async ({ update }) => {
+	// 		loading = false;
+	// 		await update();
+	// 	};
+	// };
 
 	// Animate input on mount
 	function animateInput(node: HTMLElement) {

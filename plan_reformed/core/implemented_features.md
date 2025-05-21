@@ -28,7 +28,11 @@ The community page displays the number of users who have signed up for community
 
 ## 2.5 Landing Page (`/`)
 
-A visually engaging landing page introduces the Myth Buster app, highlighting its core purpose and features through various sections and animated elements.
+A visually engaging landing page introduces the Myth Buster app, highlighting its core purpose and features through various sections and animated elements. Key features on the landing page include:
+
+*   **Interactive "Mini-Myth" Quick Check:**
+    *   **Description:** A section on the landing page (`MiniMythCheck.svelte`) allows users to quickly test their knowledge. It fetches 5 random myth statements, along with their verdicts and explanations, from a dedicated API endpoint (`/api/minimyths`). This endpoint, in turn, instructs the Perplexity API to generate and verify these 5 myths.
+    *   **Functionality:** Users can click "True" or "False" for each presented myth and receive instant feedback and a concise explanation. The component handles loading states and potential errors during the API fetch. This feature provides an immediate demonstration of the app's core myth-busting capabilities.
 
 ## 2.6 About Page (`/about`)
 

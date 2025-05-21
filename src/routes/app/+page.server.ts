@@ -1,7 +1,9 @@
 // Imports for SvelteKit server-side functionality and environment variables
 import type { Actions } from './$types';
+// @ts-ignore
 import { PERPLEXITY_API_KEY } from '$env/static/private';
 import { building } from '$app/environment';
+import type { MythVerificationResult } from '$lib/types'; // Import from shared types
 
 // Base URL for the Perplexity AI chat completions API
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
@@ -42,25 +44,6 @@ type CachedResponse = {
 	expiresAt: number; // Timestamp when the cache entry expires
 };
 
-/**
- * Type definition for the result of a myth verification.
- */
-type MythVerificationResult = {
-	success: boolean;
-	cached?: boolean; // Only present if using cache
-	myth?: string; // Present in success response
-	error?: string; // Present in error response
-	data?: {
-		// Present in success or some error responses
-		answer?: any; // Raw API response
-		explanation: string;
-		citations: { title: string; url: string }[];
-		mythOrigin: string;
-		relatedMyth: string; // New field
-		whyBelieved: string; // New field
-		verdict: 'true' | 'false' | 'inconclusive';
-	};
-};
 // In-memory cache for storing AI responses
 // Using a Map for efficient key-value storage
 // The cache is not initialized during the SvelteKit build process
@@ -378,17 +361,10 @@ export const actions: Actions = {
 		return await verifyMythLogic(myth);
 	},
 
-	// Action to reset the form data (used for clearing input)
-	reset: async () => {
-		console.log('Reset action called - clearing form data');
-		responseCache.clear(); // Clear the cache
-		return { success: true };
-	},
-
-	// Action to clear the in-memory response cache
-	clearCache: () => {
-		console.log('Clearing response cache');
+	// Action to clear the server-side API response cache
+	clearServerCache: () => {
+		console.log('Clearing server API response cache');
 		responseCache.clear(); // Clear all entries from the cache Map
-		return { success: true, message: 'Cache cleared successfully' };
+		return { success: true, message: 'Server API response cache cleared successfully.' };
 	}
 };

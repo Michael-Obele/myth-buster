@@ -9,7 +9,7 @@
 	import StatsHighlight from '$lib/components/landing-page/StatsHighlight.svelte';
 	import GlobalImpactSection from '$lib/components/landing-page/GlobalImpactSection.svelte';
 	import AlternatingFeatureSection from '$lib/components/landing-page/AlternatingFeatureSection.svelte';
-	import MiniMythCheck from '$lib/components/landing-page/MiniMythCheck/MiniMythCheck.svelte';
+	import MiniMythCheck from '$lib/components/landing-page/MiniMythCheck.svelte';
 	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 </script>
 
