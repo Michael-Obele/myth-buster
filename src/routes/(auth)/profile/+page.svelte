@@ -18,6 +18,7 @@
 	import SignOutButton from '$lib/components/auth/SignOutButton.svelte';
 	import { redirect } from '@sveltejs/kit';
 	import type { PageProps } from './$types';
+	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 
 	// Get user from page data
 	let user = $derived(page.data.user);
@@ -59,6 +60,12 @@
 		}
 	});
 </script>
+
+<RouteHead
+	title="User Profile | Myth Buster"
+	description="Manage your Myth Buster account details, update your profile information, and change your password."
+	keywords={['profile', 'account management', 'user settings', 'update profile']}
+/>
 
 <div class="container mx-auto px-4 py-12">
 	<div class="mx-auto max-w-3xl">

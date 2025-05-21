@@ -19,6 +19,7 @@
 		X
 	} from 'lucide-svelte';
 	import type { PageProps } from './$types';
+	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 
 	// Import our components
 	import MythInput from './components/MythInput.svelte';
@@ -69,6 +70,12 @@
 		};
 	};
 </script>
+
+<RouteHead
+	title="Myth Buster Game - Test Your Knowledge"
+	description="Test your knowledge and bust myths in our interactive game. See if you can distinguish fact from fiction."
+	keywords={['myth buster game', 'trivia', 'fact or fiction', 'knowledge test', 'ai game']}
+/>
 
 <!-- Using CSS media queries instead of JavaScript for responsive design -->
 

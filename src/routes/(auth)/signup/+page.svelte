@@ -15,6 +15,7 @@
 		CardTitle,
 		CardDescription
 	} from '$lib/components/ui/card';
+	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 
 	// Get the form data from props
 	let { form }: PageProps = $props();
@@ -33,10 +34,11 @@
 	let serverMessage: string = $derived.by(() => serverErrors?.error?.[0] ?? '');
 </script>
 
-<svelte:head>
-	<title>Sign Up | Myth Buster</title>
-	<meta name="description" content="Create your Myth Buster account" />
-</svelte:head>
+<RouteHead
+	title="Sign Up | Myth Buster"
+	description="Create your Myth Buster account and start verifying myths with our AI-powered tool."
+	keywords={['signup', 'register', 'create account', 'myth buster account']}
+/>
 
 <div class="flex min-h-screen items-center justify-center">
 	<Card class="w-[350px]">

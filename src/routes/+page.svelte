@@ -9,7 +9,15 @@
 	import StatsHighlight from '$lib/components/landing-page/StatsHighlight.svelte';
 	import GlobalImpactSection from '$lib/components/landing-page/GlobalImpactSection.svelte';
 	import AlternatingFeatureSection from '$lib/components/landing-page/AlternatingFeatureSection.svelte';
+	import MiniMythCheck from '$lib/components/landing-page/MiniMythCheck/MiniMythCheck.svelte';
+	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 </script>
+
+<RouteHead
+	title="Myth Buster - AI-Powered Fact Verification"
+	description="Verify myths and uncover the truth with our AI-powered fact verification tool. Get explanations and sources for common misconceptions."
+	keywords={["myth busting", "fact checking", "AI", "verify", "misconceptions"]}
+/>
 
 <!-- Animated background with grid pattern -->
 <div class="min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800">
@@ -32,6 +40,9 @@
 
 			<!-- Stats Highlight Section -->
 			<StatsHighlight />
+			
+			<!-- Mini-Myth Quick Check Feature -->
+			<MiniMythCheck />
 
 			<FeatureCardGrid />
 

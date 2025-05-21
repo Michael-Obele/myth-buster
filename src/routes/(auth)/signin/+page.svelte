@@ -16,6 +16,7 @@
 	import { AlertCircle, Eye, EyeOff } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import type { PageProps } from './$types';
+	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 
 	// Get the form from the server
 	let { data, form }: PageProps = $props();
@@ -31,10 +32,11 @@
 	let serverMessage = $derived(serverErrors?.error?.[0] ?? '');
 </script>
 
-<svelte:head>
-	<title>Sign In | Myth Buster</title>
-	<meta name="description" content="Sign in to your Myth Buster account" />
-</svelte:head>
+<RouteHead
+	title="Sign In | Myth Buster"
+	description="Sign in to your Myth Buster account to access myth verification, game features, and your profile."
+	keywords={['signin', 'login', 'authentication', 'myth buster account']}
+/>
 
 <div class="flex min-h-screen items-center justify-center">
 	<Card class="w-[350px]">

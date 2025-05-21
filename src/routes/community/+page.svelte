@@ -9,6 +9,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
+	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 
 	const attention2 = '/lottie/attention2.json';
 
@@ -88,6 +89,12 @@
 		}
 	}
 </script>
+
+<RouteHead
+		title="Join Our Myth Buster Community"
+		description="Sign up to be notified when our Myth Buster community Discord goes live. Connect with fellow truth-seekers!"
+		keywords={['community', 'discord', 'signup', 'myth busters', 'fact checking']}
+	/>
 
 <div class="container py-10">
 	<div class="mb-6 flex items-center justify-between">

@@ -8,6 +8,7 @@
 	import FeaturesTab from '$lib/components/about/FeaturesTab.svelte';
 	import TechStackTab from '$lib/components/about/TechStackTab.svelte';
 	import BackgroundBoxes from '$lib/components/blocks/BackgroundBoxes.svelte';
+	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 	import type { ComponentType } from 'svelte';
 
 	// Define Feature type
@@ -76,6 +77,12 @@
 		}
 	];
 </script>
+
+<RouteHead
+	title="About Myth Buster"
+	description="Learn about the team and technology behind Myth Buster, our AI-powered myth verification platform."
+	keywords={['about us', 'team', 'technology', 'AI', 'myth buster']}
+/>
 
 <!-- Animated background with grid pattern -->
 <div class="min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800">
