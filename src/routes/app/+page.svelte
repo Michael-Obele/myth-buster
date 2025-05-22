@@ -40,6 +40,7 @@
 	// Reactive state using Svelte 5 syntax
 	let activeTab: string = $state('citations');
 	let loading: boolean = $state(false);
+	let clearingCache: boolean = $state(false);
 
 	// We'll use CSS media queries instead of JavaScript for responsive design
 

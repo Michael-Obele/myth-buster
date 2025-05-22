@@ -103,7 +103,7 @@
 <Card.Root class="mx-auto my-12 w-full max-w-2xl overflow-hidden">
 	{#if isLoading}
 		<Card.Content class="flex min-h-96 flex-col items-center justify-center p-6 text-center">
-			<LoaderCircle class="mb-4 h-10 w-10 animate-spin fill-primary/40 text-primary" />
+			<LoaderCircle class="mb-4 h-10 w-10 animate-spin text-primary" />
 			<p class="text-lg text-muted-foreground">Conjuring myths...</p>
 		</Card.Content>
 	{:else if error}

@@ -3,8 +3,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Slider } from '$lib/components/ui/slider';
-	import { Progress } from '$lib/components/ui/progress';
-	import { Separator } from '$lib/components/ui/separator';
+	import { Progress } from '$lib/components/ui/progress'; // Ensure Progress is imported
 	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
@@ -19,54 +18,25 @@
 		Sparkles,
 		LoaderCircle,
 		Settings,
-		ChevronDown,
 		Info
 	} from 'lucide-svelte';
-	import { onMount, onDestroy } from 'svelte';
-	import type { PageData, ActionData } from './$types';
+	import type { PageData } from './$types';
 	import { Label } from '$lib/components/ui/label';
+	import type {
+		GameActionData,
+		GenerateActionResult,
+		CheckAnswerActionResult,
+		Citation
+	} from '$lib/game/types';
 	import { Confetti } from 'svelte-confetti';
 	import { PersistedState } from 'runed';
 	import { toast } from 'svelte-sonner';
-	import GameAbout from './GameAbout.svelte';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
-
-	// Import types from server
-	interface Citation {
-		url: string;
-		title: string;
-	}
-
-	interface GenerateActionResult {
-		success: boolean;
-		error?: string;
-		statement: string;
-		isTrue: boolean;
-		explanation: string;
-		citations: Citation[] | string;
-		cached?: boolean;
-		result?: undefined;
-		userAnswer?: undefined;
-		points?: undefined;
-	}
-
-	interface CheckAnswerActionResult {
-		success: boolean;
-		error?: string;
-		result: 'correct' | 'incorrect';
-		statement: string;
-		userAnswer: boolean;
-		isTrue: boolean;
-		explanation: string;
-		citations: Citation[] | string;
-		points: number;
-		answer?: string;
-	}
-
-	type FormDataType = GenerateActionResult | CheckAnswerActionResult;
+	import GameAbout from '$lib/game/GameAbout.svelte';
+	import * as GameDialog from '$lib/components/ui/dialog/index.js';
 
 	// Get props from page data
-	let { data, form }: { data: PageData; form: FormDataType } = $props();
+	let { form: formProp }: { data: PageData; form: GameActionData } = $props();
+	let form: GameActionData = $state(formProp);
 
 	// --- State Management with Svelte 5 Runes and PersistedState ---
 
@@ -153,25 +123,32 @@
 	// UI state
 	let showHighScoreMessage: boolean = $state(false);
 	let showStreakAnimation: boolean = $state(false);
-	let showConfetti: boolean = $state(false);
 	let isGenerating: boolean = $state(false);
 	let isAnswering: boolean = $state(false);
 
-	// --- Derived values with Svelte 5 ---
-	let hasResult = $derived(form?.result !== undefined);
-	let hasStatement = $derived(form?.statement !== undefined);
-	let isCorrect = $derived(form?.result === 'correct');
-
+	// --- Derived values with Svelte 5 (simplified for random game) ---
 	// Type guard functions to safely check form data types
-	function isGenerateResult(form: any): boolean {
-		return !!form && 'statement' in form && !('result' in form);
+	function isGenerateResult(formData: GameActionData): formData is GenerateActionResult {
+		// Check for a property unique to GenerateActionResult if action is not always reliable from server fail states
+		return (
+			!!formData &&
+			(formData.action === 'generate' ||
+				(formData.action === undefined &&
+					typeof formData.statement === 'string' &&
+					(formData as any).result === undefined))
+		);
 	}
 
-	function isCheckAnswerResult(form: any): boolean {
-		return !!form && 'result' in form;
+	function isCheckAnswerResult(formData: GameActionData): formData is CheckAnswerActionResult {
+		return !!formData && formData.action === 'checkAnswer';
 	}
-	// Use $derived for simple expressions
-	let confidenceLevel = $derived(confidence < 25 ? 'low' : confidence < 75 ? 'medium' : 'high');
+
+	let hasResult = $derived(!!(form && isCheckAnswerResult(form) && form.result !== undefined));
+	let hasStatement = $derived(
+		!!(form && isGenerateResult(form) && form.statement !== undefined && form.statement !== '')
+	);
+	let isCorrect = $derived(!!(form && isCheckAnswerResult(form) && form.result === 'correct'));
+	// confidenceLevel was unused
 
 	// Function to check and update high score
 	function checkHighScore(newScore: number): boolean {
@@ -190,67 +167,54 @@
 	}
 
 	// Helper function to process form results directly
-	function processFormResult(formResult: any) {
-		console.log('Processing form result:', formResult);
-		if (!formResult?.success) {
-			console.log('Form result unsuccessful');
-			return;
-		}
+	function processFormResult(formResult: GameActionData) {
+		if (!formResult) return;
+		console.log('Processing form result (Random Game):', formResult);
 
-		// Handle answer results with points
-		if (formResult.points && typeof formResult.points === 'number') {
-			console.log('Processing answer with points:', formResult.points);
-			// Update score
-			updateScore(score + formResult.points);
-
-			// Update streak for correct answers
-			if (formResult.result === 'correct') {
-				console.log('Correct answer, updating streak');
-				updateStreak(streak + 1);
-			} else {
-				// Reset streak on wrong answers
-				console.log('Incorrect answer, resetting streak');
-				updateStreak(0);
+		if (isGenerateResult(formResult)) {
+			if (!formResult.success && formResult.error) {
+				console.log('Generate action unsuccessful:', formResult.error);
+				toast.error(formResult.error);
+				return;
 			}
-		} else if (formResult.statement && !formResult.result) {
-			// Reset confidence for new statements
-		}
-	}
+			if (formResult.success && typeof formResult.statement === 'string') {
+				// Confidence could be reset here
+				// updateConfidence(50);
+				console.log('New random myth generated.');
+			}
+		} else if (isCheckAnswerResult(formResult)) {
+			if (!formResult.success && formResult.error) {
+				console.log('CheckAnswer action unsuccessful:', formResult.error);
+				toast.error(formResult.error);
+				return;
+			}
+			// The 'isCheckAnswerResult' type guard already ensures 'points' is a number if 'success' is true.
+			if (formResult.success) {
+				console.log('Processing answer with points:', formResult.points);
+				updateScore(score + formResult.points);
 
-	// Interface for form success response
-	interface FormResult {
-		success: boolean;
-		points?: number;
-		result?: 'correct' | 'incorrect';
-		statement?: string;
-		isTrue?: boolean;
-		explanation?: string;
-		citations?: Citation[];
-		error?: string;
+				if (formResult.result === 'correct') {
+					console.log('Correct answer, updating streak');
+					updateStreak(streak + 1);
+				} else {
+					console.log('Incorrect answer, resetting streak');
+					updateStreak(0);
+				}
+			}
+		}
 	}
 
 	// Parse citations from form data
 	let citationsArray: Citation[] = $derived.by(() => {
-		if (!form) {
-			return [];
+		if (!form) return [];
+
+		// Access citations safely based on action type
+		if (isGenerateResult(form) && form.citations) {
+			return Array.isArray(form.citations) ? form.citations : [];
 		}
-
-		// Process citations from form data
-		const formAny = form as any; // Use any type to safely access properties
-
-		if (formAny.citations && Array.isArray(formAny.citations)) {
-			return formAny.citations as Citation[];
+		if (isCheckAnswerResult(form) && form.citations) {
+			return Array.isArray(form.citations) ? form.citations : [];
 		}
-
-		if (typeof formAny.citations === 'string') {
-			try {
-				const parsed = JSON.parse(formAny.citations || '[]');
-				return Array.isArray(parsed) ? parsed : [];
-			} catch (e) {
-				return [];
-			}
-		}
-
 		return [];
 	});
 
@@ -286,10 +250,14 @@
 		if (streak >= 1) return 'text-yellow-500';
 		return '';
 	}
+
+	let generateForm: HTMLFormElement; // Still used for bind:this
+
+	// onMount is no longer needed here for track loading
 </script>
 
 <!-- Svelte Confetti effect for correct answers -->
-{#if form?.result === 'correct'}
+{#if isCorrect}
 	<div
 		class="pointer-events-none fixed -top-[50px] left-0 flex h-screen w-screen justify-center overflow-hidden"
 	>
@@ -348,14 +316,14 @@
 				<Sparkles class="h-6 w-6 text-primary" />
 				Test Your Knowledge
 
-				<Dialog.Root>
-					<Dialog.Trigger>
+				<GameDialog.Root>
+					<GameDialog.Trigger>
 						<Info />
-					</Dialog.Trigger>
-					<Dialog.Content>
+					</GameDialog.Trigger>
+					<GameDialog.Content>
 						<GameAbout />
-					</Dialog.Content>
-				</Dialog.Root>
+					</GameDialog.Content>
+				</GameDialog.Root>
 			</Card.Title>
 			<Card.Description class="mt-2 text-center text-base font-medium">
 				Is the statement true or false? How confident are you in your answer?
@@ -378,26 +346,84 @@
 				<form
 					method="POST"
 					action="?/generate"
+					bind:this={generateForm}
 					use:enhance={() => {
 						isGenerating = true;
-						return ({ result, update }) => {
+						return async ({ result, update }) => {
 							isGenerating = false;
-
-							// Process form result
-							if (result.type === 'success') {
-								processFormResult(result.data);
+							if (
+								result.type === 'success' &&
+								result.data &&
+								typeof result.data === 'object' &&
+								'action' in result.data &&
+								(result.data as any).action === 'generate'
+							) {
+								form = result.data as unknown as GenerateActionResult;
+							} else if (result.type === 'error') {
+								const errorMessage = result.error.message || 'Failed to generate statement.';
+								// toast.error(errorMessage); // Toast will be handled by processFormResult
+								form = {
+									success: false,
+									error: errorMessage,
+									action: 'generate',
+									statement: '',
+									isTrue: false,
+									explanation: '',
+									citations: []
+								} as GenerateActionResult;
+							} else if (
+								result.type === 'failure' &&
+								result.data &&
+								typeof result.data === 'object' &&
+								'action' in result.data &&
+								(result.data as any).action === 'generate'
+							) {
+								form = result.data as unknown as GenerateActionResult; // Server fail for generate provides this structure
+							} else if (
+								result.type === 'failure' &&
+								result.data &&
+								typeof result.data === 'object'
+							) {
+								const errorMessage =
+									(result.data as { error?: string }).error ||
+									'Failed to generate statement due to server error.';
+								form = {
+									success: false,
+									error: errorMessage,
+									action: 'generate',
+									statement: '',
+									isTrue: false,
+									explanation: '',
+									citations: []
+								} as GenerateActionResult;
+							} else if (result.type === 'failure') {
+								// General failure with no specific data
+								form = {
+									success: false,
+									error: 'Unexpected server error',
+									action: 'generate',
+									statement: '',
+									isTrue: false,
+									explanation: '',
+									citations: []
+								} as GenerateActionResult;
 							}
 
-							update({ reset: false });
+							if (form) {
+								// Process the form state, whether success or error
+								processFormResult(form);
+							}
+							await update({ reset: false });
 						};
 					}}
 				>
 					<div class="space-y-4">
-						<!-- Hidden inputs to ensure difficulty and category are sent to the backend -->
+						<!-- Hidden inputs for difficulty, category -->
 						<input type="hidden" name="difficulty" value={selectedDifficulty} />
 						<input type="hidden" name="category" value={selectedCategory} />
 
 						{#if !hasResult}
+							<!-- Only show settings if no result -->
 							<Tabs.Root value="settings" class="w-full">
 								<Tabs.List class="grid w-full grid-cols-2">
 									<Tabs.Trigger value="settings">Game Settings</Tabs.Trigger>
@@ -453,20 +479,19 @@
 							</Button>
 
 							{#if hasResult || hasStatement}
+								<!-- Show settings dropdown if there's a statement or result -->
 								<DropdownMenu.Root>
-									<DropdownMenu.Trigger>
-										<Button
-											variant="outline"
-											size="icon"
-											onclick={() => {
-												// Initialize temp values when opening dropdown
-												console.log('Settings dropdown opened');
-												tempDifficulty = selectedDifficulty;
-												tempCategory = selectedCategory;
-											}}
-										>
-											<Settings class="h-4 w-4" />
-										</Button>
+									<DropdownMenu.Trigger
+										class="inline-flex h-10 w-10 items-center justify-center whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+										onclick={() => {
+											// Initialize temp values when opening dropdown
+											console.log('Settings dropdown opened');
+											tempDifficulty = selectedDifficulty;
+											tempCategory = selectedCategory;
+										}}
+									>
+										<Settings class="h-4 w-4" />
+										<span class="sr-only">Open Settings</span>
 									</DropdownMenu.Trigger>
 									<DropdownMenu.Content class="w-64 bg-card text-primary">
 										<DropdownMenu.Label>Game Settings</DropdownMenu.Label>
@@ -528,54 +553,142 @@
 								</DropdownMenu.Root>
 							{/if}
 						</div>
+						<div class="mt-4 text-center">
+							<Button
+								href="/game/tracks"
+								variant="link"
+								class="text-sm text-primary hover:underline"
+							>
+								Explore Learning Tracks →
+							</Button>
+						</div>
 					</div>
 				</form>
-			{/if}
-
-			<!-- === State 2: Answer the current statement === -->
-			{#if hasStatement && !hasResult && form && isGenerateResult(form)}
+			{:else if hasStatement && !hasResult && form && isGenerateResult(form)}
 				<div>
 					<div class="mb-6 rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
 						<h2 class="text-center text-xl font-semibold text-primary">"{form.statement}"</h2>
 					</div>
-
 					<form
 						method="POST"
 						action="?/checkAnswer"
-						use:enhance={(formEl) => {
+						use:enhance={() => {
+							// formEl parameter removed as it was unused
 							isAnswering = true;
 
-							return ({ result, update }) => {
+							return async ({ result, update }) => {
 								isAnswering = false;
 								currentAnswer = null;
 
-								// Process the answer result (updates score, streak, and animations)
-								if (result.type === 'success') {
-									if (result?.data?.result === 'correct') {
-										updateScore(score + (result?.data?.points as any));
-										updateStreak(streak + 1);
-									} else {
-										let deduction = Math.min(confidence * 10, score);
-										updateScore(score - deduction);
-										updateStreak(0);
-										toast.error(`-${deduction} points`, {
-											description: 'Incorrect answer deduction'
-										});
-									}
+								if (
+									result.type === 'success' &&
+									result.data &&
+									typeof result.data === 'object' &&
+									'action' in result.data &&
+									(result.data as any).action === 'checkAnswer'
+								) {
+									form = result.data as unknown as CheckAnswerActionResult;
+								} else if (result.type === 'error') {
+									const errorMessage = result.error.message || 'Failed to check answer.';
+									form = {
+										success: false,
+										error: errorMessage,
+										action: 'checkAnswer',
+										statement: '',
+										isTrue: false,
+										explanation: '',
+										citations: [],
+										result: 'incorrect',
+										points: 0,
+										userAnswer: false
+									} as CheckAnswerActionResult;
+								} else if (
+									result.type === 'failure' &&
+									result.data &&
+									typeof result.data === 'object' &&
+									'action' in result.data &&
+									(result.data as any).action === 'checkAnswer'
+								) {
+									// Server fail for checkAnswer is minimal, so reconstruct a full error object for client side
+									const serverError =
+										(result.data as { error?: string }).error ||
+										'Failed to process answer due to a server issue.';
+									form = {
+										success: false,
+										error: serverError,
+										action: 'checkAnswer',
+										statement: '',
+										isTrue: false,
+										explanation: '',
+										citations: [],
+										result: 'incorrect',
+										points: 0,
+										userAnswer: false
+									} as CheckAnswerActionResult;
+								} else if (
+									result.type === 'failure' &&
+									result.data &&
+									typeof result.data === 'object'
+								) {
+									// Failure data without 'action', assume context from current form action
+									const errorMessage =
+										(result.data as { error?: string }).error ||
+										'Failed to check answer due to server error.';
+									form = {
+										success: false,
+										error: errorMessage,
+										action: 'checkAnswer',
+										statement: '',
+										isTrue: false,
+										explanation: '',
+										citations: [],
+										result: 'incorrect',
+										points: 0,
+										userAnswer: false
+									} as CheckAnswerActionResult;
+								} else if (result.type === 'failure') {
+									// General failure with no specific data
+									form = {
+										success: false,
+										error: 'Unexpected server error while checking answer.',
+										action: 'checkAnswer',
+										statement: '',
+										isTrue: false,
+										explanation: '',
+										citations: [],
+										result: 'incorrect',
+										points: 0,
+										userAnswer: false
+									} as CheckAnswerActionResult;
 								}
 
-								update({ reset: false });
+								if (form) {
+									// Process the form state, whether success or error
+									processFormResult(form);
+								}
+								await update({ reset: false });
 							};
 						}}
 					>
-						<input type="hidden" name="statement" value={form.statement || ''} />
+						<input
+							type="hidden"
+							name="statement"
+							value={(form as GenerateActionResult).statement || ''}
+						/>
 						<input
 							type="hidden"
 							name="isTrue"
-							value={form.isTrue !== undefined ? form.isTrue.toString() : 'false'}
+							value={(form as GenerateActionResult).isTrue !== undefined
+								? (form as GenerateActionResult).isTrue.toString()
+								: 'false'}
 						/>
-						<input type="hidden" name="explanation" value={form.explanation || ''} />
-						<input type="hidden" name="citations" value={JSON.stringify(form.citations || [])} />
+						<input
+							type="hidden"
+							name="explanation"
+							value={(form as GenerateActionResult).explanation || ''}
+						/>
+						<input type="hidden" name="citations" value={JSON.stringify(citationsArray || [])} />
+						<!-- No track-specific hidden inputs needed here anymore -->
 
 						<div class="mb-8 grid gap-3">
 							<div class="flex flex-col items-center">
@@ -610,7 +723,7 @@
 								name="answer"
 								value="true"
 								variant="outline"
-								class="flex-1 border-2 border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+								class="flex-1 border-2 border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-500"
 								size="lg"
 								disabled={isAnswering}
 							>
@@ -627,7 +740,7 @@
 								name="answer"
 								value="false"
 								variant="outline"
-								class="flex-1 border-2 border-red-500 bg-red-50 text-red-700 hover:bg-red-100"
+								class="flex-1 border-2 border-red-500 bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-500"
 								size="lg"
 								disabled={isAnswering}
 							>
@@ -644,7 +757,7 @@
 			{/if}
 
 			<!-- === State 3: Show the result (but not the form to generate new statement) === -->
-			{#if hasResult && form && isCheckAnswerResult(form)}
+			{#if hasResult && isCheckAnswerResult(form)}
 				<div
 					class={isCorrect
 						? 'rounded-lg border-2 border-emerald-700/30 bg-emerald-950/20 p-6 shadow-md'
@@ -680,8 +793,12 @@
 					<div class="mb-6 rounded-md border border-slate-700/50 bg-slate-900/60 p-4 shadow-sm">
 						<div class="mb-2 flex items-center justify-between">
 							<p class="text-sm font-medium text-slate-300">
-								Your Answer: <span class={form.userAnswer ? 'text-emerald-400' : 'text-red-400'}>
-									{form.userAnswer ? 'TRUE' : 'FALSE'}
+								Your Answer: <span
+									class={isCheckAnswerResult(form) && form.userAnswer
+										? 'text-emerald-400'
+										: 'text-red-400'}
+								>
+									{isCheckAnswerResult(form) ? (form.userAnswer ? 'TRUE' : 'FALSE') : ''}
 								</span>
 							</p>
 							<p class="text-sm font-medium text-slate-300">
@@ -689,18 +806,35 @@
 							</p>
 						</div>
 						<p class="text-lg font-medium text-slate-100">
-							The statement "{form.statement}" is
-							<span class={form.isTrue ? 'font-bold text-emerald-400' : 'font-bold text-red-400'}>
-								{form.isTrue ? 'TRUE' : 'FALSE'}
+							The statement "{isCheckAnswerResult(form)
+								? form.statement
+								: isGenerateResult(form)
+									? form.statement
+									: ''}" is
+							<span
+								class={(isCheckAnswerResult(form) && form.isTrue) ||
+								(isGenerateResult(form) && form.isTrue)
+									? 'font-bold text-emerald-400'
+									: 'font-bold text-red-400'}
+							>
+								{(isCheckAnswerResult(form) && form.isTrue) ||
+								(isGenerateResult(form) && form.isTrue)
+									? 'TRUE'
+									: 'FALSE'}
 							</span>
 						</p>
 					</div>
 
 					<div class="mb-6">
 						<h3 class="mb-2 text-base font-semibold text-slate-200">Explanation:</h3>
-						<p class="text-slate-300">{form.explanation}</p>
+						<p class="text-slate-300">
+							{isCheckAnswerResult(form)
+								? form.explanation
+								: isGenerateResult(form)
+									? form.explanation
+									: ''}
+						</p>
 					</div>
-
 					{#if citationsArray.length > 0}
 						<div class="rounded-md border border-slate-700/50 bg-slate-800/50 p-4">
 							<h3 class="mb-2 text-sm font-semibold text-slate-200">Sources:</h3>
@@ -736,7 +870,7 @@
 				<span>{streak}</span>
 				{#if streak > 0}
 					<span class="flex">
-						{#each Array(getStreakCount(streak)) as _}
+						{#each Array(getStreakCount(streak))}
 							<Flame class="h-5 w-5 {getStreakColor(streak)}" />
 						{/each}
 					</span>
