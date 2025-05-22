@@ -6,7 +6,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
-	import { enhance,applyAction } from '$app/forms';
+	import { enhance, applyAction } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
@@ -284,7 +284,7 @@
 								<p class="text-muted-foreground">{form.data.whyBelieved}</p>
 							</div>
 						{/if}
-						
+
 						<!-- Share Options for current myth -->
 						{#if form.myth && form.data?.verdict}
 							<ShareOptions
