@@ -119,8 +119,6 @@
 
 		if (!actionResult) {
 			currentMythStatement = null;
-			// Potentially show a generic error if actionResult is unexpectedly null after a form submission
-			// For now, this mainly handles initial state or programmatic resets.
 			console.warn('[TrackPlayer handleFormUpdate] Received null or undefined actionResult.');
 			return;
 		}
@@ -168,12 +166,6 @@
 				toast.error(actionResult.error);
 			}
 		} else {
-			// Handle cases where actionResult is not null/undefined but doesn't match known action types.
-			// This could happen if formProp is an error object from SvelteKit (e.g., from fail())
-			// that doesn't include our custom 'action' field but might have an 'error' property.
-			// This block handles cases where actionResult is not null/undefined,
-			// and it's not a GenerateActionResult or CheckAnswerActionResult (based on our type guards checking 'action').
-			// It might be a generic SvelteKit `fail` object that includes an 'error' property.
 			const potentialError = (actionResult as { error?: string }).error;
 			if (typeof potentialError === 'string') {
 				toast.error(potentialError);
@@ -363,151 +355,15 @@
 				</GameDialog.Content>
 			</GameDialog.Root>
 
-			<!-- State 1: Generate/Next Myth Button Form -->
-			{#if !showTrackCompletedMessage && (!hasValidStatementForDisplay || hasAnswerResultForDisplay)}
-				<form
-					method="POST"
-					action="?/generateMyth"
-					bind:this={generateMythFormElement}
-					use:enhance={() => {
-						isGenerating = true;
-						clientSideError = null;
-						return async ({ result, update }) => {
-							await update({ reset: false });
-							isGenerating = false;
-							if (result.type === 'error') {
-								clientSideError = result.error.message || 'Failed to request new myth.';
-								handleFormUpdate(null); // Clear current myth display on client-side fetch error
-							} else {
-								handleFormUpdate(formProp);
-							}
-						};
-					}}
-				>
-					<input type="hidden" name="trackTitle" value={pageLoadData.trackTitle} />
-					<input type="hidden" name="trackCategory" value={pageLoadData.trackCategory} />
-					<input type="hidden" name="trackDifficulty" value={pageLoadData.trackDifficulty} />
-					<input
-						type="hidden"
-						name="totalMythsInTrack"
-						value={pageLoadData.totalMythsInTrack.toString()}
-					/>
-					<input
-						type="hidden"
-						name="mythIndex"
-						value={hasAnswerResultForDisplay
-							? currentMythIndexInTrack + 1
-							: currentMythIndexInTrack}
-					/>
-
-					<div class="flex w-full">
-						<Button
-							type="submit"
-							class="flex-1"
-							disabled={isGenerating ||
-								(hasAnswerResultForDisplay && isLastMythInTrack && !showTrackCompletedMessage)}
-						>
-							{#if isGenerating}
-								<LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Generating...
-							{:else if hasAnswerResultForDisplay && isLastMythInTrack}
-								Finish Track
-							{:else if hasAnswerResultForDisplay || (currentMythStatement && !hasAnswerResultForDisplay)}
-								Next Myth
-							{:else}
-								<LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Loading Myth...
-							{/if}
-						</Button>
-					</div>
-				</form>
-				<!-- State 2: Show Statement and Answer Buttons -->
-			{:else if hasValidStatementForDisplay && !hasAnswerResultForDisplay && !showTrackCompletedMessage}
-				<div>
-					<div class="mb-6 rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-						<h2 class="text-center text-xl font-semibold text-primary">"{currentMythStatement}"</h2>
-					</div>
-					<form
-						method="POST"
-						action="?/checkAnswer"
-						use:enhance={() => {
-							isAnswering = true;
-							clientSideError = null;
-							currentAnswerSubmission =
-								(document.activeElement as HTMLButtonElement)?.value || null;
-							return async ({ result, update }) => {
-								await update({ reset: false });
-								isAnswering = false;
-								if (result.type === 'error') {
-									clientSideError = result.error.message || 'Failed to submit answer.';
-									handleFormUpdate(null);
-								} else {
-									handleFormUpdate(formProp);
-								}
-							};
-						}}
-					>
-						<input type="hidden" name="statement" value={currentMythStatement || ''} />
-						<input
-							type="hidden"
-							name="isTrue"
-							value={currentMythIsTrue !== null ? currentMythIsTrue.toString() : 'false'}
-						/>
-						<input type="hidden" name="explanation" value={currentMythExplanation || ''} />
-						<input
-							type="hidden"
-							name="citations"
-							value={JSON.stringify(currentMythCitations || [])}
-						/>
-
-						<div class="mb-8 grid gap-3">
-							<div class="flex flex-col items-center">
-								<div class="w-full max-w-xs space-y-3">
-									<Slider type="single" bind:value={confidence} min={1} max={100} step={1} />
-									<input type="hidden" name="confidence" value={confidence} />
-									<Progress value={confidence} max={100} class="h-2" />
-									<div class="flex justify-between text-sm">
-										<p class="font-medium">{getConfidenceLabel(confidence)}</p>
-										<p class="font-medium {getConfidenceColor(confidence)}">{confidence}%</p>
-									</div>
-								</div>
-							</div>
-						</div>
-
-						<div class="flex flex-col gap-4 sm:flex-row">
-							<Button
-								type="submit"
-								name="answer"
-								value="true"
-								variant="outline"
-								class="flex-1 border-2 border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-500"
-								size="lg"
-								disabled={isAnswering}
-							>
-								{#if isAnswering && currentAnswerSubmission === 'true'}
-									<RefreshCw class="mr-2 h-5 w-5 animate-spin" />
-								{:else}
-									<Check class="mr-2 h-5 w-5" />
-								{/if} TRUE
-							</Button>
-							<Button
-								type="submit"
-								name="answer"
-								value="false"
-								variant="outline"
-								class="flex-1 border-2 border-red-500 bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-500"
-								size="lg"
-								disabled={isAnswering}
-							>
-								{#if isAnswering && currentAnswerSubmission === 'false'}
-									<RefreshCw class="mr-2 h-5 w-5 animate-spin" />
-								{:else}
-									<X class="mr-2 h-5 w-5" />
-								{/if} FALSE
-							</Button>
-						</div>
-					</form>
+			{#if showTrackCompletedMessage}
+				<!-- Track completed message is handled by the dialog -->
+				<!-- Optionally, add a specific message here if dialog isn't shown or for other reasons -->
+				<div class="text-center">
+					<p class="text-xl font-semibold">Track Finished!</p>
+					<p>You can start a new track or play random myths.</p>
 				</div>
-				<!-- State 3: Show Answer Result -->
-			{:else if hasAnswerResultForDisplay && formProp && isCheckAnswerResult(formProp) && !showTrackCompletedMessage}
+			{:else if hasAnswerResultForDisplay && formProp && isCheckAnswerResult(formProp)}
+				<!-- State 3: Show Answer Result (this block now comes first after completed check) -->
 				{@const resultData = formProp}
 				<div
 					class={resultData.result === 'correct'
@@ -580,7 +436,174 @@
 							</ul>
 						</div>
 					{/if}
+
+					<!-- Form for Next Myth / Finish Track (inside answer result block) -->
+					<form
+						method="POST"
+						action="?/generateMyth"
+						class="mt-6"
+						use:enhance={() => {
+							isGenerating = true;
+							clientSideError = null;
+							return async ({ result, update }) => {
+								await update({ reset: false });
+								isGenerating = false;
+								if (result.type === 'error') {
+									clientSideError = result.error.message || 'Failed to request new myth.';
+									handleFormUpdate(null);
+								} else {
+									handleFormUpdate(formProp);
+								}
+							};
+						}}
+					>
+						<input type="hidden" name="trackTitle" value={pageLoadData.trackTitle} />
+						<input type="hidden" name="trackCategory" value={pageLoadData.trackCategory} />
+						<input type="hidden" name="trackDifficulty" value={pageLoadData.trackDifficulty} />
+						<input
+							type="hidden"
+							name="totalMythsInTrack"
+							value={pageLoadData.totalMythsInTrack.toString()}
+						/>
+						<input type="hidden" name="mythIndex" value={currentMythIndexInTrack + 1} />
+						<Button type="submit" class="w-full" disabled={isGenerating}>
+							{#if isGenerating}
+								<LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Loading...
+							{:else if isLastMythInTrack}
+								Finish Track
+							{:else}
+								Next Myth
+							{/if}
+						</Button>
+					</form>
 				</div>
+			{:else if hasValidStatementForDisplay}
+				<!-- State 2: Show Statement and Answer Buttons -->
+				<div>
+					<div class="mb-6 rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
+						<h2 class="text-center text-xl font-semibold text-primary">"{currentMythStatement}"</h2>
+					</div>
+					<form
+						method="POST"
+						action="?/checkAnswer"
+						use:enhance={() => {
+							isAnswering = true;
+							clientSideError = null;
+							currentAnswerSubmission =
+								(document.activeElement as HTMLButtonElement)?.value || null;
+							return async ({ result, update }) => {
+								await update({ reset: false });
+								isAnswering = false;
+								if (result.type === 'error') {
+									clientSideError = result.error.message || 'Failed to submit answer.';
+									handleFormUpdate(null);
+								} else {
+									handleFormUpdate(formProp);
+								}
+							};
+						}}
+					>
+						<input type="hidden" name="statement" value={currentMythStatement || ''} />
+						<input
+							type="hidden"
+							name="isTrue"
+							value={currentMythIsTrue !== null ? currentMythIsTrue.toString() : 'false'}
+						/>
+						<input type="hidden" name="explanation" value={currentMythExplanation || ''} />
+						<input
+							type="hidden"
+							name="citations"
+							value={JSON.stringify(currentMythCitations || [])}
+						/>
+
+						<div class="mb-8 grid gap-3">
+							<div class="flex flex-col items-center">
+								<div class="w-full max-w-xs space-y-3">
+									<Slider type="single" bind:value={confidence} min={1} max={100} step={1} />
+									<input type="hidden" name="confidence" value={confidence} />
+									<Progress value={confidence} max={100} class="h-2" />
+									<div class="flex justify-between text-sm">
+										<p class="font-medium">{getConfidenceLabel(confidence)}</p>
+										<p class="font-medium {getConfidenceColor(confidence)}">{confidence}%</p>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="flex flex-col gap-4 sm:flex-row">
+							<Button
+								type="submit"
+								name="answer"
+								value="true"
+								variant="outline"
+								class="flex-1 border-2 border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-700"
+								size="lg"
+								disabled={isAnswering}
+							>
+								{#if isAnswering && currentAnswerSubmission === 'true'}
+									<RefreshCw class="mr-2 h-5 w-5 animate-spin" />
+								{:else}
+									<Check class="mr-2 h-5 w-5" />
+								{/if} TRUE
+							</Button>
+							<Button
+								type="submit"
+								name="answer"
+								value="false"
+								variant="outline"
+								class="flex-1 border-2 border-red-500 bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-700"
+								size="lg"
+								disabled={isAnswering}
+							>
+								{#if isAnswering && currentAnswerSubmission === 'false'}
+									<RefreshCw class="mr-2 h-5 w-5 animate-spin" />
+								{:else}
+									<X class="mr-2 h-5 w-5" />
+								{/if} FALSE
+							</Button>
+						</div>
+					</form>
+				</div>
+			{:else}
+				<!-- State 1: Initial Load / Generating First Myth (via onMount) -->
+				<form
+					method="POST"
+					action="?/generateMyth"
+					bind:this={generateMythFormElement}
+					class="text-center"
+					use:enhance={() => {
+						isGenerating = true;
+						clientSideError = null;
+						return async ({ result, update }) => {
+							await update({ reset: false });
+							isGenerating = false;
+							if (result.type === 'error') {
+								clientSideError = result.error.message || 'Failed to request new myth.';
+								handleFormUpdate(null);
+							} else {
+								handleFormUpdate(formProp);
+							}
+						};
+					}}
+				>
+					<input type="hidden" name="trackTitle" value={pageLoadData.trackTitle} />
+					<input type="hidden" name="trackCategory" value={pageLoadData.trackCategory} />
+					<input type="hidden" name="trackDifficulty" value={pageLoadData.trackDifficulty} />
+					<input
+						type="hidden"
+						name="totalMythsInTrack"
+						value={pageLoadData.totalMythsInTrack.toString()}
+					/>
+					<input type="hidden" name="mythIndex" value={currentMythIndexInTrack} />
+
+					{#if !generateMythFormElement || isGenerating}
+						<!--This button isn't really meant to be clicked manually in this state, onMount handles it -->
+						<!--It serves as the target for the programmatic submission -->
+						<Button type="submit" class="w-full" disabled={true}>
+							<LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Loading Myth...
+						</Button>
+					{/if}
+				</form>
 			{/if}
 		</Card.Content>
 	</Card.Root>
@@ -591,4 +614,3 @@
 		>
 	</div>
 </div>
-```

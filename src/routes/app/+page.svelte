@@ -2,25 +2,10 @@
 	// Import UI components
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as Accordion from '$lib/components/ui/accordion';
-	import * as HoverCard from '$lib/components/ui/hover-card';
-	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
-	import { enhance, applyAction } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import { toast } from 'svelte-sonner';
-	import {
-		Flame,
-		MenuIcon,
-		HistoryIcon,
-		DatabaseZap,
-		Book,
-		Link,
-		ExternalLink,
-		X,
-		Trash2
-	} from 'lucide-svelte';
+	import { DatabaseZap, Book, Link, ExternalLink } from 'lucide-svelte';
 	import type { PageProps } from './$types';
 	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 	import { PersistedState } from 'runed';
@@ -34,13 +19,11 @@
 	import RelatedMyths from './components/RelatedMyths.svelte';
 	import ShareOptions from './components/ShareOptions.svelte';
 	import HistoryTimeline from './components/HistoryTimeline.svelte';
-	import RetroGrid from '$lib/components/blocks/RetroGrid.svelte';
 	import AuroraText from '$lib/components/blocks/AuroraText.svelte';
 
 	// Reactive state using Svelte 5 syntax
 	let activeTab: string = $state('citations');
 	let loading: boolean = $state(false);
-	let clearingCache: boolean = $state(false);
 
 	// We'll use CSS media queries instead of JavaScript for responsive design
 
@@ -98,15 +81,6 @@
 		}
 	}
 
-	// Handle cache clearing (this is for a separate server action, not used in current UI for myth history)
-	const handleClearCache: SubmitFunction = () => {
-		clearingCache = true;
-		return async ({ update }) => {
-			clearingCache = false;
-			await update();
-		};
-	};
-
 	// Handle form submission
 	const handleSubmit: SubmitFunction = () => {
 		loading = true;
@@ -159,32 +133,6 @@
 		form = {} as PageProps['form']; // Reset form to trigger UI change to input view
 		// Or form = null; if that's how your initial state is better represented
 	}
-
-	async function handleClearAllData() {
-		console.log(
-			'[handleClearAllData] Clearing client and server data. Current client history:',
-			JSON.parse(JSON.stringify(mythHistory.current))
-		);
-		mythHistory.current = [];
-		try {
-			const response = await fetch('/app?/clearServerCache', { method: 'POST' });
-			if (response.ok) {
-				const resJson = await response.json();
-				console.log('[handleClearAllData] Server cache cleared:', resJson);
-				toast.success('Client history & Server API cache cleared!');
-			} else {
-				console.error('[handleClearAllData] Failed to clear server cache:', response.statusText);
-				toast.error('Failed to clear server cache. Client history cleared.');
-			}
-		} catch (error) {
-			console.error('[handleClearAllData] Error calling clearServerCache:', error);
-			toast.error('Error clearing server cache. Client history cleared.');
-		}
-		// Reset UI to input view as well
-		resetUIVisibility();
-	}
-
-	console.log('mythHistory', mythHistory.current);
 </script>
 
 <RouteHead
@@ -237,7 +185,7 @@
 
 						<!-- Citations specific to the main result display -->
 						{#if form?.data?.citations && form.data.citations.length > 0}
-							<Accordion.Root type="single" collapsible>
+							<Accordion.Root type="single">
 								<Accordion.Item value="main-column-citations">
 									<Accordion.Trigger class="flex items-center gap-2">
 										<Book class="h-4 w-4 text-primary" />
@@ -245,7 +193,7 @@
 									</Accordion.Trigger>
 									<Accordion.Content>
 										<div class="mt-4 space-y-3">
-											{#each form.data.citations as citation, i}
+											{#each form.data.citations as citation}
 												<div
 													class="flex items-start gap-3 rounded-md border border-primary/20 bg-muted/30 p-3"
 												>
@@ -305,6 +253,11 @@
 							Verify Another Myth
 						</Button>
 					{/if}
+
+					<!-- HistoryTimeline now part of the main column flow, shown on desktop -->
+					<div class="mt-6 hidden md:block">
+						<HistoryTimeline {mythHistory} />
+					</div>
 				</div>
 
 				<!-- Secondary Information Column -->
@@ -380,7 +333,7 @@
 								No related myth to display.
 							</div>
 						{/if}
-						<HistoryTimeline {mythHistory} />
+						<!-- HistoryTimeline was here, now moved to the main column for desktop -->
 					</div>
 				</div>
 			</div>

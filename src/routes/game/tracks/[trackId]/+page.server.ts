@@ -27,11 +27,19 @@ Category: "${trackCategory}"
 Difficulty: "${trackDifficulty}"
 You are generating myth number ${currentMythNumber} of ${totalMyths}.
 
-Provide a single statement that is definitively true or false, suitable for this track and its context.
-The statement should be distinct from typical random myths and fit the theme of the track.
-Ensure this specific myth (myth ${currentMythNumber} of ${totalMyths}) is distinct from other potential myths in this same track. Avoid simple rephrasing of a previous concept within the track.
-The explanation should clearly state why a false statement is false and what the truth is, or why a true statement is true, correcting common misconceptions if applicable to the track's theme.
-Citations should be from reputable sources, ideally supporting the specific context of the track.
+Your goal is to create a myth that is engaging, verifiable, and **not easily predictable**.
+
+Key requirements for this specific myth (myth ${currentMythNumber} of ${totalMyths}):
+1.  **Distinctiveness:** The statement MUST be unique within this track. Avoid rephrasing previous concepts. If the category is 'History', steer clear of very common or repeatedly debunked historical "facts" (e.g., Vikings having horned helmets, Marie Antoinette saying "Let them eat cake"). Instead, find more specific, lesser-known historical details that can be presented as a true/false statement.
+2.  **Unpredictability & Engagement:**
+    *   Aim for statements that might surprise the user or challenge common assumptions.
+    *   Consider framing some statements around obscure details, unexpected consequences, or subtle misunderstandings within the track's theme.
+    *   Vary the style of the myth: some can be direct assertions, others might mimic common sayings or beliefs, and some could be slightly tricky (but not ambiguous or reliant on wordplay).
+3.  **Verifiability:** Provide a single statement that is definitively true or false.
+4.  **Clarity & Conciseness:** The statement itself should be clear and to the point.
+5.  **Contextual Relevance:** The myth must fit the theme, category, and difficulty of the track.
+6.  **Explanation Quality:** The explanation should clearly state why a false statement is false (and what the truth is, with nuance if needed) or why a true statement is true. Correct common misconceptions if applicable to the track's theme.
+7.  **Citations:** Provide 1-3 reliable citations from reputable sources, ideally supporting the specific context of the track and the explanation.
 
 Return your response as a JSON object with the following structure:
 {
