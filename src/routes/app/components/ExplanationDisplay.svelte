@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { animate } from 'svelte-motion';
 	import * as HoverCard from '$lib/components/ui/hover-card';
 	import { ExternalLink, Sparkles } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -85,9 +84,6 @@
 	// Parse explanation into segments
 	let segments = $derived(parseExplanation(explanation));
 
-	// Container ref for debugging
-	let container: HTMLElement | null = null;
-
 	// Simple function to log explanation content for debugging
 	function logExplanation(): void {
 		console.log('Explanation content:', explanation);
@@ -97,7 +93,6 @@
 
 	// Setup debugging on mount
 	function onMount(node: HTMLElement): void {
-		container = node;
 		logExplanation();
 	}
 </script>
@@ -110,7 +105,6 @@
 		role="textbox"
 		tabindex="0"
 		aria-label="Explanation with clickable citations"
-		use:onMount
 	>
 		<!-- Debug information -->
 		{#if !explanation || explanation.length === 0}

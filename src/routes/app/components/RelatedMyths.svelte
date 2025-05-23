@@ -11,35 +11,14 @@
 	}: {
 		relatedMyth: string;
 	} = $props();
-
-	// Container ref for animations (keeping for now, might remove if not needed)
-	let container: HTMLElement;
-
-	// Animate the item if it exists
-	function animateItem(): void {
-		if (!container) return;
-
-		const item = container.querySelector<HTMLElement>('.myth-item');
-		if (item) {
-			// Run the animation with properly typed parameters
-			animate(item, { x: [15, 0], opacity: [0, 1] } as any, { duration: 0.4 });
-		}
-	}
-
-	// Setup animation on mount or when relatedMyth changes
-	$effect(() => {
-		if (container && relatedMyth) {
-			setTimeout(animateItem, 100); // Small delay to ensure element is rendered
-		}
-	});
 </script>
 
 <div class="rounded-lg border border-primary/20 p-4">
 	<h3 class="mb-3 text-lg font-medium">Related Myth</h3>
 
-	<div class="space-y-3" bind:this={container}>
+	<div class="space-y-3">
 		{#if relatedMyth}
-			<div class="myth-item opacity-0">
+			<div class="myth-item">
 				<div
 					class="flex items-start justify-between rounded-md border border-primary/10 bg-muted/30 p-3 transition-colors hover:bg-muted/50"
 				>

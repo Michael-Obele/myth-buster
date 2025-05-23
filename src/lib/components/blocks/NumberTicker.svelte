@@ -1,3 +1,26 @@
+<!--
+@component
+The `NumberTicker` component is used to display a numeric value that animates from an initial value to a target value. It supports customization for animation direction, duration, and additional styling.
+
+### Props
+- `value` (number | string, default: `100`): The target value to animate to. Can include a numeric value with optional prefix and suffix.
+- `initial` (number, default: `0`): The starting value for the animation.
+- `startValue` (number, optional): Overrides the `initial` value as the starting point for the animation.
+- `duration` (number, default: `2000`): The duration of the animation in milliseconds.
+- `class` (any, optional): Additional CSS classes to apply to the component.
+- `direction` ('up' | 'down', default: `'up'`): The direction of the animation. `'up'` animates from a lower to a higher value, while `'down'` animates from a higher to a lower value.
+- `[key: string]` (any): Additional props that can be passed to the component.
+
+### Usage
+```svelte
+<NumberTicker
+  value="1234"
+  initial={0}
+  duration={3000}
+  class="text-lg font-bold"
+  direction="up"
+/>
+ -->
 <script lang="ts">
 	import { cubicOut } from 'svelte/easing';
 	import { onMount } from 'svelte';

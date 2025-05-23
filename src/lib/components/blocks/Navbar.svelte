@@ -1,12 +1,18 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { Flame, Menu, X, User } from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button';
-	import { Badge } from '$lib/components/ui/badge';
 	import * as Avatar from '$lib/components/ui/avatar';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { beforeNavigate } from '$app/navigation';
 	import { goto } from '$app/navigation';
+	import MinusIcon from '@lucide/svelte/icons/minus';
+	import PlusIcon from '@lucide/svelte/icons/plus';
+	import * as Drawer from '$lib/components/ui/drawer/index.js';
+	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+
+	import { cubicInOut } from 'svelte/easing';
+
+	let context = $state();
 
 	// Get user from page data
 	let user = $derived(page.data.user);
@@ -101,10 +107,10 @@
 		</div>
 
 		<!-- Mobile menu button -->
-		<Button
+		<!-- <Button
 			variant="ghost"
 			size="icon"
-			class="border border-green-400 text-green-400 md:hidden"
+			class="border border-green-400 text-green-400 hover:text-primary-foreground md:hidden"
 			onclick={toggleMenu}
 			aria-label="Toggle menu"
 		>
@@ -113,7 +119,49 @@
 			{:else}
 				<Menu class="h-5 w-5" />
 			{/if}
-		</Button>
+		</Button> -->
+		<Drawer.Root>
+			<Drawer.Trigger
+				class={buttonVariants({ variant: 'outline', size: 'icon' }) +
+					'border border-green-400 px-3 py-4 text-green-400 hover:text-primary-foreground md:hidden'}
+				><Menu class="h-5 w-5" /></Drawer.Trigger
+			>
+			<Drawer.Content class="w-full">
+				<div class="mx-auto w-full">
+					<Drawer.Header>
+						<Drawer.Title>Move Goal</Drawer.Title>
+						<Drawer.Description>Set your daily activity goal.</Drawer.Description>
+					</Drawer.Header>
+					<div class="flex flex-col space-y-3 border-t border-primary/20 bg-background/95">
+						{#each navLinks as link}
+							<a
+								href={link.href}
+								class={`rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10 hover:text-primary ${isActive(link.href) ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
+							>
+								{link.label}
+							</a>
+						{/each}
+
+						{#if user}
+							<div class="flex items-center gap-2 rounded-md px-3 py-2">
+								<Avatar.Root class="h-6 w-6">
+									<Avatar.Fallback class="bg-primary text-xs text-primary-foreground">
+										{userInitial}
+									</Avatar.Fallback>
+								</Avatar.Root>
+								<span class="text-sm font-medium">{user.username}</span>
+							</div>
+							<a
+								href="/signout"
+								class="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+							>
+								Sign out
+							</a>
+						{/if}
+					</div>
+				</div>
+			</Drawer.Content>
+		</Drawer.Root>
 	</div>
 
 	<!-- Mobile navigation menu -->

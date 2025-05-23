@@ -2,65 +2,139 @@
 
 **License**: Proprietary 2025 MiniApps. All rights reserved.
 
-Myth Buster is a creative, interactive web app that helps users verify the truth of statements and debunk myths with detailed, sourced answers. Built with Svelte 5, shadcn-svelte, lucide-svelte, Tailwind CSS, and powered by the Perplexity Sonar API, it delivers an engaging myth-busting experience with rich visual and audio cues.
+Myth Buster is an interactive web application that helps users verify myths and misconceptions using AI-powered analysis. Built with modern web technologies, it offers both a verification interface and an engaging game mode to test knowledge.
 
-**Live Demo:** [https://myth-buster.netlify.app/](https://myth-buster.netlify.app/)
+**Live Demo**: [https://myth-buster.netlify.app/](https://myth-buster.netlify.app/)
 
 ## Features
 
-The following features are available in the initial hackathon submission:
+### Currently Implemented Features
 
-- **Myth Verification Interface**: Enter any statement to get a verdict (True/False/Inconclusive) with detailed explanations and resource links, emphasizing debunking of falsehoods.
-- **Visual Cues**: Animated icons and verdict-specific visuals for instant feedback.
-- **Responsive Design**: Works seamlessly across devices.
-- **Robust Sonar API Integration**: Real-time, cited information for every answer.
+- **Myth Verification Interface** (`/app`)
+  - Submit any statement for AI analysis
+  - Receive verdicts (True/False/Inconclusive) with detailed explanations
+  - View citations and sources
+  - Learn about myth origins and why they're believed
+  - Related myths suggestions
 
-The features below are planned, but have not yet been integrated and will not be available in time for the hackathon submission:
+- **Myth Busting Game** (`/game`)
+  - Interactive true/false game with AI-generated statements
+  - Track score and streaks
+  - Confidence level input
+  - Immediate feedback with explanations
+  - Persisted game state between sessions
 
-- **Audio Cues**: Optional sounds for verdicts, with user toggle.
-- **Confidence Meter**: Indicate your confidence before submitting a statement.
-- **Myth Origin Stories**: Learn about the historical or cultural origins of myths (collapsible section).
-- **Myth-Busting Streaks**: Track consecutive verifications and earn badges.
-- **Seasonal/Themed Myths**: Explore curated myths for holidays and seasons.
+- **User Authentication**
+  - Secure account creation and login
+  - Profile management
+  - Password changes
 
-## Tech Stack
+- **Community Features** (`/community`)
+  - Community signup count
+  - Waitlist form for updates
 
-- **Svelte 5** (runes for reactivity)
-- **shadcn-svelte** (UI components)
-- **lucide-svelte** (icons)
-- **Tailwind CSS** (styling)
-- **Perplexity Sonar API** (AI-powered myth verification)
+- **Landing Page** (`/`)
+  - Interactive "Mini-Myth" quick check
+  - Dynamic stats and highlights
+  - Feature showcases
 
-## Roadmap & Future Features
+- **About Page** (`/about`)
+  - Project information
+  - Feature list
+  - Technology stack details
+  - Team information
 
-Some features will be introduced after the initial release, including:
-- **Premium Insight**: Advanced analytics, deeper research, and exclusive myth-busting insights (premium feature, coming soon).
-- **Advanced Analytics**: Usage stats, trends, and more.
-- **Expanded Myth Origins & Seasonal Content**: More stories and themed myth packs.
-- **Onboarding Flow**: An onboarding experience will be added as more features are introduced, to help new users get started and understand the app's capabilities.
+## Technology Stack
+
+- **Framework**: SvelteKit
+- **Language**: TypeScript
+- **UI Components**: Shadcn-svelte
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide-svelte
+- **Animations**: Svelte-motion, Svelte-Magic-UI, Lottie
+- **API**: Perplexity Sonar API
+- **State Management**: Svelte 5 Runes, PersistedState
+- **Build Tool**: Vite
+- **Package Manager**: Bun
+
+## Project Structure
+
+The application follows standard SvelteKit conventions:
+
+```
+myth-buster/
+├── src/
+│   ├── lib/               # Reusable components and utilities
+│   ├── routes/            # Application routes
+│   │   ├── (auth)/        # Authentication routes
+│   │   ├── app/           # Myth verification
+│   │   ├── game/          # Game interface
+│   │   ├── community/     # Community features
+│   │   └── about/         # About page
+│   └── app.css            # Global styles
+├── static/                # Static assets
+├── prisma/                # Database schema
+└── tests/                 # Test files
+```
 
 ## Development
 
-Install dependencies with `bun install` (or `pnpm install`/`yarn install`), then start the development server:
+### Prerequisites
+
+- Node.js (v18+ recommended)
+- Bun (or npm/yarn/pnpm)
+
+### Installation
+
+```bash
+bun install
+```
+
+### Running the Development Server
 
 ```bash
 bun dev
 ```
 
-## Building for Production
-
-To create a production build:
+### Building for Production
 
 ```bash
 bun run build
 ```
 
-Preview the production build with:
+### Previewing Production Build
 
 ```bash
 bun run preview
 ```
 
+## Future Roadmap
+
+### Near-Term Enhancements
+
+- Comprehensive error handling system
+- Advanced caching mechanism
+- User onboarding experience
+- Animation polish and microinteractions
+- Formalized testing strategy
+
+### Planned Features
+
+- Myth history and bookmarks
+- Shareable image generation
+- Game leaderboards and achievements
+- Themed game rounds
+- Community myth submissions
+- Personalized myth recommendations
+
+### Long-Term Vision
+
+- Multilingual support
+- Public API for developers
+- Educational platform integrations
+- Advanced analytics and insights
+- Premium features for deeper analysis
+
 ---
 
-This project was built for a hackathon and will continue to evolve.
+This project was initially built for a hackathon and continues to evolve with new features and improvements.

@@ -1,16 +1,17 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Card from '$lib/components/ui/card';
-	import { Brain, Zap, BookOpen } from 'lucide-svelte';
+	import { Brain, Zap, BookOpen, type Icon as IconType } from 'lucide-svelte';
 	import NumberTicker from '$lib/components/blocks/NumberTicker.svelte';
 
 	interface Stat {
-		icon: any;
+		icon: typeof IconType;
 		value: string;
 		label: string;
 		description: string;
 		color: string;
 		bgColor: string;
+		duration: number;
 		direction: 'up' | 'down';
 	}
 
@@ -22,7 +23,8 @@
 			description: 'Every myth is verified with reliable sources',
 			color: 'text-purple-500',
 			bgColor: 'bg-purple-500/10',
-			direction: 'up'
+			direction: 'up',
+			duration: 1500
 		},
 		{
 			icon: Zap,
@@ -31,7 +33,8 @@
 			description: 'Get answers almost instantly',
 			color: 'text-primary',
 			bgColor: 'bg-primary/10',
-			direction: 'down'
+			direction: 'down',
+			duration: 3500
 		},
 		{
 			icon: BookOpen,
@@ -40,7 +43,8 @@
 			description: 'And growing every day with user contributions',
 			color: 'text-red-500',
 			bgColor: 'bg-red-500/10',
-			direction: 'up'
+			direction: 'up',
+			duration: 2000
 		}
 	]);
 </script>
@@ -78,6 +82,7 @@
 								class="text-4xl font-bold tracking-tight"
 								direction={stat.direction}
 								value={stat.value}
+								duration={stat.duration}
 							/>
 							<p class="text-sm text-muted-foreground">{stat.description}</p>
 						</div>

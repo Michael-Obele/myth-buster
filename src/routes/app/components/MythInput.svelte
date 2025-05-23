@@ -62,7 +62,7 @@
 </script>
 
 <form
-	class="w-full max-w-3xl space-y-4"
+	class="mx-auto w-full space-y-4"
 	method="POST"
 	action="?/verifyMyth"
 	use:enhance={handleSubmit}

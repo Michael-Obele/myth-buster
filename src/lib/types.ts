@@ -30,3 +30,49 @@ export type MythHistoryEntry = {
 	result: MythVerificationResult; // The full result from the server
 	isBookmarked: boolean; // Flag for bookmarking
 };
+
+/**
+ * Type definition for research lens results.
+ */
+export type LensResult = {
+	id: string;
+	name: string;
+	isCustom: boolean;
+	loading?: boolean;
+	error?: string;
+	result?: {
+		explanation: string;
+		citations: { title: string; url: string }[];
+		keyInsights?: string[];
+	};
+};
+
+/**
+ * Type definition for source analysis results.
+ */
+export type SourceAnalysisResult = {
+	loading?: boolean;
+	error?: string;
+	result?: {
+		analysis: string;
+		reliability?: string;
+		methodology?: string;
+		corroborating?: string[];
+		contradicting?: string[];
+	};
+};
+
+/**
+ * Type definition for synthesis results.
+ */
+export type SynthesisResult = {
+	loading?: boolean;
+	error?: string;
+	overallInsight?: string;
+	themes?: Array<{
+		title: string;
+		description: string;
+	}>;
+	connections?: string[];
+	contradictions?: string[];
+};
