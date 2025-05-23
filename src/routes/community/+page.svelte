@@ -358,12 +358,12 @@
 				<CardContent>
 					{#if data.user}
 						<div class="relative">
-							<div class="absolute inset-0 z-10 flex items-center justify-center bg-black/30">
+							<div class="absolute inset-0 z-10 flex items-center justify-center bg-black/30 rounded-lg">
 								<p class="rotate-[-10deg] transform text-2xl font-bold italic text-white">
 									Feature Coming Soon
 								</p>
 							</div>
-							<div class="pointer-events-none opacity-50">
+							<div class="pointer-events-none opacity-50 rounded-lg">
 								<Label for="myth-text" class="mb-2 block font-medium">Your Myth Suggestion:</Label>
 								<Textarea
 									id="myth-text"
@@ -408,54 +408,56 @@
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-									<div class="relative rounded-lg overflow-hidden">
-										<div class="absolute inset-0 z-10 flex items-center justify-center bg-black/50 rounded-lg">
-											<p class="text-2xl font-bold text-white italic transform rotate-[-10deg]">
-												Feature Coming Soon
-											</p>
-										</div>
-										<div class="pointer-events-none opacity-50">
-											{#if submittedMythsList.length > 0}
-												<ul class="space-y-4">
-													{#each submittedMythsList as myth (myth.id)}
-														<li class="rounded-lg border p-4">
-															<p class="mb-2 text-lg">{myth.text}</p>
-															<div
-																class="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground"
-															>
-																<span>
-																	Submitted by: {myth.submittedBy || 'Anonymous'} on
-																	{new Date(myth.createdAt).toLocaleDateString()}
-																</span>
-																<Button
-																	variant={myth.votedByCurrentUser ? 'secondary' : 'outline'}
-																	size="sm"
-																	onclick={() => handleVote(myth.id)}
-																	disabled={!data.user || myth.votedByCurrentUser}
-																	title={!data.user
-																		? 'Sign in to vote'
-																		: myth.votedByCurrentUser
-																			? 'Already voted'
-																			: 'Upvote this myth'}
-																>
-																	<ArrowUp class="mr-2 size-4" />
-																	Vote ({myth.votes})
-																</Button>
-															</div>
-														</li>
-													{/each}
-												</ul>
-											{:else}
-												<p class="py-8 text-center text-lg text-muted-foreground">
-													No community myths submitted yet. Why not <button
-														class="text-primary underline"
-														onclick={() => (activeTab = 'submit')}>suggest one</button
-													>?
-												</p>
-											{/if}
-										</div>
-									</div>
-								</CardContent>
+					<div class="relative overflow-hidden rounded-lg">
+						<div
+							class="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-black/50"
+						>
+							<p class="rotate-[-10deg] transform text-2xl font-bold italic text-white">
+								Feature Coming Soon
+							</p>
+						</div>
+						<div class="pointer-events-none opacity-50">
+							{#if submittedMythsList.length > 0}
+								<ul class="space-y-4">
+									{#each submittedMythsList as myth (myth.id)}
+										<li class="rounded-lg border p-4">
+											<p class="mb-2 text-lg">{myth.text}</p>
+											<div
+												class="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground"
+											>
+												<span>
+													Submitted by: {myth.submittedBy || 'Anonymous'} on
+													{new Date(myth.createdAt).toLocaleDateString()}
+												</span>
+												<Button
+													variant={myth.votedByCurrentUser ? 'secondary' : 'outline'}
+													size="sm"
+													onclick={() => handleVote(myth.id)}
+													disabled={!data.user || myth.votedByCurrentUser}
+													title={!data.user
+														? 'Sign in to vote'
+														: myth.votedByCurrentUser
+															? 'Already voted'
+															: 'Upvote this myth'}
+												>
+													<ArrowUp class="mr-2 size-4" />
+													Vote ({myth.votes})
+												</Button>
+											</div>
+										</li>
+									{/each}
+								</ul>
+							{:else}
+								<p class="py-8 text-center text-lg text-muted-foreground">
+									No community myths submitted yet. Why not <button
+										class="text-primary underline"
+										onclick={() => (activeTab = 'submit')}>suggest one</button
+									>?
+								</p>
+							{/if}
+						</div>
+					</div>
+				</CardContent>
 				<CardFooter>
 					<p class="text-sm text-muted-foreground">
 						Your votes help us decide which myths to tackle next! Log in to cast your vote.
