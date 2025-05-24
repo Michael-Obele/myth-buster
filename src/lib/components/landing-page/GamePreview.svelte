@@ -48,9 +48,8 @@
 
 		<div class="grid items-center gap-12 md:grid-cols-2">
 			<section class="overflow-hidden rounded-lg border border-slate-700 shadow-2xl">
-				<div class="relative bg-slate-800 pb-[75%]">
-					<!-- 4:3 aspect ratio -->
-					<div class="absolute inset-0 flex h-full w-full flex-col items-center justify-center p-8">
+				<div class="bg-slate-800">
+					<div class="flex flex-col items-center justify-center p-8">
 						<div class="max-w-sm space-y-4 text-center">
 							<div
 								class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/20"

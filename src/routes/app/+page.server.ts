@@ -14,30 +14,37 @@ import type {
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
 
 // System prompt to guide the AI's behavior and response format
-const SYSTEM_PROMPT = `You are a myth-busting expert who analyzes statements to determine their accuracy.
+const SYSTEM_PROMPT = `You are a myth-busting expert who analyzes statements to determine their accuracy using evidence-based research.
 
 For each statement provided, follow these steps:
-1. Analyze whether the statement is true, false, or inconclusive based on current evidence
-2. Provide a detailed explanation of your verdict, with special emphasis on debunking if the statement is false
-3. Include factual information that corrects any misconceptions
-4. Cite reliable sources to support your explanation
-5. If known, briefly explain the origin of this myth or misconception
-6. If applicable, provide a related myth or misconception
-7. If known, briefly explain why people believe this myth or misconception
+1. Conduct thorough research to analyze whether the statement is true, false, or inconclusive based on current scientific evidence and credible sources
+2. Provide a detailed, factual explanation of your verdict with emphasis on debunking misconceptions if the statement is false
+3. Include specific factual information that corrects any misconceptions, citing quantitative data where available
+4. Search for and cite multiple reliable, authoritative sources to support your explanation (prefer peer-reviewed studies, official organizations, and established institutions)
+5. If applicable, explain the historical or cultural origin of this myth or misconception
+6. If relevant, mention a related myth or common misconception in the same domain
+7. Analyze and explain the psychological, social, or cognitive factors that lead people to believe this myth
+
+Guidelines for analysis:
+- Prioritize recent, peer-reviewed research and official sources
+- Consider scientific consensus and avoid fringe theories
+- Be specific about limitations in current knowledge when marking something as "inconclusive"
+- Distinguish between correlation and causation in explanations
+- Address common logical fallacies associated with the topic
 
 Return your response as a JSON object with the following structure:
 {
   "verdict": "true" | "false" | "inconclusive",
-  "explanation": "A detailed explanation of why the statement is true, false, or inconclusive",
+  "explanation": "A comprehensive, evidence-based explanation of why the statement is true, false, or inconclusive",
   "citations": [
     {
-      "title": "Source title",
-      "url": "URL to the source"
+      "title": "Specific source title with publication year",
+      "url": "URL to the authoritative source"
     }
   ],
-  "mythOrigin": "Brief explanation of where this myth originated (if applicable)",
-  "relatedMyth": "A related myth or misconception (if applicable)",
-  "whyBelieved": "Brief explanation of why people believe this myth (if applicable)"
+  "mythOrigin": "Historical or cultural context of where this belief originated (if applicable)",
+  "relatedMyth": "A related myth or misconception in the same domain (if applicable)",
+  "whyBelieved": "Psychological, social, or cognitive factors that explain why people believe this myth (if applicable)"
 }
 
 Always format your response as a JSON object within a markdown code block.`;
@@ -72,7 +79,9 @@ function getCachedResponse(key: string): any | null {
 		return null;
 	}
 
-	console.log(`[getCachedResponse] Key: "${key}", Now: ${now}, ExpiresAt: ${cachedData.expiresAt}, IsExpired: ${now >= cachedData.expiresAt}`);
+	console.log(
+		`[getCachedResponse] Key: "${key}", Now: ${now}, ExpiresAt: ${cachedData.expiresAt}, IsExpired: ${now >= cachedData.expiresAt}`
+	);
 	// Check if the cache entry has expired
 	if (now >= cachedData.expiresAt) {
 		// Remove the expired cache entry
@@ -165,7 +174,14 @@ async function verifyMythLogic(myth: string): Promise<MythVerificationResult> {
 		messages: [
 			{ role: 'system', content: SYSTEM_PROMPT }, // Include the system prompt
 			{ role: 'user', content: myth } // Include the user's myth statement
-		]
+		],
+		temperature: 0.2, // Lower temperature for more factual, deterministic responses
+		max_tokens: 4000, // Control response length
+		web_search_options: {
+			search_context_size: 'medium' // Use medium context for comprehensive myth analysis
+		},
+		return_images: false, // We don't need images for myth verification
+		return_related_questions: false // Focus on the specific myth only
 	};
 	console.log('Payload to Perplexity:', JSON.stringify(payload, null, 2));
 
@@ -381,7 +397,12 @@ export const actions: Actions = {
 		const lensName = data.get('lensName');
 		const customQuery = data.get('customQuery');
 
-		console.log('[researchLens] Action started. Received data:', { mythStatement, lensType, lensName, customQuery });
+		console.log('[researchLens] Action started. Received data:', {
+			mythStatement,
+			lensType,
+			lensName,
+			customQuery
+		});
 
 		if (typeof mythStatement !== 'string' || !mythStatement.trim()) {
 			console.error('[researchLens] Error: Myth statement is required.');
@@ -448,7 +469,14 @@ export const actions: Actions = {
 					role: 'user',
 					content: lensPrompt
 				}
-			]
+			],
+			temperature: 0.3, // Slightly higher for research analysis
+			max_tokens: 3000,
+			web_search_options: {
+				search_context_size: 'medium' // Medium for comprehensive research
+			},
+			return_images: false,
+			return_related_questions: false
 		};
 		console.log('[researchLens] API Payload:', JSON.stringify(payload, null, 2));
 
@@ -466,7 +494,9 @@ export const actions: Actions = {
 
 			if (!resp.ok) {
 				const errorText = await resp.text();
-				console.error(`[researchLens] Error: API returned status ${resp.status}. Response: ${errorText}`);
+				console.error(
+					`[researchLens] Error: API returned status ${resp.status}. Response: ${errorText}`
+				);
 				return { success: false, error: `API returned status ${resp.status}` };
 			}
 
@@ -491,7 +521,10 @@ export const actions: Actions = {
 						console.log('[researchLens] Successfully parsed from ```json block.');
 					}
 				} catch (e) {
-					console.warn('[researchLens] Failed to parse from ```json block, will try direct parse.', e);
+					console.warn(
+						'[researchLens] Failed to parse from ```json block, will try direct parse.',
+						e
+					);
 				}
 
 				// Attempt 2: Try parsing the whole content as JSON if not successful above
@@ -500,7 +533,9 @@ export const actions: Actions = {
 						parsedData = JSON.parse(content);
 						console.log('[researchLens] Successfully parsed direct content string.');
 					} catch (e) {
-						console.log('[researchLens] Direct content string is not JSON. Treating as plain text explanation.');
+						console.log(
+							'[researchLens] Direct content string is not JSON. Treating as plain text explanation.'
+						);
 						// No error, content will be used as plain text if parsedData remains null
 					}
 				}
@@ -515,20 +550,34 @@ export const actions: Actions = {
 						// We should not use the whole 'content' string if 'content' was the JSON that 'parsedData' came from.
 						// Instead, if 'explanation' is missing or not a string, it's better to have an empty explanation
 						// or a specific message, rather than potentially re-printing the whole JSON object.
-						console.warn('[researchLens] Parsed data is missing a string "explanation" field or it was not a string. Content was:', content, 'Parsed data:', parsedData);
+						console.warn(
+							'[researchLens] Parsed data is missing a string "explanation" field or it was not a string. Content was:',
+							content,
+							'Parsed data:',
+							parsedData
+						);
 						explanation = ''; // Default to empty or a message like "Explanation not available in expected format."
 					}
-					
-					keyInsights = Array.isArray(parsedData.keyInsights) ? parsedData.keyInsights.filter(item => typeof item === 'string') : [];
-					parsedContentCitations = Array.isArray(parsedData.citations) ? parsedData.citations.filter(c => c && typeof c.title === 'string' && typeof c.url === 'string') : [];
-					
-					console.log('[researchLens] Extracted from parsed data:', { explanation, keyInsights, "parsedContentCitations_COUNT": parsedContentCitations.length });
 
+					keyInsights = Array.isArray(parsedData.keyInsights)
+						? parsedData.keyInsights.filter((item: any) => typeof item === 'string')
+						: [];
+					parsedContentCitations = Array.isArray(parsedData.citations)
+						? parsedData.citations.filter(
+								(c: any) => c && typeof c.title === 'string' && typeof c.url === 'string'
+							)
+						: [];
+
+					console.log('[researchLens] Extracted from parsed data:', {
+						explanation,
+						keyInsights,
+						parsedContentCitations_COUNT: parsedContentCitations.length
+					});
 				} else if (typeof content === 'string') {
 					// content is not parsable JSON (or was an empty JSON object like {}), treat as plain text explanation
 					explanation = content;
-					keyInsights = []; 
-					parsedContentCitations = []; 
+					keyInsights = [];
+					parsedContentCitations = [];
 					console.log('[researchLens] Using content as plain text explanation.');
 				} else {
 					console.error('[researchLens] API content was not a string or a usable JSON object.');
@@ -541,16 +590,17 @@ export const actions: Actions = {
 			}
 
 			// API-provided citations (outside the message content)
-			const apiCitations = answer.citations?.map((url: string, index: number) => ({
-				title: `Source ${index + 1}`, 
-				url
-			})) || [];
+			const apiCitations =
+				answer.citations?.map((url: string, index: number) => ({
+					title: `Source ${index + 1}`,
+					url
+				})) || [];
 			console.log('[researchLens] API-provided citations (answer.citations):', apiCitations);
 
 			// Merge citations
 			const citationMap = new Map<string, { title: string; url: string }>();
 			parsedContentCitations.forEach((citation) => {
-				if(citation.url) citationMap.set(citation.url, citation);
+				if (citation.url) citationMap.set(citation.url, citation);
 			});
 			apiCitations.forEach((citation: { title: string; url: string }) => {
 				if (citation.url && !citationMap.has(citation.url)) {
@@ -569,7 +619,10 @@ export const actions: Actions = {
 					citations: finalCitations
 				}
 			};
-			console.log('[researchLens] Returning successful result:', JSON.stringify(resultData, null, 2));
+			console.log(
+				'[researchLens] Returning successful result:',
+				JSON.stringify(resultData, null, 2)
+			);
 			return resultData;
 		} catch (err) {
 			console.error('[researchLens] Failed to research lens:', err);
@@ -634,7 +687,14 @@ export const actions: Actions = {
 					role: 'user',
 					content: analysisPrompt
 				}
-			]
+			],
+			temperature: 0.2, // Low temperature for analytical precision
+			max_tokens: 3500,
+			web_search_options: {
+				search_context_size: 'medium' // Medium context for focused source analysis
+			},
+			return_images: false,
+			return_related_questions: false
 		};
 
 		try {
@@ -780,7 +840,14 @@ Format as JSON:
 					role: 'user',
 					content: synthesisPrompt
 				}
-			]
+			],
+			temperature: 0.4, // Higher temperature for creative synthesis
+			max_tokens: 3000,
+			web_search_options: {
+				search_context_size: 'low' // Low context since we're synthesizing provided data
+			},
+			return_images: false,
+			return_related_questions: false
 		};
 
 		try {
@@ -817,7 +884,10 @@ Format as JSON:
 						console.log('[synthesizeInsights] Successfully parsed from ```json block.');
 					}
 				} catch (e) {
-					console.warn('[synthesizeInsights] Failed to parse from ```json block, will try direct parse.', e);
+					console.warn(
+						'[synthesizeInsights] Failed to parse from ```json block, will try direct parse.',
+						e
+					);
 				}
 
 				// Attempt 2: Try parsing the whole content as JSON if not successful above
@@ -826,24 +896,42 @@ Format as JSON:
 						parsedData = JSON.parse(content);
 						console.log('[synthesizeInsights] Successfully parsed direct content string.');
 					} catch (e) {
-						console.log('[synthesizeInsights] Direct content string is not JSON. Treating as plain text for overallInsight or error.');
+						console.log(
+							'[synthesizeInsights] Direct content string is not JSON. Treating as plain text for overallInsight or error.'
+						);
 					}
 				}
 
 				// Now, process parsedData or use content as fallback
 				if (parsedData && typeof parsedData === 'object' && parsedData !== null) {
-					overallInsight = typeof parsedData.overallInsight === 'string' ? parsedData.overallInsight : '';
-					themes = Array.isArray(parsedData.themes) ? parsedData.themes.filter(
-						(t: any) => t && typeof t.title === 'string' && typeof t.description === 'string'
-					) : [];
-					connections = Array.isArray(parsedData.connections) ? parsedData.connections.filter(item => typeof item === 'string') : [];
-					contradictions = Array.isArray(parsedData.contradictions) ? parsedData.contradictions.filter(item => typeof item === 'string') : [];
-					
-					if (typeof parsedData.overallInsight !== 'string' && overallInsight === '') {
-						console.warn('[synthesizeInsights] Parsed data is missing a string "overallInsight" field. Content was:', content, 'Parsed data:', parsedData);
-					}
-					console.log('[synthesizeInsights] Extracted from parsed data:', { overallInsight, themes_count: themes.length, connections_count: connections.length, contradictions_count: contradictions.length });
+					overallInsight =
+						typeof parsedData.overallInsight === 'string' ? parsedData.overallInsight : '';
+					themes = Array.isArray(parsedData.themes)
+						? parsedData.themes.filter(
+								(t: any) => t && typeof t.title === 'string' && typeof t.description === 'string'
+							)
+						: [];
+					connections = Array.isArray(parsedData.connections)
+						? parsedData.connections.filter((item: any) => typeof item === 'string')
+						: [];
+					contradictions = Array.isArray(parsedData.contradictions)
+						? parsedData.contradictions.filter((item: any) => typeof item === 'string')
+						: [];
 
+					if (typeof parsedData.overallInsight !== 'string' && overallInsight === '') {
+						console.warn(
+							'[synthesizeInsights] Parsed data is missing a string "overallInsight" field. Content was:',
+							content,
+							'Parsed data:',
+							parsedData
+						);
+					}
+					console.log('[synthesizeInsights] Extracted from parsed data:', {
+						overallInsight,
+						themes_count: themes.length,
+						connections_count: connections.length,
+						contradictions_count: contradictions.length
+					});
 				} else if (typeof content === 'string') {
 					// content is not parsable JSON, treat as plain text for overallInsight if it seems like a sentence.
 					// Otherwise, it might be an error or unexpected format.
@@ -851,9 +939,13 @@ Format as JSON:
 					themes = [];
 					connections = [];
 					contradictions = [];
-					console.log('[synthesizeInsights] Using content as plain text for overallInsight, other fields empty.');
+					console.log(
+						'[synthesizeInsights] Using content as plain text for overallInsight, other fields empty.'
+					);
 				} else {
-					console.error('[synthesizeInsights] API content was not a string or a usable JSON object for synthesis.');
+					console.error(
+						'[synthesizeInsights] API content was not a string or a usable JSON object for synthesis.'
+					);
 					overallInsight = 'Error: Could not process synthesis response content.';
 					themes = [];
 					connections = [];

@@ -55,12 +55,6 @@
 				'User prediction interface before seeing verdict with comparison to actual result.',
 			icon: HelpCircle,
 			priority: 'nice' as const // Use 'as const' for literal type
-		},
-		{
-			title: 'Audio Cues',
-			description: 'Simple, non-intrusive sounds for different verdicts with volume control.',
-			icon: Users,
-			priority: 'important' as const // Use 'as const' for literal type
 		}
 	];
 
@@ -104,13 +98,10 @@
 			<!-- Header -->
 			<div class="mb-12 flex flex-col items-center text-center">
 				<div class="mb-6 flex items-center gap-3">
-					<Flame class="size-8 animate-pulse text-primary md:size-12" />
 					<SparklesText
 						text="About Myth Buster"
 						class="font-underdog text-5xl font-bold tracking-tight text-primary md:text-6xl"
 					/>
-
-					<Badge class="bg-primary/20 text-primary">AI Powered</Badge>
 				</div>
 
 				<p class="max-w-2xl text-center text-lg text-muted-foreground">

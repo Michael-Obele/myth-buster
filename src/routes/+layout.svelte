@@ -11,7 +11,7 @@
 	});
 </script>
 
-<Toaster position="top-center" />
+<Toaster expand={true} position="top-center" />
 
 <Navbar />
 <!-- Spacer to prevent content from being hidden under the navbar -->

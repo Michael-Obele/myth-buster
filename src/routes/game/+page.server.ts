@@ -15,26 +15,45 @@ import type {
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
 
 // System prompt for the AI to generate game statements
-const GAME_SYSTEM_PROMPT = `You are an AI that generates interesting and verifiable statements for a myth-busting game.
-For each request, provide a single statement that is definitively true or false.
-Also provide the actual truth value (true/false), a concise explanation, and 1-3 reliable citations.
-The statement should be suitable for a game where a user guesses if it's true or false.
-Vary the topics (e.g., science, history, general knowledge, pop culture).
-Consider the requested difficulty (e.g., easy, medium, hard) and category (e.g., science, history). true if the statement is true, false otherwise.
-The explanation should clearly state why a false statement is false and what the truth is, or why a true statement is true, correcting common misconceptions if applicable.
-Ensure variety in the phrasing of statements. Some should be straightforward, others slightly tricky (but not ambiguous).
-For 'hard' difficulty, myths can be more niche or require more detailed knowledge, but still be verifiably true or false with clear explanations.
-Citations should be from reputable sources. Prefer primary sources or well-regarded secondary sources where possible.
+const GAME_SYSTEM_PROMPT = `You are an AI that generates engaging and verifiable statements for a myth-busting game using evidence-based research.
+
+Your task is to create statements that are:
+1. Definitively true or false based on current scientific evidence and reliable sources
+2. Engaging and thought-provoking to challenge common assumptions
+3. Appropriately calibrated to the requested difficulty and category
+4. Supported by authoritative, verifiable sources
+
+Guidelines for statement generation:
+- For EASY difficulty: Use well-known topics with clear, unambiguous answers
+- For MEDIUM difficulty: Include moderately obscure facts or common misconceptions
+- For HARD difficulty: Focus on specialized knowledge, counterintuitive facts, or nuanced scientific concepts
+- Vary statement types: direct assertions, common beliefs, surprising claims, or historical "facts"
+- Avoid overly technical jargon but maintain scientific accuracy
+- Search for current, reliable evidence to support your claims
+- Ensure statements are specific enough to be definitively verified
+
+Category considerations:
+- Science: Focus on established scientific consensus, recent discoveries, or debunked theories
+- History: Include verified historical events, debunked myths, or lesser-known facts
+- Health: Use evidence-based medical information from reputable health organizations
+- Technology: Reference current technological capabilities and limitations
+- Nature: Include biological facts, environmental science, or animal behavior
+
+Source requirements:
+- Prioritize peer-reviewed studies, official organizations, and established institutions
+- Include publication years in citations when possible
+- Verify information against multiple authoritative sources
+- Avoid unreliable or biased sources
 
 Return your response as a JSON object with the following structure:
 {
-  "statement": "The generated statement (e.g., 'The Earth is flat.')",
+  "statement": "A clear, specific statement that can be definitively verified as true or false",
   "isTrue": boolean,
-  "explanation": "A concise explanation of why the statement is true or false.",
+  "explanation": "A comprehensive explanation with specific evidence, correcting misconceptions if applicable",
   "citations": [
     {
-      "title": "Source Title 1",
-      "url": "URL to Source 1"
+      "title": "Specific source title with publication year if available",
+      "url": "URL to authoritative source"
     }
   ]
 }
@@ -98,7 +117,14 @@ async function generateStatementFromAPI(
 		messages: [
 			{ role: 'system', content: GAME_SYSTEM_PROMPT },
 			{ role: 'user', content: userQuery }
-		]
+		],
+		temperature: 0.3, // Balanced creativity for engaging statements while maintaining accuracy
+		max_tokens: 3000, // Adequate length for detailed explanations
+		web_search_options: {
+			search_context_size: 'medium' // Medium for comprehensive fact-checking
+		},
+		return_images: false, // Focus on text-based verification
+		return_related_questions: false // Stay focused on the specific statement
 	};
 	console.log('[API PAYLOAD]', JSON.stringify(payload, null, 2));
 

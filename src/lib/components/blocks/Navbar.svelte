@@ -12,8 +12,6 @@
 
 	import { cubicInOut } from 'svelte/easing';
 
-	let context = $state();
-
 	// Get user from page data
 	let user = $derived(page.data.user);
 
@@ -29,6 +27,7 @@
 		{ href: '/', label: 'Home' },
 		{ href: '/app', label: 'Verify Myths' },
 		{ href: '/game', label: 'Game' },
+		{ href: '/game/tracks', label: 'Tracks' },
 		{ href: '/community', label: 'Community' },
 		{ href: '/about', label: 'About' }
 	];
@@ -36,18 +35,15 @@
 	// Combine base links with auth links
 	let navLinks = $derived([...baseNavLinks, ...authLinks]);
 
-	let isMenuOpen: boolean = $state(false);
 	let currentPath = $derived(page.url.pathname);
 
 	// Get first letter of username for avatar
 	let userInitial = $derived(user?.username ? user.username[0].toUpperCase() : '');
 
-	function toggleMenu() {
-		isMenuOpen = !isMenuOpen;
-	}
+	let isOpen = $state(false);
 
 	beforeNavigate(() => {
-		isMenuOpen = false;
+		isOpen = false;
 	});
 
 	function isActive(path: string) {
@@ -72,7 +68,7 @@
 
 		<!-- Desktop navigation -->
 		<div class="hidden md:flex md:items-center md:gap-6">
-			{#each navLinks as link}
+			{#each baseNavLinks as link}
 				<a
 					href={link.href}
 					class={`text-sm font-medium transition-colors hover:text-primary ${isActive(link.href) ? 'text-primary' : 'text-muted-foreground'}`}
@@ -103,97 +99,68 @@
 						<DropdownMenu.Item onclick={() => goto('/signout')}>Sign out</DropdownMenu.Item>
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
+			{:else}
+				<a
+					href="/signin"
+					class={`text-sm font-medium transition-colors hover:text-primary ${isActive('/signin') ? 'text-primary' : 'text-muted-foreground'}`}
+				>
+					Sign In
+				</a>
 			{/if}
 		</div>
 
 		<!-- Mobile menu button -->
-		<!-- <Button
+		<Button
 			variant="ghost"
 			size="icon"
 			class="border border-green-400 text-green-400 hover:text-primary-foreground md:hidden"
-			onclick={toggleMenu}
+			onclick={() => (isOpen = true)}
 			aria-label="Toggle menu"
 		>
-			{#if isMenuOpen}
+			{#if isOpen}
 				<X class="h-5 w-5" />
 			{:else}
 				<Menu class="h-5 w-5" />
 			{/if}
-		</Button> -->
-		<Drawer.Root>
-			<Drawer.Trigger
-				class={buttonVariants({ variant: 'outline', size: 'icon' }) +
-					'border border-green-400 px-3 py-4 text-green-400 hover:text-primary-foreground md:hidden'}
-				><Menu class="h-5 w-5" /></Drawer.Trigger
-			>
-			<Drawer.Content class="w-full">
-				<div class="mx-auto w-full">
-					<Drawer.Header>
-						<Drawer.Title>Move Goal</Drawer.Title>
-						<Drawer.Description>Set your daily activity goal.</Drawer.Description>
-					</Drawer.Header>
-					<div class="flex flex-col space-y-3 border-t border-primary/20 bg-background/95">
-						{#each navLinks as link}
-							<a
-								href={link.href}
-								class={`rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10 hover:text-primary ${isActive(link.href) ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
-							>
-								{link.label}
-							</a>
-						{/each}
-
-						{#if user}
-							<div class="flex items-center gap-2 rounded-md px-3 py-2">
-								<Avatar.Root class="h-6 w-6">
-									<Avatar.Fallback class="bg-primary text-xs text-primary-foreground">
-										{userInitial}
-									</Avatar.Fallback>
-								</Avatar.Root>
-								<span class="text-sm font-medium">{user.username}</span>
-							</div>
-							<a
-								href="/signout"
-								class="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
-							>
-								Sign out
-							</a>
-						{/if}
-					</div>
-				</div>
-			</Drawer.Content>
-		</Drawer.Root>
+		</Button>
 	</div>
 
 	<!-- Mobile navigation menu -->
-	{#if isMenuOpen}
-		<div class="md:hidden">
-			<div class="flex flex-col space-y-3 border-t border-primary/20 bg-background/95 px-4 py-4">
-				{#each navLinks as link}
-					<a
-						href={link.href}
-						class={`rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10 hover:text-primary ${isActive(link.href) ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
-					>
-						{link.label}
-					</a>
-				{/each}
+	<Drawer.Root bind:open={isOpen}>
+		<Drawer.Content class="min-h-[80vh] w-full">
+			<div class="mx-auto w-full">
+				<Drawer.Header>
+					<Drawer.Title>Menu</Drawer.Title>
+					<Drawer.Description>Navigate through Myth Buster</Drawer.Description>
+				</Drawer.Header>
+				<div class="flex flex-col space-y-3 border-t border-primary/20 bg-background/95">
+					{#each navLinks as link}
+						<a
+							href={link.href}
+							class={`rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10 hover:text-primary ${isActive(link.href) ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
+						>
+							{link.label}
+						</a>
+					{/each}
 
-				{#if user}
-					<div class="flex items-center gap-2 rounded-md px-3 py-2">
-						<Avatar.Root class="h-6 w-6">
-							<Avatar.Fallback class="bg-primary text-xs text-primary-foreground">
-								{userInitial}
-							</Avatar.Fallback>
-						</Avatar.Root>
-						<span class="text-sm font-medium">{user.username}</span>
-					</div>
-					<a
-						href="/signout"
-						class="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
-					>
-						Sign out
-					</a>
-				{/if}
+					{#if user}
+						<div class="flex items-center gap-2 rounded-md px-3 py-2">
+							<Avatar.Root class="h-6 w-6">
+								<Avatar.Fallback class="bg-primary text-xs text-primary-foreground">
+									{userInitial}
+								</Avatar.Fallback>
+							</Avatar.Root>
+							<span class="text-sm font-medium">{user.username}</span>
+						</div>
+						<a
+							href="/signout"
+							class="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+						>
+							Sign out
+						</a>
+					{/if}
+				</div>
 			</div>
-		</div>
-	{/if}
+		</Drawer.Content>
+	</Drawer.Root>
 </nav>

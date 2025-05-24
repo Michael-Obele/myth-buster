@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import { Search, Lightbulb, Microscope, Loader2 } from 'lucide-svelte';
+	import { Search, Lightbulb, Microscope, Loader2, ChevronDown } from 'lucide-svelte';
 	import type { LensResult, SynthesisResult } from '$lib/types';
 	import * as Card from '$lib/components/ui/card';
+	import * as Accordion from '$lib/components/ui/accordion';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
@@ -228,36 +229,47 @@
 					>Review and analyze the initial sources provided for the myth.</Card.Description
 				>
 			</Card.Header>
-			<Card.Content>
-				<ul class="space-y-3">
-					{#each initialCitations as citation}
-						<li class="flex items-center justify-between rounded-md border p-3">
-							<a
-								href={citation.url}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="flex-grow truncate text-primary hover:underline"
-								title={citation.title}
-							>
-								{citation.title}
-							</a>
-							<Button
-								variant="secondary"
-								size="sm"
-								class="ml-2 h-auto shrink-0 px-2 py-1 text-xs"
-								onclick={() =>
-									openSourceAnalysisFunction({
-										url: citation.url,
-										name: citation.title,
-										mythContext: mythStatement || ''
-									})}
-							>
-								<Search class="mr-1 h-3 w-3" />
-								Analyze
-							</Button>
-						</li>
-					{/each}
-				</ul>
+			<Card.Content class="p-0">
+				<Accordion.Root type="single" class="w-full">
+					<Accordion.Item value="initial-citations" class="border-b-0">
+						<Accordion.Trigger
+							class="flex w-full items-center justify-between px-6 py-4 text-base font-medium hover:bg-muted/50 [&[data-state=open]>svg]:rotate-180"
+						>
+							<span>View Initial Citations ({initialCitations.length})</span>
+						</Accordion.Trigger>
+						<Accordion.Content class="px-6 pb-4 pt-0">
+							<ul class="space-y-3">
+								{#each initialCitations as citation}
+									<li class="flex items-center justify-between rounded-md border p-3">
+										<a
+											href={citation.url}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="flex-grow truncate text-primary hover:underline"
+											title={citation.title}
+										>
+											{citation.title}
+										</a>
+										<Button
+											variant="outline"
+											size="sm"
+											class="ml-2 h-auto shrink-0 px-2 py-1 text-xs"
+											onclick={() =>
+												openSourceAnalysisFunction({
+													url: citation.url,
+													name: citation.title,
+													mythContext: mythStatement || ''
+												})}
+										>
+											<Search class="mr-1 h-3 w-3" />
+											Analyze
+										</Button>
+									</li>
+								{/each}
+							</ul>
+						</Accordion.Content>
+					</Accordion.Item>
+				</Accordion.Root>
 			</Card.Content>
 		</Card.Root>
 	{/if}

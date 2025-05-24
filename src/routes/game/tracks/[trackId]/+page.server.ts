@@ -21,33 +21,44 @@ const TRACK_MYTH_GENERATION_SYSTEM_PROMPT_TEMPLATE = (
 	trackDifficulty: string,
 	currentMythNumber: number,
 	totalMyths: number
-) => `You are an AI generating a specific myth for a learning track in a myth-busting game.
-The track is titled: "${trackTitle}"
-Category: "${trackCategory}"
-Difficulty: "${trackDifficulty}"
-You are generating myth number ${currentMythNumber} of ${totalMyths}.
+) => `You are an AI that generates engaging and verifiable myths for a specific learning track in a myth-busting game, using evidence-based research and authoritative sources.
 
-Your goal is to create a myth that is engaging, verifiable, and **not easily predictable**.
+Track Context:
+- Title: "${trackTitle}"
+- Category: "${trackCategory}"
+- Difficulty: "${trackDifficulty}"
+- Current Myth Number: ${currentMythNumber} of ${totalMyths}
+
+Your goal is to create a myth that is engaging, verifiable, **not easily predictable**, and deeply rooted in factual evidence.
 
 Key requirements for this specific myth (myth ${currentMythNumber} of ${totalMyths}):
-1.  **Distinctiveness:** The statement MUST be unique within this track. Avoid rephrasing previous concepts. If the category is 'History', steer clear of very common or repeatedly debunked historical "facts" (e.g., Vikings having horned helmets, Marie Antoinette saying "Let them eat cake"). Instead, find more specific, lesser-known historical details that can be presented as a true/false statement.
-2.  **Unpredictability & Engagement:**
-    *   Aim for statements that might surprise the user or challenge common assumptions.
-    *   Consider framing some statements around obscure details, unexpected consequences, or subtle misunderstandings within the track's theme.
-    *   Vary the style of the myth: some can be direct assertions, others might mimic common sayings or beliefs, and some could be slightly tricky (but not ambiguous or reliant on wordplay).
-3.  **Verifiability:** Provide a single statement that is definitively true or false.
-4.  **Clarity & Conciseness:** The statement itself should be clear and to the point.
-5.  **Contextual Relevance:** The myth must fit the theme, category, and difficulty of the track.
-6.  **Explanation Quality:** The explanation should clearly state why a false statement is false (and what the truth is, with nuance if needed) or why a true statement is true. Correct common misconceptions if applicable to the track's theme.
-7.  **Citations:** Provide 1-3 reliable citations from reputable sources, ideally supporting the specific context of the track and the explanation.
+1.  **Distinctiveness & Unpredictability:**
+    *   The statement MUST be unique and not a rephrasing of common knowledge or clichés for this topic.
+    *   Aim for statements that challenge common assumptions, reveal surprising truths, or highlight nuanced details within the track's theme.
+    *   For "hard" difficulty, delve into more specialized or counter-intuitive aspects.
+    *   Vary statement style: direct assertions, challenging common beliefs, highlighting obscure facts, or presenting surprising consequences. Avoid ambiguity or reliance on wordplay.
+2.  **Verifiability & Evidence-Based:**
+    *   The statement must be definitively true or false based on current, credible evidence.
+    *   Conduct thorough research to ensure accuracy.
+3.  **Clarity & Conciseness:** The myth statement itself must be clear, specific, and to the point.
+4.  **Contextual Relevance:** The myth must align perfectly with the track's title, category, and difficulty level.
+5.  **Explanation Quality:**
+    *   Provide a comprehensive, evidence-based explanation.
+    *   If false, clearly debunk the myth, state the correct facts, and explain common reasons for the misconception.
+    *   If true, explain why it's true, perhaps contrasting with related falsehoods.
+    *   Cite specific evidence, data, or studies within the explanation.
+6.  **Authoritative Citations:**
+    *   Provide 1-3 reliable, authoritative citations (e.g., peer-reviewed journals, official reports from reputable organizations, academic books).
+    *   Include specific titles and publication years if available.
+    *   Ensure URLs link directly to the source or an abstract. Avoid general news articles or blogs unless they are reporting directly on primary research.
 
 Return your response as a JSON object with the following structure:
 {
-  "statement": "The generated statement...",
-  "isTrue": boolean,
-  "explanation": "A concise explanation...",
+  "statement": "A clear, specific, and engaging statement that is definitively true or false.",
+  "isTrue": boolean, // true if the statement is factually true, false otherwise
+  "explanation": "A detailed, evidence-based explanation of why the statement is true or false, correcting any misconceptions.",
   "citations": [
-    { "title": "Source Title 1", "url": "URL to Source 1" }
+    { "title": "Specific source title with publication year (if available)", "url": "Direct URL to the authoritative source" }
   ]
 }
 
@@ -87,7 +98,10 @@ function getCachedTrackMyth(key: string): GameStatement | null {
 function cacheTrackMyth(key: string, response: GameStatement): void {
 	if (building) return;
 	// Temporarily disable cache for debugging
-	console.log(`[CACHE DISABLED] cacheTrackMyth called for key: ${key}, not caching. Data:`, response);
+	console.log(
+		`[CACHE DISABLED] cacheTrackMyth called for key: ${key}, not caching. Data:`,
+		response
+	);
 	return;
 	// const now = Date.now();
 	// trackMythCache.set(key, {
@@ -154,7 +168,14 @@ export const actions: Actions = {
 		const mythIndexStr = formData.get('mythIndex')?.toString();
 		let mythIndex = mythIndexStr ? parseInt(mythIndexStr, 10) : 0;
 
-		console.log('[ACTION generateMyth] Parsed Details:', { trackId, trackTitle, trackCategory, trackDifficulty, totalMythsInTrackStr, mythIndex });
+		console.log('[ACTION generateMyth] Parsed Details:', {
+			trackId,
+			trackTitle,
+			trackCategory,
+			trackDifficulty,
+			totalMythsInTrackStr,
+			mythIndex
+		});
 
 		if (!trackTitle || !trackCategory || !trackDifficulty || !totalMythsInTrackStr) {
 			console.error('[ACTION generateMyth] Error: Missing required track details.');
@@ -170,7 +191,10 @@ export const actions: Actions = {
 		}
 		const totalMythsInTrack = parseInt(totalMythsInTrackStr, 10);
 		if (isNaN(totalMythsInTrack) || totalMythsInTrack <= 0) {
-			console.error('[ACTION generateMyth] Error: Invalid totalMythsInTrack value:', totalMythsInTrackStr);
+			console.error(
+				'[ACTION generateMyth] Error: Invalid totalMythsInTrack value:',
+				totalMythsInTrackStr
+			);
 			return fail(400, {
 				error: 'Invalid totalMythsInTrack.',
 				action: 'generateMyth',
@@ -189,7 +213,9 @@ export const actions: Actions = {
 
 			if (!gameStatement) {
 				fromCache = false;
-				console.log(`[ACTION generateMyth] Myth for index ${mythIndex} (key: ${cacheKey}) not found in cache or cache disabled. Fetching from API.`);
+				console.log(
+					`[ACTION generateMyth] Myth for index ${mythIndex} (key: ${cacheKey}) not found in cache or cache disabled. Fetching from API.`
+				);
 				try {
 					const systemPromptContent = TRACK_MYTH_GENERATION_SYSTEM_PROMPT_TEMPLATE(
 						trackTitle,
@@ -212,11 +238,21 @@ export const actions: Actions = {
 							{ role: 'system', content: systemPromptContent },
 							{
 								role: 'user',
-								content: `Generate myth number ${mythIndex + 1} for the track "${trackTitle}".`
+								content: `Generate myth number ${mythIndex + 1} for the track "${trackTitle}". Focus on creating a statement that is not obvious and requires some thought or specific knowledge related to the track's theme, difficulty, and category.`
 							}
-						]
+						],
+						temperature: 0.35, // Slightly higher for more creative/less obvious myths
+						max_tokens: 3500, // Ensure enough space for detailed explanation and citations
+						web_search_options: {
+							search_context_size: 'medium' // Essential for finding accurate, specific information
+						},
+						return_images: false,
+						return_related_questions: false
 					};
-					console.log('[ACTION generateMyth] API Request Payload:', JSON.stringify(payload, null, 2));
+					console.log(
+						'[ACTION generateMyth] API Request Payload:',
+						JSON.stringify(payload, null, 2)
+					);
 
 					const resp = await fetch(PERPLEXITY_API_URL, {
 						method: 'POST',
@@ -226,7 +262,10 @@ export const actions: Actions = {
 
 					if (!resp.ok) {
 						const errorText = await resp.text();
-						console.error(`[ACTION generateMyth] API request failed with status ${resp.status}:`, errorText);
+						console.error(
+							`[ACTION generateMyth] API request failed with status ${resp.status}:`,
+							errorText
+						);
 						throw new Error(`Track Myth API request failed status ${resp.status}: ${errorText}`);
 					}
 					const answer = await resp.json();
@@ -234,14 +273,19 @@ export const actions: Actions = {
 
 					const content = answer.choices?.[0]?.message?.content;
 					if (!content) {
-						console.error('[ACTION generateMyth] Invalid API response: No content found in choices.');
+						console.error(
+							'[ACTION generateMyth] Invalid API response: No content found in choices.'
+						);
 						throw new Error('Invalid Track Myth API response: No content.');
 					}
 					console.log('[ACTION generateMyth] API Response Content:', content);
 
 					const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
 					if (!jsonMatch || !jsonMatch[1]) {
-						console.error('[ACTION generateMyth] Invalid API response: JSON block not found. Content:', content);
+						console.error(
+							'[ACTION generateMyth] Invalid API response: JSON block not found. Content:',
+							content
+						);
 						throw new Error('Invalid Track Myth API response: JSON block not found.');
 					}
 					console.log('[ACTION generateMyth] Extracted JSON string from API:', jsonMatch[1]);
@@ -254,7 +298,10 @@ export const actions: Actions = {
 						typeof gameStatement.explanation !== 'string' ||
 						!Array.isArray(gameStatement.citations)
 					) {
-						console.error('[ACTION generateMyth] API Response JSON validation failed. Parsed content:', gameStatement);
+						console.error(
+							'[ACTION generateMyth] API Response JSON validation failed. Parsed content:',
+							gameStatement
+						);
 						throw new Error('Parsed JSON for track myth does not match GameStatement structure.');
 					}
 
@@ -262,7 +309,11 @@ export const actions: Actions = {
 						cacheTrackMyth(cacheKey, gameStatement); // Will log that it's disabled
 					}
 				} catch (error: any) {
-					console.error('[ACTION generateMyth] Catch Block - API or Parsing Error:', error.message, error.stack);
+					console.error(
+						'[ACTION generateMyth] Catch Block - API or Parsing Error:',
+						error.message,
+						error.stack
+					);
 					return fail(500, {
 						error: 'Failed to generate myth for track. ' + (error.message || 'Unknown API error'),
 						action: 'generateMyth',
@@ -294,7 +345,10 @@ export const actions: Actions = {
 					totalMythsInTrack
 				});
 			}
-			console.log(`[ACTION generateMyth] Successfully generated/retrieved myth (fromCache: ${fromCache}):`, gameStatement);
+			console.log(
+				`[ACTION generateMyth] Successfully generated/retrieved myth (fromCache: ${fromCache}):`,
+				gameStatement
+			);
 
 			const resultData = {
 				success: true,
@@ -311,7 +365,9 @@ export const actions: Actions = {
 			return resultData;
 		} else {
 			// Track completed or invalid index
-			console.warn(`[ACTION generateMyth] Myth index ${mythIndex} is out of bounds or track completed.`);
+			console.warn(
+				`[ACTION generateMyth] Myth index ${mythIndex} is out of bounds or track completed.`
+			);
 			return fail(400, {
 				error: `Myth index ${mythIndex} is out of bounds. Track completed.`,
 				action: 'generateMyth',
@@ -348,15 +404,30 @@ export const actions: Actions = {
 			try {
 				citations = JSON.parse(citationsString);
 				if (!Array.isArray(citations)) {
-					console.warn('[ACTION checkAnswer] Parsed citations is not an array, defaulting to empty. String was:', citationsString);
+					console.warn(
+						'[ACTION checkAnswer] Parsed citations is not an array, defaulting to empty. String was:',
+						citationsString
+					);
 					citations = [];
 				}
 			} catch (e: any) {
-				console.error('[ACTION checkAnswer] Failed to parse citations JSON:', e.message, '. String was:', citationsString);
+				console.error(
+					'[ACTION checkAnswer] Failed to parse citations JSON:',
+					e.message,
+					'. String was:',
+					citationsString
+				);
 				citations = [];
 			}
 		}
-		console.log('[ACTION checkAnswer] Parsed answer details:', { userAnswer, isTrue, confidence, statement, explanation, citationsCount: citations.length });
+		console.log('[ACTION checkAnswer] Parsed answer details:', {
+			userAnswer,
+			isTrue,
+			confidence,
+			statement,
+			explanation,
+			citationsCount: citations.length
+		});
 
 		if (statement === '' || isTrueFromForm === null || isTrueFromForm === undefined) {
 			console.error('[ACTION checkAnswer] Error: Missing statement data for answer check.');
@@ -372,7 +443,9 @@ export const actions: Actions = {
 		if (isCorrect) {
 			points = Math.round(confidence); // Simple point logic
 		}
-		console.log(`[ACTION checkAnswer] User answer is ${isCorrect ? 'correct' : 'incorrect'}. Points: ${points}`);
+		console.log(
+			`[ACTION checkAnswer] User answer is ${isCorrect ? 'correct' : 'incorrect'}. Points: ${points}`
+		);
 
 		const resultData = {
 			success: true,

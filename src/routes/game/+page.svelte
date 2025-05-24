@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import type { SubmitFunction } from '@sveltejs/kit';
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Slider } from '$lib/components/ui/slider';
@@ -33,6 +34,10 @@
 	import { toast } from 'svelte-sonner';
 	import GameAbout from '$lib/game/GameAbout.svelte';
 	import * as GameDialog from '$lib/components/ui/dialog/index.js';
+	import StreakMessage from '$lib/game/StreakMessage.svelte';
+	import HighScoreMessage from '$lib/game/HighScoreMessage.svelte';
+	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
+	const flame = '/lottie/flame.json';
 
 	// Get props from page data
 	let { form: formProp }: { data: PageData; form: GameActionData } = $props();
@@ -88,16 +93,10 @@
 		console.log('Streak updated:', newStreak);
 
 		// Show streak notification for streaks of 3 or more
-		if (newStreak >= 3) {
-			let message = 'Keep it up! 🔥';
-			if (newStreak >= 10) {
-				message = 'Amazing streak! 🔥🔥🔥';
-			} else if (newStreak >= 5) {
-				message = 'Great streak! 🔥🔥';
-			}
-
-			toast.success(message, {
-				duration: 3000
+		if (newStreak >= 1) {
+			toast.success(StreakMessage, {
+				componentProps: { streak: newStreak },
+				duration: 3500
 			});
 		}
 	}
@@ -156,8 +155,9 @@
 			highScore = newScore;
 			highScoreState.current = newScore;
 			if (newScore > 0) {
-				toast.success('🎉 New High Score! 🎉', {
-					duration: 3000
+				toast.success(HighScoreMessage, {
+					componentProps: { highScore: newScore },
+					duration: 3500
 				});
 				console.log('New high score achieved:', newScore);
 			}
@@ -169,7 +169,7 @@
 	// Helper function to process form results directly
 	function processFormResult(formResult: GameActionData) {
 		if (!formResult) return;
-		console.log('Processing form result (Random Game):', formResult);
+		// console.log('Processing form result (Random Game):', formResult);
 
 		if (isGenerateResult(formResult)) {
 			if (!formResult.success && formResult.error) {
@@ -245,15 +245,174 @@
 	}
 
 	function getStreakColor(streak: number): string {
-		if (streak >= 10) return 'text-amber-500';
-		if (streak >= 5) return 'text-orange-500';
-		if (streak >= 1) return 'text-yellow-500';
-		return '';
+		if (streak >= 10) return 'primary:#f59e0b,secondary:#f59e0b'; // amber-500
+		if (streak >= 5) return 'primary:#f97316,secondary:#f97316'; // orange-500
+		if (streak >= 1) return 'primary:#eab308,secondary:#eab308'; // yellow-500
+		return 'primary:#10B981,secondary:#10b981'; // Default color
 	}
 
-	let generateForm: HTMLFormElement; // Still used for bind:this
-
 	// onMount is no longer needed here for track loading
+
+	// --- Form Submit Handlers ---
+	const handleGenerateSubmit: SubmitFunction = () => {
+		isGenerating = true;
+		return async ({ result, update }) => {
+			isGenerating = false;
+			if (
+				result.type === 'success' &&
+				result.data &&
+				typeof result.data === 'object' &&
+				'action' in result.data &&
+				(result.data as any).action === 'generate'
+			) {
+				form = result.data as unknown as GenerateActionResult;
+			} else if (result.type === 'error') {
+				const errorMessage = result.error.message || 'Failed to generate statement.';
+				// toast.error(errorMessage); // Toast will be handled by processFormResult
+				form = {
+					success: false,
+					error: errorMessage,
+					action: 'generate',
+					statement: '',
+					isTrue: false,
+					explanation: '',
+					citations: []
+				} as GenerateActionResult;
+			} else if (
+				result.type === 'failure' &&
+				result.data &&
+				typeof result.data === 'object' &&
+				'action' in result.data &&
+				(result.data as any).action === 'generate'
+			) {
+				form = result.data as unknown as GenerateActionResult; // Server fail for generate provides this structure
+			} else if (result.type === 'failure' && result.data && typeof result.data === 'object') {
+				const errorMessage =
+					(result.data as { error?: string }).error ||
+					'Failed to generate statement due to server error.';
+				form = {
+					success: false,
+					error: errorMessage,
+					action: 'generate',
+					statement: '',
+					isTrue: false,
+					explanation: '',
+					citations: []
+				} as GenerateActionResult;
+			} else if (result.type === 'failure') {
+				// General failure with no specific data
+				form = {
+					success: false,
+					error: 'Unexpected server error',
+					action: 'generate',
+					statement: '',
+					isTrue: false,
+					explanation: '',
+					citations: []
+				} as GenerateActionResult;
+			}
+
+			if (form) {
+				// Process the form state, whether success or error
+				processFormResult(form);
+			}
+			await update({ reset: false });
+		};
+	};
+
+	const handleAnswerSubmit: SubmitFunction = () => {
+		// formEl parameter removed as it was unused
+		isAnswering = true;
+
+		return async ({ result, update }) => {
+			isAnswering = false;
+			currentAnswer = null;
+
+			if (
+				result.type === 'success' &&
+				result.data &&
+				typeof result.data === 'object' &&
+				'action' in result.data &&
+				(result.data as any).action === 'checkAnswer'
+			) {
+				form = result.data as unknown as CheckAnswerActionResult;
+			} else if (result.type === 'error') {
+				const errorMessage = result.error.message || 'Failed to check answer.';
+				form = {
+					success: false,
+					error: errorMessage,
+					action: 'checkAnswer',
+					statement: '',
+					isTrue: false,
+					explanation: '',
+					citations: [],
+					result: 'incorrect',
+					points: 0,
+					userAnswer: false
+				} as CheckAnswerActionResult;
+			} else if (
+				result.type === 'failure' &&
+				result.data &&
+				typeof result.data === 'object' &&
+				'action' in result.data &&
+				(result.data as any).action === 'checkAnswer'
+			) {
+				// Server fail for checkAnswer is minimal, so reconstruct a full error object for client side
+				const serverError =
+					(result.data as { error?: string }).error ||
+					'Failed to process answer due to a server issue.';
+				form = {
+					success: false,
+					error: serverError,
+					action: 'checkAnswer',
+					statement: '',
+					isTrue: false,
+					explanation: '',
+					citations: [],
+					result: 'incorrect',
+					points: 0,
+					userAnswer: false
+				} as CheckAnswerActionResult;
+			} else if (result.type === 'failure' && result.data && typeof result.data === 'object') {
+				// Failure data without 'action', assume context from current form action
+				const errorMessage =
+					(result.data as { error?: string }).error ||
+					'Failed to check answer due to server error.';
+				form = {
+					success: false,
+					error: errorMessage,
+					action: 'checkAnswer',
+					statement: '',
+					isTrue: false,
+					explanation: '',
+					citations: [],
+					result: 'incorrect',
+					points: 0,
+					userAnswer: false
+				} as CheckAnswerActionResult;
+			} else if (result.type === 'failure') {
+				// General failure with no specific data
+				form = {
+					success: false,
+					error: 'Unexpected server error while checking answer.',
+					action: 'checkAnswer',
+					statement: '',
+					isTrue: false,
+					explanation: '',
+					citations: [],
+					result: 'incorrect',
+					points: 0,
+					userAnswer: false
+				} as CheckAnswerActionResult;
+			}
+
+			if (form) {
+				// Process the form state, whether success or error
+				processFormResult(form);
+			}
+			await update({ reset: false });
+		};
+	};
 </script>
 
 <!-- Svelte Confetti effect for correct answers -->
@@ -343,80 +502,7 @@
 
 			<!-- === State 1: Generate a new statement (or show Next button after result) === -->
 			{#if !hasStatement || hasResult}
-				<form
-					method="POST"
-					action="?/generate"
-					bind:this={generateForm}
-					use:enhance={() => {
-						isGenerating = true;
-						return async ({ result, update }) => {
-							isGenerating = false;
-							if (
-								result.type === 'success' &&
-								result.data &&
-								typeof result.data === 'object' &&
-								'action' in result.data &&
-								(result.data as any).action === 'generate'
-							) {
-								form = result.data as unknown as GenerateActionResult;
-							} else if (result.type === 'error') {
-								const errorMessage = result.error.message || 'Failed to generate statement.';
-								// toast.error(errorMessage); // Toast will be handled by processFormResult
-								form = {
-									success: false,
-									error: errorMessage,
-									action: 'generate',
-									statement: '',
-									isTrue: false,
-									explanation: '',
-									citations: []
-								} as GenerateActionResult;
-							} else if (
-								result.type === 'failure' &&
-								result.data &&
-								typeof result.data === 'object' &&
-								'action' in result.data &&
-								(result.data as any).action === 'generate'
-							) {
-								form = result.data as unknown as GenerateActionResult; // Server fail for generate provides this structure
-							} else if (
-								result.type === 'failure' &&
-								result.data &&
-								typeof result.data === 'object'
-							) {
-								const errorMessage =
-									(result.data as { error?: string }).error ||
-									'Failed to generate statement due to server error.';
-								form = {
-									success: false,
-									error: errorMessage,
-									action: 'generate',
-									statement: '',
-									isTrue: false,
-									explanation: '',
-									citations: []
-								} as GenerateActionResult;
-							} else if (result.type === 'failure') {
-								// General failure with no specific data
-								form = {
-									success: false,
-									error: 'Unexpected server error',
-									action: 'generate',
-									statement: '',
-									isTrue: false,
-									explanation: '',
-									citations: []
-								} as GenerateActionResult;
-							}
-
-							if (form) {
-								// Process the form state, whether success or error
-								processFormResult(form);
-							}
-							await update({ reset: false });
-						};
-					}}
-				>
+				<form method="POST" action="?/generate" use:enhance={handleGenerateSubmit}>
 					<div class="space-y-4">
 						<!-- Hidden inputs for difficulty, category -->
 						<input type="hidden" name="difficulty" value={selectedDifficulty} />
@@ -509,7 +595,9 @@
 																tempDifficulty = difficulty.value;
 															}}
 															size="sm"
-															class="bg-background"
+															class={tempDifficulty === difficulty.value
+																? 'bg-green-300 text-black'
+																: '' + 'bg-background '}
 														>
 															{difficulty.label}
 														</Button>
@@ -528,7 +616,9 @@
 																tempCategory = category.value;
 															}}
 															size="sm"
-															class="bg-background"
+															class={tempCategory === category.value
+																? 'bg-green-300 text-black'
+																: '' + 'bg-background '}
 														>
 															{category.label}
 														</Button>
@@ -569,107 +659,7 @@
 					<div class="mb-6 rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
 						<h2 class="text-center text-xl font-semibold text-primary">"{form.statement}"</h2>
 					</div>
-					<form
-						method="POST"
-						action="?/checkAnswer"
-						use:enhance={() => {
-							// formEl parameter removed as it was unused
-							isAnswering = true;
-
-							return async ({ result, update }) => {
-								isAnswering = false;
-								currentAnswer = null;
-
-								if (
-									result.type === 'success' &&
-									result.data &&
-									typeof result.data === 'object' &&
-									'action' in result.data &&
-									(result.data as any).action === 'checkAnswer'
-								) {
-									form = result.data as unknown as CheckAnswerActionResult;
-								} else if (result.type === 'error') {
-									const errorMessage = result.error.message || 'Failed to check answer.';
-									form = {
-										success: false,
-										error: errorMessage,
-										action: 'checkAnswer',
-										statement: '',
-										isTrue: false,
-										explanation: '',
-										citations: [],
-										result: 'incorrect',
-										points: 0,
-										userAnswer: false
-									} as CheckAnswerActionResult;
-								} else if (
-									result.type === 'failure' &&
-									result.data &&
-									typeof result.data === 'object' &&
-									'action' in result.data &&
-									(result.data as any).action === 'checkAnswer'
-								) {
-									// Server fail for checkAnswer is minimal, so reconstruct a full error object for client side
-									const serverError =
-										(result.data as { error?: string }).error ||
-										'Failed to process answer due to a server issue.';
-									form = {
-										success: false,
-										error: serverError,
-										action: 'checkAnswer',
-										statement: '',
-										isTrue: false,
-										explanation: '',
-										citations: [],
-										result: 'incorrect',
-										points: 0,
-										userAnswer: false
-									} as CheckAnswerActionResult;
-								} else if (
-									result.type === 'failure' &&
-									result.data &&
-									typeof result.data === 'object'
-								) {
-									// Failure data without 'action', assume context from current form action
-									const errorMessage =
-										(result.data as { error?: string }).error ||
-										'Failed to check answer due to server error.';
-									form = {
-										success: false,
-										error: errorMessage,
-										action: 'checkAnswer',
-										statement: '',
-										isTrue: false,
-										explanation: '',
-										citations: [],
-										result: 'incorrect',
-										points: 0,
-										userAnswer: false
-									} as CheckAnswerActionResult;
-								} else if (result.type === 'failure') {
-									// General failure with no specific data
-									form = {
-										success: false,
-										error: 'Unexpected server error while checking answer.',
-										action: 'checkAnswer',
-										statement: '',
-										isTrue: false,
-										explanation: '',
-										citations: [],
-										result: 'incorrect',
-										points: 0,
-										userAnswer: false
-									} as CheckAnswerActionResult;
-								}
-
-								if (form) {
-									// Process the form state, whether success or error
-									processFormResult(form);
-								}
-								await update({ reset: false });
-							};
-						}}
-					>
+					<form method="POST" action="?/checkAnswer" use:enhance={handleAnswerSubmit}>
 						<input
 							type="hidden"
 							name="statement"
@@ -806,19 +796,16 @@
 							</p>
 						</div>
 						<p class="text-lg font-medium text-slate-100">
-							The statement "{isCheckAnswerResult(form)
-								? form.statement
-								: isGenerateResult(form)
-									? form.statement
-									: ''}" is
+							The statement "{(form as CheckAnswerActionResult).statement ||
+								(form as GenerateActionResult).statement ||
+								''}" is
 							<span
-								class={(isCheckAnswerResult(form) && form.isTrue) ||
-								(isGenerateResult(form) && form.isTrue)
+								class={(form as CheckAnswerActionResult).isTrue ||
+								(form as GenerateActionResult).isTrue
 									? 'font-bold text-emerald-400'
 									: 'font-bold text-red-400'}
 							>
-								{(isCheckAnswerResult(form) && form.isTrue) ||
-								(isGenerateResult(form) && form.isTrue)
+								{(form as CheckAnswerActionResult).isTrue || (form as GenerateActionResult).isTrue
 									? 'TRUE'
 									: 'FALSE'}
 							</span>
@@ -829,9 +816,9 @@
 						<h3 class="mb-2 text-base font-semibold text-slate-200">Explanation:</h3>
 						<p class="text-slate-300">
 							{isCheckAnswerResult(form)
-								? form.explanation
+								? (form as CheckAnswerActionResult).explanation
 								: isGenerateResult(form)
-									? form.explanation
+									? (form as GenerateActionResult).explanation
 									: ''}
 						</p>
 					</div>
@@ -871,7 +858,7 @@
 				{#if streak > 0}
 					<span class="flex">
 						{#each Array(getStreakCount(streak))}
-							<Flame class="h-5 w-5 {getStreakColor(streak)}" />
+							<LordIcon src={flame} colors={getStreakColor(streak)} class={`size-6`} />
 						{/each}
 					</span>
 				{/if}

@@ -51,6 +51,7 @@ export type LensResult = {
  * Type definition for source analysis results.
  */
 export type SourceAnalysisResult = {
+	success?: boolean;
 	loading?: boolean;
 	error?: string;
 	result?: {
@@ -66,6 +67,7 @@ export type SourceAnalysisResult = {
  * Type definition for synthesis results.
  */
 export type SynthesisResult = {
+	success?: boolean;
 	loading?: boolean;
 	error?: string;
 	overallInsight?: string;

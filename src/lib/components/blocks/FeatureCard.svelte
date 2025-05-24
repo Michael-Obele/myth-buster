@@ -129,7 +129,7 @@
 					</div>
 				</div>
 
-				<div class="h-[350px] min-h-[200px] w-auto {ltr && 'lg:order-1'}">
+				<div class="mx-auto h-[350px] min-h-[200px] w-auto {ltr && 'lg:order-1'}">
 					{#if data[currentIndex]?.image}
 						<!-- <img
 							src={data[currentIndex].image}
@@ -144,7 +144,7 @@
 								target="#hero"
 								colors="primary:#10B981,secondary:#10b981"
 								mobileLoop={false}
-								class="size-96"
+								class="mx-auto size-64 md:size-96"
 							/>
 						</div>
 					{:else if data[currentIndex]?.video}
@@ -156,18 +156,6 @@
 							loop
 							muted
 						></video>
-					{:else if data[currentIndex]?.lottie}
-						<div>
-							<LordIcon
-								src={data[currentIndex].image}
-								trigger="loop"
-								stroke="thick"
-								target="#hero"
-								colors="primary:#10B981,secondary:#10b981"
-								mobileLoop={false}
-								class="size-96"
-							/>
-						</div>
 					{:else}
 						<div
 							class="aspect-auto size-full rounded-xl border border-neutral-300/50 bg-gray-200 p-1"
@@ -178,7 +166,7 @@
 				<div
 					class="relative -mb-8 pb-0.5 [-webkit-mask-image:linear-gradient(90deg,transparent,black_20%,white_80%,transparent)] [mask-image:linear-gradient(90deg,transparent,black_20%,white_80%,transparent)] md:hidden"
 				>
-					{#each data as _, index}
+					{#each data, index}
 						<div
 							class="absolute inset-x-0 top-0 h-0.5 w-full overflow-hidden rounded-lg bg-neutral-300/50 dark:bg-neutral-300/30"
 						>
@@ -194,20 +182,20 @@
 				</div>
 				<ul
 					bind:this={carouselRef}
-					class="relative flex h-full snap-x snap-mandatory flex-nowrap overflow-x-auto [-ms-overflow-style:none] [-webkit-mask-image:linear-gradient(90deg,transparent,black_20%,white_80%,transparent)] [mask-image:linear-gradient(90deg,transparent,black_20%,white_80%,transparent)] [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden"
+					class="relative flex h-full snap-x snap-mandatory flex-nowrap overflow-x-auto px-4 pl-20 [-ms-overflow-style:none] [-webkit-mask-image:linear-gradient(90deg,transparent,black_20%,white_80%,transparent)] [mask-image:linear-gradient(90deg,transparent,black_20%,white_80%,transparent)] [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden"
 				>
 					{#each data as item, index}
 						<!-- svelte-ignore a11y_click_events_have_key_events -->
 						<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 
 						<li
-							class="card_code relative mr-2 grid h-full max-w-full shrink-0 cursor-pointer items-start justify-center pl-2 last:mr-0"
+							class="card_code relative mr-2 h-full max-w-full shrink-0 cursor-pointer items-start justify-center last:mr-0"
 							onclick={() => (currentIndex = index)}
 							style="scroll-snap-align: center;"
 						>
 							<span class="flex items-center gap-2">
 								<p>{index + 1}</p>
-								<h2 class="text-xl font-bold">{item.title}</h2>
+								<h2 class=" text-sm font-bold md:text-xl">{item.title}</h2>
 							</span>
 							<p class="mx-0 max-w-sm text-balance text-sm">{item.content}</p>
 						</li>

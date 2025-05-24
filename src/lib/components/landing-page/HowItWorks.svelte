@@ -2,7 +2,6 @@
 	import { Check, Search, FileText } from 'lucide-svelte';
 	import FeatureCard from '$lib/components/blocks/FeatureCard.svelte';
 
-	const attention = '/lottie/attention.json';
 	const cycle = '/lottie/cycle.json';
 	const press = '/lottie/press.json';
 	const privacy = '/lottie/privacy.json';
@@ -13,7 +12,6 @@
 			id: 1,
 			title: 'Enter Your Myth',
 			content: 'Type in any statement, claim, or myth you want to verify into the input field.',
-			// image: 'https://i.pinimg.com/736x/ca/aa/49/caaa49d386d84f2d037d0abcc919778f.jpg',
 			image: press,
 			icon: Search
 		},
@@ -21,7 +19,6 @@
 			id: 2,
 			title: 'AI Analysis',
 			content: 'Our AI analyzes the statement using advanced research and reliable sources.',
-			// image: 'https://i.pinimg.com/736x/a5/dc/0a/a5dc0af50d185b7f9111949b17e17e1a.jpg',
 			image: cycle,
 			icon: FileText
 		},
@@ -30,7 +27,6 @@
 			title: 'Get Results',
 			content:
 				'Receive a detailed verdict (True/False/Inconclusive) with explanations and verifiable citations.',
-			// image: 'https://i.pinimg.com/736x/b1/b9/c2/b1b9c230143fb0d8540eabe5b74adf27.jpg',
 			image: privacy,
 			icon: Check
 		}

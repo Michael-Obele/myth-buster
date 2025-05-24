@@ -13,13 +13,14 @@
 		Palette,
 		Scale,
 		ScrollText,
-		Video
+		Video,
+		type Icon as IconType
 	} from 'lucide-svelte';
-	import type { ComponentType, SvelteComponent } from 'svelte';
+	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 
 	let { data }: { data: PageData } = $props();
 
-	const iconMap: Record<string, ComponentType<SvelteComponent>> = {
+	const iconMap: Record<string, typeof IconType> = {
 		BookOpen,
 		Brain,
 		FlaskConical,
@@ -46,13 +47,21 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Learning Tracks - Myth Buster</title>
-	<meta
-		name="description"
-		content="Choose a learning track and test your knowledge on specific topics."
-	/>
-</svelte:head>
+<RouteHead
+	title="Learning Tracks - Myth Buster"
+	description="Choose a learning track and test your knowledge on specific topics."
+	keywords={["learning tracks", "quiz", "knowledge test", "myth buster", "education", "topics"]}
+	author="Myth Buster Team"
+	ogTitle="Learning Tracks - Myth Buster"
+	ogDescription="Choose a learning track and test your knowledge on specific topics."
+	ogType="website"
+	ogSiteName="Myth Buster"
+	ogLocale="en_US"
+	robots="index, follow"
+	twitterCard="summary_large_image"
+	twitterTitle="Learning Tracks - Myth Buster"
+	twitterDescription="Choose a learning track and test your knowledge on specific topics."
+/>
 
 <div class="container mx-auto min-h-screen max-w-5xl px-4 py-8 text-white">
 	<div class="mb-8 text-center">

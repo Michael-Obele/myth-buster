@@ -22,9 +22,15 @@
 		explanation: string;
 	} = $props();
 
-	// Reactive state
-	let isRevealed: boolean = $state(false);
-	let container: HTMLElement;
+	type TriggerType =
+		| 'in'
+		| 'click'
+		| 'hover'
+		| 'loop'
+		| 'loop-on-hover'
+		| 'morph'
+		| 'boomerang'
+		| 'sequence';
 
 	// Derived values for verdict styling
 	let verdictColor = $derived(() => {
@@ -52,55 +58,41 @@
 	let verdictText = $derived(() => {
 		switch (verdict) {
 			case 'true':
-				return 'True (Confirmed!)';
+				return 'Mostly True';
 			case 'false':
-				return 'False (Busted!)';
+				return 'Mostly False';
 			default:
 				return 'Inconclusive';
 		}
 	});
 
-	// Animation functions
-	onMount(() => {
-		setTimeout(() => {
-			isRevealed = true;
-			animateReveal();
-		}, 500);
+	let iconState = $state({
+		true: 'morph-up',
+		false: 'in-reveal'
 	});
 
-	function animateReveal() {
-		if (!container) return;
+	let iconTrigger: TriggerType = $state('in');
 
-		// First animate container
-		animate(container, { scale: [0.9, 1.05, 1], opacity: [0, 1] } as any, {
-			duration: 0.6,
-			ease: 'easeOut'
-		});
-
-		// Then animate children with staggered delay
-		const children = Array.from(container.children);
-		children.forEach((child, i) => {
-			const delay = 0.6 + i * 0.15;
-			animate(child, { y: [15, 0], opacity: [0, 1] } as any, { delay, duration: 0.4 });
-		});
-	}
+	onMount(() => {
+		setTimeout(() => {
+			iconState.true = 'hover-up';
+			iconState.false = 'hover-down';
+			iconTrigger = 'loop';
+		}, 1500);
+	});
 </script>
 
 <div class="space-y-4">
-	<div
-		class="rounded-lg border border-primary/20 bg-gradient-to-br {verdictGradient} p-6"
-		bind:this={container}
-		class:opacity-0={!isRevealed}
-	>
-		<div class="mb-4 flex items-center gap-3">
+	<div class="rounded-lg border border-primary/20 bg-gradient-to-br {verdictGradient} p-6">
+		<div class="mb-4 flex w-full items-center gap-3 px-14">
 			<div
-				class="flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg {verdictColor}"
+				class="mx-4 flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg {verdictColor}"
 			>
 				{#if verdict === 'true'}
 					<LordIcon
 						src={wrong}
-						state="hover-up"
-						trigger="loop"
+						state={iconState.true}
+						trigger={iconTrigger}
 						stroke="thick"
 						colors="primary:#10B981,secondary:#10b981"
 						class="size-8 shrink-0 md:block md:size-12"
@@ -109,7 +101,7 @@
 					<LordIcon
 						src={wrong}
 						trigger="loop"
-						state="in-reveal"
+						state={iconState.false}
 						stroke="thick"
 						target="#hero"
 						colors="primary:#10B981,secondary:#10b981"
@@ -131,11 +123,12 @@
 			</h2>
 		</div>
 
-		<div class="mt-4 flex flex-wrap items-center justify-between gap-2">
+		<!-- Removed for now -->
+		<!-- <div class="mt-4 flex flex-wrap items-center justify-between gap-2">
 			<div class="flex items-center gap-2">
 				<ShareOptions {verdict} {myth} {explanation} />
 			</div>
-		</div>
+		</div> -->
 	</div>
 
 	<div>

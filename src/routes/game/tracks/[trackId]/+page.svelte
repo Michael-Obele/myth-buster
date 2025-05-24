@@ -36,8 +36,11 @@
 		Palette,
 		Scale,
 		ScrollText,
-		Video
+		Video,
+		ChevronLeft
 	} from 'lucide-svelte';
+
+	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 
 	import { Confetti } from 'svelte-confetti';
 	import { PersistedState } from 'runed';
@@ -245,6 +248,22 @@
 	};
 </script>
 
+<RouteHead
+	title="Track Quiz - Myth Buster"
+	description="Test your knowledge and bust myths in this learning track quiz."
+	keywords={['quiz', 'myth buster', 'education', 'learning track', 'knowledge test']}
+	author="Myth Buster Team"
+	ogTitle="Track Quiz - Myth Buster"
+	ogDescription="Test your knowledge and bust myths in this learning track quiz."
+	ogType="website"
+	ogSiteName="Myth Buster"
+	ogLocale="en_US"
+	robots="index, follow"
+	twitterCard="summary_large_image"
+	twitterTitle="Track Quiz - Myth Buster"
+	twitterDescription="Test your knowledge and bust myths in this learning track quiz."
+/>
+
 {#if isCurrentAnswerCorrect}
 	<div
 		class="pointer-events-none fixed -top-[50px] left-0 flex h-screen w-screen justify-center overflow-hidden"
@@ -255,7 +274,18 @@
 			delay={[500, 2000]}
 			duration={5000}
 			amount={200}
-			colorArray={['#FFD700', '#FF6347', '#7FFF00', '#1E90FF', '#FF1493']}
+			colorArray={[
+				'#f59e42',
+				'#14b8a6',
+				'#22c55e',
+				'#ef4444',
+				'#a21caf',
+				'#FFD700',
+				'#FF6347',
+				'#7FFF00',
+				'#1E90FF',
+				'#FF1493'
+			]}
 			fallDistance="100vh"
 		/>
 	</div>
@@ -609,8 +639,9 @@
 	</Card.Root>
 
 	<div class="mt-12 text-center">
-		<Button href="/game/tracks" variant="link" class="text-primary hover:text-primary/90"
-			>‹ Back to All Tracks</Button
+		<Button href="/game/tracks" variant="link" class="text-primary hover:text-primary/90">
+			<ChevronLeft class="mr-2 h-4 w-4" />
+			Back to All Tracks</Button
 		>
 	</div>
 </div>
