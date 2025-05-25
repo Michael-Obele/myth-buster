@@ -57,16 +57,17 @@ export const actions = {
     let userPrompt = '';
     
     if (lensType === 'historical') {
-      systemPrompt = HISTORICAL_LENS_SYSTEM_PROMPT;
+      systemPrompt = HISTORICAL_LENS_SYSTEM_PROMPT; // Ensure this constant is defined
       userPrompt = `Trace the historical origins and earliest known mentions of the belief that "${mythStatement}".`;
     } else if (lensType === 'custom') {
-      systemPrompt = CUSTOM_LENS_SYSTEM_PROMPT;
+      systemPrompt = CUSTOM_LENS_SYSTEM_PROMPT; // Ensure this constant is defined
       userPrompt = `Investigate the myth "${mythStatement}" focusing on the following user-defined aspect: "${customQuery}".`;
     }
     // ... other lens types
     
     // Call Sonar API with the constructed prompts
     // Parse and return results
+    // Server-side logic includes robust validation of the parsed JSON response to ensure it matches the expected TypeScript interface (e.g., ResearchLensResponse).
   }
 }
 ```
@@ -88,32 +89,27 @@ This feature allows users to critically evaluate individual pieces of evidence b
 
 **Component Enhancements:**
 - Enhance `CitationList.svelte` to make citations interactive
-- Create `SourceAnalysis.svelte` component for the analysis modal
-- Develop `SourceAnalysisPromptSelector.svelte` for pre-defined and custom analytical queries
+- Create `SourceAnalysis.svelte` component for the analysis modal (likely integrated directly into `/app/+page.svelte` for simplicity in the hackathon)
+- Develop `SourceAnalysisPromptSelector.svelte` for pre-defined and custom analytical queries (integrated into the dialog)
 
 **UI Elements:**
 - "Analyze Source" buttons next to each citation
 - Modal dialog for displaying source analysis
 - Dropdown for selecting pre-defined analytical queries
 - Input field for custom questions about the source
-- Visual indicators for source credibility (badges, ratings)
+- Visual indicators for source credibility (badges, ratings) - *Future enhancement*
 
 **State Management:**
 ```typescript
-// In SourceAnalysis.svelte
+// In /app/+page.svelte
 interface SourceAnalysis {
-  sourceId: string;
-  sourceName: string;
-  sourceUrl: string;
-  analysisType: 'methodology' | 'reliability' | 'arguments' | 'corroboration' | 'custom';
-  customQuery?: string;
-  result: string;
-  loading: boolean;
-  error: string | null;
+  // ... (as defined previously, likely managed within the page component's state)
+  // result: string;
+  // loading: boolean;
+  // error: string | null;
 }
-
-let currentSourceAnalysis: SourceAnalysis | null = $state(null);
-let analysisHistory: Record<string, SourceAnalysis[]> = $state({});
+// Example state in +page.svelte
+let currentSourceAnalysisResult: { analysis: string; loading: boolean; error: string | null } | null = $state(null);
 ```
 
 **Server Actions:**
@@ -128,7 +124,7 @@ analyzeSource: async ({ request }) => {
   const customQuery = data.get('customQuery') as string;
   
   // Construct appropriate Sonar API prompt based on analysis type
-  let systemPrompt = SOURCE_ANALYSIS_SYSTEM_PROMPT;
+  let systemPrompt = SOURCE_ANALYSIS_SYSTEM_PROMPT; // Ensure this constant is defined
   let userPrompt = '';
   
   if (analysisType === 'methodology') {
@@ -140,6 +136,7 @@ analyzeSource: async ({ request }) => {
   
   // Call Sonar API with the constructed prompts
   // Parse and return results
+  // Server-side logic includes robust validation of the parsed JSON response to ensure it matches the expected TypeScript interface (e.g., AnalyzeSourceResponse).
 }
 ```
 
@@ -148,7 +145,7 @@ analyzeSource: async ({ request }) => {
 - Reliability Assessment: Academic consensus on the source's reliability
 - Argument Breakdown: Key arguments and how they support/refute the myth
 - Corroborating Evidence: Other research that supports or contradicts this source
-- Bias Evaluation: Potential biases or conflicts of interest
+- Bias Evaluation: Potential biases or conflicts of interest - *Simplified for hackathon, mainly covered by reliability*
 
 ### 3. Dynamic Insight Mapping & Connection Weaver
 
@@ -157,39 +154,22 @@ This feature synthesizes findings across different research angles to identify t
 #### Technical Implementation
 
 **New Components:**
-- `InsightMapper.svelte` in `src/routes/app/components/`
-- `ThemeDisplay.svelte` for showing identified themes
-- `ConnectionVisualizer.svelte` for simple visualization (if time permits)
+- `InsightMapper.svelte` in `src/routes/app/components/` (or integrated directly into `/app/+page.svelte`)
+- `ThemeDisplay.svelte` for showing identified themes (likely part of `InsightMapper.svelte` or `/app/+page.svelte`)
+- `ConnectionVisualizer.svelte` for simple visualization (if time permits) - *Likely out of scope for hackathon MVP, text-based display prioritized*
 
 **UI Elements:**
 - "Synthesize Insights" button that appears after multiple lenses have been explored
 - Structured display of key themes, contradictions, and connections
-- Visual indicators for the strength of connections or confidence in insights
+- Visual indicators for the strength of connections or confidence in insights - *Simplified for hackathon*
 
 **State Management:**
 ```typescript
-// In InsightMapper.svelte
-interface Theme {
-  id: string;
-  title: string;
-  description: string;
-  relevance: 'high' | 'medium' | 'low';
-  relatedLenses: string[];
-}
-
-interface Connection {
-  id: string;
-  description: string;
-  sourceThemeId: string;
-  targetThemeId: string;
-  strength: 'strong' | 'moderate' | 'weak';
-  nature: 'supporting' | 'contradicting' | 'complementary';
-}
-
+// In /app/+page.svelte
 interface SynthesisResult {
-  themes: Theme[];
-  connections: Connection[];
-  overallInsight: string;
+  overallInsight: string | null;
+  keyThemes: { title: string; description: string }[];
+  connections: { description: string }[]; // Simplified, may also include contradictions
   loading: boolean;
   error: string | null;
 }
@@ -206,94 +186,86 @@ synthesizeInsights: async ({ request }) => {
   const lensResults = JSON.parse(data.get('lensResults') as string);
   
   // Construct a system prompt for synthesizing insights
-  const systemPrompt = SYNTHESIS_SYSTEM_PROMPT;
+  const systemPrompt = SYNTHESIS_SYSTEM_PROMPT; // Ensure this constant is defined
   
   // Create a detailed user prompt that includes summaries from all explored lenses
   let userPrompt = `Given the following information about the myth "${mythStatement}":\n\n`;
   
-  lensResults.forEach((lens: any) => {
+  lensResults.forEach((lens: any) => { // Type `lens` appropriately based on `LensResult`
     userPrompt += `${lens.name} Analysis: ${lens.result}\n\n`;
   });
   
-  userPrompt += `Identify 3-5 overarching themes, key points of contention, or unexpected connections that emerge from these analyses. For each theme or connection, provide a brief explanation of its significance. Then, describe how these elements relate to each other.`;
+  userPrompt += `Identify 3-5 overarching themes, key points of contention, or unexpected connections that emerge from these analyses. For each theme or connection, provide a brief explanation of its significance. Then, describe how these elements relate to each other. Provide an 'overallInsight' as well.`;
   
   // Call Sonar API with the synthesis prompt
   // Parse the response into themes and connections
   // Return structured synthesis result
+  // Server-side logic includes robust validation of the parsed JSON response to ensure it matches the expected TypeScript interface (e.g., SynthesizeInsightsResponse).
 }
 ```
 
 **Visualization Strategy:**
-- For MVP: Use structured text display with visual hierarchy
-- If time permits: Implement a simple network graph visualization using a lightweight library
-- Focus on clarity and insight rather than complex visuals
+- For MVP: Use structured text display with shadcn-svelte `Card` components for themes, lists for connections/contradictions.
+- Focus on clarity and insight rather than complex visuals.
 
 ## Integration with Existing Codebase
 
 To integrate these features into the existing Myth Buster application:
 
-1. **Enhance the Verification Flow:**
-   - After a myth is verified, present the "Explore Deeper" section
-   - Update the `/app/+page.svelte` to include the new research components
-   - Modify the state management to track research progress
+1.  **Enhance the Verification Flow:**
+    *   After a myth is verified (initial `verifyMyth` action in `/app/+page.server.ts`), present the "Explore Deeper" section on `/app/+page.svelte`.
+    *   Update `/app/+page.svelte` to include UI for triggering and displaying results from `researchLens`, `analyzeSource`, and `synthesizeInsights`.
+    *   Modify the state management in `/app/+page.svelte` to track the state of each deep research feature (loading, results, errors).
 
-2. **Server-Side Enhancements:**
-   - Add the new actions to `/app/+page.server.ts`
-   - Implement caching for research results
-   - Create reusable prompt templates for different research types
+2.  **Server-Side Enhancements:**
+    *   Add the new actions (`researchLens`, `analyzeSource`, `synthesizeInsights`) to `/app/+page.server.ts`.
+    *   **Crucially, implement robust validation logic within each server action after receiving and parsing the Perplexity API response. Ensure the structure of `parsedContent` matches the expected TypeScript interfaces (e.g., `VerifyMythResponse`, `ResearchLensResponse`, `AnalyzeSourceResponse`, `SynthesizeInsightsResponse`) before returning data to the client. This was recently implemented and enhances reliability.**
+    *   Implement server-side caching for API responses from these actions to manage API costs and improve performance.
+    *   Create and refine system and user prompts for each new Sonar API interaction.
 
-3. **UI/UX Improvements:**
-   - Create a consistent visual language for research components
-   - Implement loading states that communicate research depth
-   - Design a clear visual hierarchy for the research journey
+3.  **UI/UX Improvements:**
+    *   Create a consistent visual language for deep research components using shadcn-svelte.
+    *   Implement clear loading states (e.g., skeleton loaders, spinners within buttons) for each asynchronous operation.
+    *   Design a clear visual hierarchy to present the multi-layered research findings.
 
-4. **State Management:**
-   - Use Svelte 5 Runes for reactive state
-   - Implement PersistedState for saving research progress
-   - Create a central store for tracking the overall research journey
+4.  **State Management:**
+    *   Use Svelte 5 Runes (`$state`, `$derived`) within `/app/+page.svelte` for managing the UI state related to deep research features.
+    *   No client-side `PersistedState` is planned for active deep research data for the hackathon scope; results are fetched on demand or from server cache.
 
 ## Technical Challenges and Solutions
 
-1. **API Rate Limiting:**
-   - Implement request throttling and queuing
-   - Use effective caching to minimize redundant API calls
-   - Provide clear feedback to users during longer operations
-
-2. **Complex State Management:**
-   - Structure state carefully to handle nested research data
-   - Use derived state to calculate research metrics and progress
-   - Implement state persistence for research-in-progress
-
-3. **UI Performance with Rich Research Data:**
-   - Lazy-load research components
-   - Implement virtualization for long research results
-   - Use progressive enhancement for complex visualizations
+1.  **API Rate Limiting & Cost:**
+    *   **Solution:** Aggressive server-side caching with appropriate TTLs. Clear UI indication of cached data. Throttling/queuing is out of scope for hackathon MVP but a consideration for production.
+2.  **Complex State Management in `/app/+page.svelte`:**
+    *   **Solution:** Keep state localized where possible. Use derived state (`$derived`) for computed UI properties. Ensure action results clearly update specific state slices.
+3.  **UI Performance with Rich Research Data:**
+    *   **Solution:** Use shadcn-svelte components which are generally performant. For very long text, ensure proper `whitespace-pre-wrap` and consider `ScrollArea` components. Virtualization is out of scope for hackathon.
+4.  **Robust Prompt Engineering for Structured JSON:**
+    *   **Solution:** Iterate on prompts, clearly define the desired JSON structure in the prompt itself, and include server-side validation of the returned JSON structure. Fallback to parsing text if direct JSON output fails or is malformed.
 
 ## Hackathon Implementation Timeline
 
-1. **Day 1:**
-   - Implement Multi-Angle Investigation basic structure
-   - Create the ResearchLenses component and server action
-   - Test with pre-defined lenses
+1.  **Day 1:**
+    *   Implement Multi-Angle Investigation basic structure (predefined lenses, server action, basic UI display).
+    *   Add server-side response validation for `researchLens`.
 
-2. **Day 2:**
-   - Enhance Multi-Angle Investigation with custom lens input
-   - Implement Evidence Deconstruction component and server action
-   - Add pre-defined analytical queries
+2.  **Day 2:**
+    *   Enhance Multi-Angle Investigation with custom lens input.
+    *   Implement Evidence Deconstruction (dialog, predefined analysis types, server action, basic UI display).
+    *   Add server-side response validation for `analyzeSource`.
 
-3. **Day 3:**
-   - Implement source analysis with custom queries
-   - Create the InsightMapper component and basic synthesis
-   - Begin integration testing
+3.  **Day 3:**
+    *   Implement Evidence Deconstruction with custom query input.
+    *   Implement Dynamic Insight Mapping (button logic, server action for synthesis, basic UI display).
+    *   Add server-side response validation for `synthesizeInsights`.
 
-4. **Day 4:**
-   - Refine UI/UX for all research components
-   - Implement additional visual enhancements
-   - Optimize performance and error handling
+4.  **Day 4:**
+    *   Refine UI/UX for all deep research components (loading states, error display, layout).
+    *   Implement server-side caching for all deep research actions.
+    *   Integrate all features smoothly into the `/app` page flow.
 
-5. **Final Day:**
-   - Comprehensive testing and bug fixing
-   - Create demo examples and documentation
-   - Prepare submission materials highlighting deep research capabilities
+5.  **Final Day:**
+    *   Comprehensive testing and bug fixing.
+    *   Create demo examples and prepare submission materials.
 
 This implementation plan transforms the Myth Buster application from a simple fact-checking tool into a sophisticated deep research platform, making it a strong contender for the "Best Deep Research Project" category.
