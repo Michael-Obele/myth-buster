@@ -14,7 +14,6 @@ import type {
 // API Configuration
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
 
-// System prompt for the AI to generate game statements
 const GAME_SYSTEM_PROMPT = `You are an AI that generates engaging and verifiable statements for a myth-busting game using evidence-based research.
 
 Your task is to create statements that are:
@@ -58,323 +57,133 @@ Return your response as a JSON object with the following structure:
   ]
 }
 
-Ensure the output is ONLY the JSON object within a markdown code block.`;
+Ensure the output is ONLY the JSON object.`;
 
-// --- Caching Logic ---
 interface CachedGameStatementResponse {
 	timestamp: number;
 	response: GameStatement;
 	expiresAt: number;
 }
-
-const gameStatementCache: Map<string, CachedGameStatementResponse> = !building
-	? new Map()
-	: new Map();
-const GAME_CACHE_EXPIRATION_MS = 10 * 1000; // 10 seconds - effectively disabling cache for gameplay
+const gameStatementCache: Map<string, CachedGameStatementResponse> = !building ? new Map() : new Map();
+const GAME_CACHE_EXPIRATION_MS = 10 * 1000;
 
 function getCachedGameStatement(key: string): GameStatement | null {
-	// Always return null to disable caching and get a fresh question each time
-	console.log(`[GAME CACHE] Disabled - always generating new questions`);
+	console.log(`[GAME CACHE] Always generating new questions (cache disabled).`);
 	return null;
 }
 
 function cacheGameStatement(key: string, response: GameStatement): void {
-	if (building) return; // Don't use cache during build
+	if (building) return;
 	const now = Date.now();
-	gameStatementCache.set(key, {
-		timestamp: now,
-		response,
-		expiresAt: now + GAME_CACHE_EXPIRATION_MS
-	});
+	gameStatementCache.set(key, { timestamp: now, response, expiresAt: now + GAME_CACHE_EXPIRATION_MS });
 	console.log(`[GAME CACHE] Cached entry for key: ${key}`);
 }
-// --- End Caching Logic ---
 
-/**
- * Generate a statement from the Perplexity API based on difficulty and category
- * @param difficulty - The difficulty level of the statement
- * @param category - The category of the statement
- * @returns A GameStatement object with the generated statement
- */
-async function generateStatementFromAPI(
-	difficulty: string,
-	category: string
-): Promise<GameStatement> {
-	console.log(
-		`[API CALL] Generating statement from API with difficulty: ${difficulty}, category: ${category}`
-	);
+async function generateStatementFromAPI(difficulty: string, category: string): Promise<GameStatement> {
+	console.log(`[API CALL] Generating statement: Difficulty: ${difficulty}, Category: ${category}`);
 	const apiKey = PERPLEXITY_API_KEY;
-
-	if (!apiKey) {
-		console.error('[API ERROR] Perplexity API key is missing.');
-		throw new Error('API key is not configured.');
-	}
+	if (!apiKey) throw new Error('API key is not configured.');
 
 	const userQuery = `Generate a ${difficulty} difficulty statement in the ${category} category.`;
-
 	const payload = {
 		model: 'sonar',
-		messages: [
-			{ role: 'system', content: GAME_SYSTEM_PROMPT },
-			{ role: 'user', content: userQuery }
-		],
-		temperature: 0.3, // Balanced creativity for engaging statements while maintaining accuracy
-		max_tokens: 3000, // Adequate length for detailed explanations
-		web_search_options: {
-			search_context_size: 'medium' // Medium for comprehensive fact-checking
-		},
-		return_images: false, // Focus on text-based verification
-		return_related_questions: false // Stay focused on the specific statement
-	};
-	console.log('[API PAYLOAD]', JSON.stringify(payload, null, 2));
-
-	const resp = await fetch(PERPLEXITY_API_URL, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${apiKey}`
-		},
-		body: JSON.stringify(payload)
-	});
-
-	console.log('[API RESPONSE STATUS]', resp.status);
-
-	if (!resp.ok) {
-		const errorText = await resp.text();
-		console.error('[API ERROR] API request failed:', resp.status, errorText);
-		throw new Error(`API request failed with status ${resp.status}: ${errorText}`);
-	}
-
-	const answer = await resp.json();
-	console.log('[API RAW RESPONSE]', JSON.stringify(answer, null, 2));
-
-	const content = answer.choices?.[0]?.message?.content;
-	if (!content) {
-		console.error('[API PARSE ERROR] No content in API response choices.');
-		throw new Error('Invalid API response: No content found.');
-	}
-
-	console.log('[API CONTENT]', content);
-	const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
-	if (!jsonMatch || !jsonMatch[1]) {
-		console.error('[API PARSE ERROR] Could not extract JSON from API response content.');
-		console.log('Content that failed to parse: ', content);
-		throw new Error('Invalid API response: JSON block not found or malformed.');
-	}
-
-	try {
-		// Clean the JSON string by removing comments and fixing common JSON issues
-		let cleanedJson = jsonMatch[1]
-			// Remove single-line comments
-			.replace(/\s*\/\/.*$/gm, '')
-			// Remove trailing commas in arrays and objects
-			.replace(/,\s*(\]|\})/g, '$1');
-
-		console.log('[API CLEANED JSON]', cleanedJson);
-
-		// Try to parse the cleaned JSON
-		let parsedContent: GameStatement;
-		try {
-			parsedContent = JSON.parse(cleanedJson) as GameStatement;
-		} catch (error) {
-			const parseError = error as Error;
-			console.error('[API JSON PARSE ERROR]', parseError.message);
-			console.error('JSON string that failed to parse: ', cleanedJson);
-
-			// If parsing fails, try to fix common issues and parse again
-			cleanedJson = cleanedJson
-				// Remove any remaining non-standard JSON elements
-				.replace(/\/\*[\s\S]*?\*\//g, '') // Remove multi-line comments
-				.replace(/[\u0000-\u001F]+/g, ' ') // Remove control characters
-				.trim();
-
-			// Create a minimal valid statement if everything else fails
-			try {
-				parsedContent = JSON.parse(cleanedJson) as GameStatement;
-			} catch (error) {
-				const finalError = error as Error;
-				console.error('[API FINAL JSON PARSE ERROR]', finalError.message);
-				// Extract statement directly using regex as a last resort
-				const statementMatch = cleanedJson.match(/"statement"\s*:\s*"([^"]+)"/i);
-				const isTrueMatch = cleanedJson.match(/"isTrue"\s*:\s*(true|false)/i);
-				const explanationMatch = cleanedJson.match(/"explanation"\s*:\s*"([^"]+)"/i);
-
-				if (statementMatch && isTrueMatch) {
-					// Create a minimal valid statement
-					parsedContent = {
-						statement: statementMatch[1],
-						isTrue: isTrueMatch[1].toLowerCase() === 'true',
-						explanation: explanationMatch ? explanationMatch[1] : 'No explanation available.',
-						citations: []
-					};
-					console.log('[API FALLBACK PARSING]', 'Created minimal valid statement from regex');
-				} else {
-					throw new Error(`Failed to parse JSON from API response: ${finalError.message}`);
+		messages: [{ role: 'system', content: GAME_SYSTEM_PROMPT }, { role: 'user', content: userQuery }],
+		temperature: 0.3, max_tokens: 3000,
+		web_search_options: { search_context_size: 'low' },
+		return_images: false, return_related_questions: false,
+		response_format: {
+			type: 'json_schema',
+			json_schema: {
+				schema: {
+					type: 'object',
+					properties: {
+						statement: { type: 'string', description: 'The myth statement' },
+						isTrue: { type: 'boolean', description: 'Whether the statement is true or false' },
+						explanation: { type: 'string', description: 'Explanation of the verdict' },
+						citations: { type: 'array', items: { type: 'object', properties: { title: { type: 'string' }, url: { type: 'string' } }, required: ['title', 'url'] } }
+					},
+					required: ['statement', 'isTrue', 'explanation', 'citations'],
+					additionalProperties: false
 				}
 			}
 		}
+	};
 
-		console.log('[API PARSED CONTENT]', parsedContent);
+	const resp = await fetch(PERPLEXITY_API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` }, body: JSON.stringify(payload) });
 
-		// Basic validation of the parsed content
-		if (
-			typeof parsedContent.statement !== 'string' ||
-			typeof parsedContent.isTrue !== 'boolean' ||
-			typeof parsedContent.explanation !== 'string' ||
-			!Array.isArray(parsedContent.citations) ||
-			!parsedContent.citations.every(
-				(c) => typeof c.title === 'string' && typeof c.url === 'string'
-			)
-		) {
-			console.error(
-				'[API VALIDATION ERROR] Parsed JSON does not match expected GameStatement structure.'
-			);
-			throw new Error('Parsed JSON does not match expected GameStatement structure.');
-		}
-
-		return parsedContent;
-	} catch (e: any) {
-		console.error('[API JSON PARSE ERROR]', e.message);
-		console.log('JSON string that failed to parse: ', jsonMatch[1]);
-		throw new Error(`Failed to parse JSON from API response: ${e.message}`);
+	if (!resp.ok) {
+		let errorBody = ''; try { errorBody = await resp.text(); } catch (e) { /* ignore */ }
+		console.error('[API ERROR] Request failed:', resp.status, errorBody);
+		throw new Error(`API request failed: ${resp.status}${errorBody ? `: ${errorBody}` : '.'}`);
 	}
+
+	const answer = await resp.json();
+	let parsedContent = answer.choices?.[0]?.message?.content;
+
+    // Robust parsing: if content is a string, try to parse it.
+    if (typeof parsedContent === 'string') {
+        try {
+            parsedContent = JSON.parse(parsedContent);
+        } catch (e: any) {
+            console.error('[API PARSE ERROR] Content was string, failed to parse as JSON:', parsedContent, e.message);
+            throw new Error(`Invalid API response: Content string not valid JSON. ${e.message}`);
+        }
+    }
+
+	if (!parsedContent || typeof parsedContent !== 'object') {
+		console.error('[API PARSE ERROR] Content is not an object after potential parse:', parsedContent);
+		throw new Error('Invalid API response: Expected a JSON object.');
+	}
+
+	if (typeof parsedContent.statement !== 'string' || typeof parsedContent.isTrue !== 'boolean' || typeof parsedContent.explanation !== 'string' || !Array.isArray(parsedContent.citations) || !parsedContent.citations.every((c: any) => typeof c.title === 'string' && typeof c.url === 'string')) {
+		console.error('[API VALIDATION ERROR] Parsed JSON structure invalid:', parsedContent);
+		throw new Error('Parsed JSON does not match expected GameStatement structure.');
+	}
+	return parsedContent as GameStatement;
 }
 
 export const actions: Actions = {
-	/**
-	 * Generate a new statement for the game
-	 */
 	generate: async ({ request }) => {
 		const formData = await request.formData();
 		const difficulty = formData.get('difficulty')?.toString() || 'medium';
 		const category = formData.get('category')?.toString() || 'general';
-
-		console.log(
-			`[ACTION generate] Generating random myth with Difficulty: ${difficulty}, Category: ${category}`
-		);
-
-		const cacheKey = `game_statement_${difficulty}_${category}_${Date.now()}`; // Use full timestamp to ensure uniqueness
-		let generatedData = getCachedGameStatement(cacheKey);
-		let fromCache = true;
-
-		if (!generatedData) {
-			fromCache = false;
-			try {
-				generatedData = await generateStatementFromAPI(difficulty, category);
-				if (generatedData) {
-					cacheGameStatement(cacheKey, generatedData);
-				}
-			} catch (error: any) {
-				console.error('[ACTION generate API ERROR]', error);
-				return fail(500, {
-					error:
-						'Failed to generate a new statement from API. ' +
-						(error.message || 'Unknown API error'),
-					action: 'generate', // Keep action for client-side differentiation if needed
-					success: false,
-					statement: '',
-					isTrue: false,
-					explanation: 'API Error.',
-					citations: [], // Provide default structure on error
-					difficulty, // Pass back parameters for context
-					category
-				});
-			}
+		try {
+			const generatedData = await generateStatementFromAPI(difficulty, category);
+			// Caching is disabled in getCachedGameStatement but if re-enabled, this would be where to use it.
+			// cacheGameStatement(cacheKey, generatedData); 
+			return { success: true, ...generatedData, cached: false, action: 'generate' } as GenerateActionResult;
+		} catch (error: any) {
+			console.error('[ACTION generate API ERROR]', error);
+			return fail(500, { error: error.message || 'Failed to generate statement.', action: 'generate', success: false, statement: '', isTrue: false, explanation: 'API Error', citations: [], difficulty, category });
 		}
-
-		if (!generatedData) {
-			console.error(
-				'[ACTION generate API ERROR] No statement generated after API call and cache check.'
-			);
-			return fail(500, {
-				error: 'Failed to generate a statement from API. Please try again.',
-				action: 'generate',
-				success: false,
-				statement: '',
-				isTrue: false,
-				explanation: 'Data generation error.',
-				citations: [],
-				difficulty,
-				category
-			});
-		}
-
-		console.log(
-			`[ACTION generate API SUCCESS] Returning data (fromCache: ${fromCache}):`,
-			generatedData
-		);
-		// Ensure the returned object matches GenerateActionResult, track-specific fields will be undefined
-		return {
-			success: true,
-			...generatedData,
-			cached: fromCache,
-			action: 'generate' // Explicitly set action
-		} as GenerateActionResult;
 	},
 
-	/**
-	 * Check the user's answer against the correct answer
-	 */
 	checkAnswer: async ({ request }) => {
 		const formData = await request.formData();
-		console.log('[ACTION checkAnswer] FormData received:', Object.fromEntries(formData));
-
 		const userAnswer = formData.get('answer') === 'true';
-		const isTrueFromForm = formData.get('isTrue');
-		const isTrue = isTrueFromForm === 'true';
+		const isTrue = formData.get('isTrue') === 'true';
 		const confidence = parseInt(formData.get('confidence')?.toString() || '50');
 		const statement = formData.get('statement')?.toString() || '';
 		const explanation = formData.get('explanation')?.toString() || '';
-
 		let citations: Citation[] = [];
 		const citationsString = formData.get('citations')?.toString();
 		if (citationsString) {
-			try {
-				const parsedCitations = JSON.parse(citationsString);
-				if (Array.isArray(parsedCitations)) {
-					citations = parsedCitations.map((c) => ({
-						title: c.title || 'Unknown Source',
-						url: c.url || '#'
-					}));
-				} else {
-					console.warn(
-						'[ACTION checkAnswer] Parsed citations is not an array, defaulting to empty.'
-					);
-				}
-			} catch (e) {
-				console.error('[ACTION checkAnswer] Failed to parse citations JSON:', e);
-			}
+			try { 
+				const parsed = JSON.parse(citationsString); 
+				if(Array.isArray(parsed)) citations = parsed;
+			} catch (e) { /* ignore */ }
 		}
 
-		if (statement === '' || isTrueFromForm === null || isTrueFromForm === undefined) {
-			console.warn('[ACTION checkAnswer] Missing statement data for answer check.');
-			return fail(400, {
-				error: 'Missing statement data for answer check.',
-				action: 'checkAnswer',
-				success: false,
-				formData: Object.fromEntries(formData)
-			});
+		if (!statement || formData.get('isTrue') === null) {
+			return fail(400, { error: 'Missing statement data.', action: 'checkAnswer', success: false });
 		}
 
 		const isCorrect = userAnswer === isTrue;
-		let points = 0;
-
-		if (isCorrect) {
-			points = Math.round(confidence);
-		}
-
-		const responseData: CheckAnswerActionResult = {
-			success: true,
-			result: isCorrect ? 'correct' : 'incorrect',
-			statement,
-			userAnswer,
-			isTrue,
-			explanation,
-			citations,
-			points,
-			action: 'checkAnswer' // Explicitly set action
-		};
-		console.log('[ACTION checkAnswer SUCCESS] Returning data:', responseData);
-		return responseData as CheckAnswerActionResult;
+		return {
+			success: true, result: isCorrect ? 'correct' : 'incorrect',
+			statement, userAnswer, isTrue, explanation, citations,
+			points: isCorrect ? Math.round(confidence) : 0,
+			action: 'checkAnswer'
+		} as CheckAnswerActionResult;
 	}
 };

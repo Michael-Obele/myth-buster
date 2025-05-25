@@ -111,12 +111,16 @@ async function generateTrackConceptsFromAPI(): Promise<LearningTrack[]> {
 		model: 'sonar',
 		messages: [
 			{ role: 'system', content: TRACK_CONCEPT_SYSTEM_PROMPT },
-			{ role: 'user', content: 'Generate diverse, engaging learning track concepts that challenge common misconceptions and promote evidence-based learning. Focus on topics with rich potential for verifiable myths and facts.' }
+			{
+				role: 'user',
+				content:
+					'Generate diverse, engaging learning track concepts that challenge common misconceptions and promote evidence-based learning. Focus on topics with rich potential for verifiable myths and facts.'
+			}
 		],
 		temperature: 0.4, // Balanced creativity for diverse topics while maintaining educational focus
 		max_tokens: 3500, // Adequate space for detailed track concepts
 		web_search_options: {
-			search_context_size: 'medium' // Medium context to research current misconceptions and trending topics
+			search_context_size: 'low' // Medium context to research current misconceptions and trending topics
 		},
 		return_images: false,
 		return_related_questions: false

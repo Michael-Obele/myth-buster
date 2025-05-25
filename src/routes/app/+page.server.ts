@@ -3,146 +3,264 @@ import type { Actions } from './$types';
 // @ts-expect-error editor error
 import { PERPLEXITY_API_KEY } from '$env/static/private';
 import { building } from '$app/environment';
-import type {
-	MythVerificationResult,
-	LensResult,
-	SourceAnalysisResult,
-	SynthesisResult
-} from '$lib/types'; // Import from shared types
+import type { MythVerificationResult, LensResult } from '$lib/types'; // Import from shared types
 
 // Base URL for the Perplexity AI chat completions API
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
 
-// System prompt to guide the AI's behavior and response format
-const SYSTEM_PROMPT = `You are a myth-busting expert who analyzes statements to determine their accuracy using evidence-based research.
+interface Citation {
+	title: string;
+	url: string;
+}
 
+interface VerifyMythResponse {
+	verdict: 'true' | 'false' | 'inconclusive';
+	explanation: string;
+	citations: Citation[];
+	mythOrigin?: string;
+	relatedMyth?: string;
+	whyBelieved?: string;
+}
+
+interface ResearchLensResponse {
+	explanation: string;
+	keyInsights: string[];
+	citations: Citation[];
+}
+
+interface AnalyzeSourceResponse {
+	analysis: string;
+	reliability?: string;
+	methodology?: string;
+	corroborating: string[];
+	contradicting: string[];
+}
+
+interface SynthesizeInsightsResponse {
+	overallInsight: string;
+	themes: { title: string; description: string }[];
+	connections: string[];
+	contradictions: string[];
+}
+
+// --- Perplexity API Response Types ---
+interface PerplexityMessage {
+	role: string;
+	content: string | object;
+}
+
+interface PerplexityChoice {
+	index: number;
+	finish_reason: string;
+	message: PerplexityMessage;
+	delta?: {
+		role?: string;
+		content?: string;
+	};
+}
+
+interface PerplexityUsage {
+	prompt_tokens: number;
+	completion_tokens: number;
+	total_tokens: number;
+	search_context_size?: string;
+}
+
+interface PerplexityRawResponse {
+	id: string;
+	model: string;
+	created: number;
+	usage: PerplexityUsage;
+	citations?: string[] | { title?: string; url: string }[];
+	object: string;
+	choices: PerplexityChoice[];
+}
+// --- End Perplexity API Response Types ---
+
+// Helper function to validate citation arrays
+function isValidCitationsArray(arr: any): arr is Citation[] {
+	if (!Array.isArray(arr)) return false;
+	return arr.every(
+		(c: any) =>
+			typeof c === 'object' &&
+			c !== null &&
+			typeof c.title === 'string' &&
+			typeof c.url === 'string'
+	);
+}
+
+const VERIFY_MYTH_SYSTEM_PROMPT = `You are a myth-busting expert who analyzes statements to determine their accuracy using evidence-based research.
 For each statement provided, follow these steps:
-1. Conduct thorough research to analyze whether the statement is true, false, or inconclusive based on current scientific evidence and credible sources
-2. Provide a detailed, factual explanation of your verdict with emphasis on debunking misconceptions if the statement is false
-3. Include specific factual information that corrects any misconceptions, citing quantitative data where available
-4. Search for and cite multiple reliable, authoritative sources to support your explanation (prefer peer-reviewed studies, official organizations, and established institutions)
-5. If applicable, explain the historical or cultural origin of this myth or misconception
-6. If relevant, mention a related myth or common misconception in the same domain
-7. Analyze and explain the psychological, social, or cognitive factors that lead people to believe this myth
-
+1. Conduct thorough research to analyze whether the statement is true, false, or inconclusive based on current scientific evidence and credible sources.
+2. Provide a detailed, factual explanation of your verdict with emphasis on debunking misconceptions if the statement is false.
+3. Include specific factual information that corrects any misconceptions, citing quantitative data where available.
+4. Search for and cite multiple reliable, authoritative sources to support your explanation (prefer peer-reviewed studies, official organizations, and established institutions).
+5. If applicable, explain the historical or cultural origin of this myth or misconception.
+6. If relevant, mention a related myth or common misconception in the same domain.
+7. Analyze and explain the psychological, social, or cognitive factors that lead people to believe this myth.
 Guidelines for analysis:
-- Prioritize recent, peer-reviewed research and official sources
-- Consider scientific consensus and avoid fringe theories
-- Be specific about limitations in current knowledge when marking something as "inconclusive"
-- Distinguish between correlation and causation in explanations
-- Address common logical fallacies associated with the topic
-
+- Prioritize recent, peer-reviewed research and official sources.
+- Consider scientific consensus and avoid fringe theories.
+- Be specific about limitations in current knowledge when marking something as "inconclusive".
+- Distinguish between correlation and causation in explanations.
+- Address common logical fallacies associated with the topic.
 Return your response as a JSON object with the following structure:
 {
   "verdict": "true" | "false" | "inconclusive",
   "explanation": "A comprehensive, evidence-based explanation of why the statement is true, false, or inconclusive",
-  "citations": [
-    {
-      "title": "Specific source title with publication year",
-      "url": "URL to the authoritative source"
-    }
-  ],
+  "citations": [ { "title": "Specific source title with publication year", "url": "URL to the authoritative source" } ],
   "mythOrigin": "Historical or cultural context of where this belief originated (if applicable)",
   "relatedMyth": "A related myth or misconception in the same domain (if applicable)",
   "whyBelieved": "Psychological, social, or cognitive factors that explain why people believe this myth (if applicable)"
 }
+Ensure the output is ONLY the JSON object.`;
 
-Always format your response as a JSON object within a markdown code block.`;
+const RESEARCH_LENS_SYSTEM_PROMPT = `You are an expert researcher analyzing myths and claims from specific perspectives.
+Provide a detailed analysis that includes:
+1. Key insights from this perspective
+2. Supporting evidence with proper citations
+3. Any contradictory evidence
+4. Nuanced conclusions
+Format your response as JSON:
+{
+  "explanation": "Detailed analysis from this perspective",
+  "keyInsights": ["Insight 1", "Insight 2", "Insight 3"],
+  "citations": [{"title": "Source title", "url": "URL"}]
+}
+Ensure the output is ONLY the JSON object.`;
 
-// Type definition for cached responses
-type CachedResponse = {
-	timestamp: number;
-	response: any; // Store the full response object
-	expiresAt: number; // Timestamp when the cache entry expires
-};
+const ANALYZE_SOURCE_SYSTEM_PROMPT = `You are an expert source analyst evaluating information quality and reliability.
+Provide a detailed analysis formatted as JSON:
+{
+  "analysis": "Main analysis of the source",
+  "reliability": "Assessment of source reliability (if applicable)",
+  "methodology": "Evaluation of research methods (if applicable)",
+  "corroborating": ["Supporting source 1", "Supporting source 2"],
+  "contradicting": ["Contradicting source 1", "Contradicting source 2"]
+}
+Ensure the output is ONLY the JSON object.`;
 
-// In-memory cache for storing AI responses
-// Using a Map for efficient key-value storage
-// The cache is not initialized during the SvelteKit build process
+const SYNTHESIZE_INSIGHTS_SYSTEM_PROMPT = `You are an expert research synthesizer who integrates findings from multiple perspectives to generate comprehensive insights. Focus on identifying patterns, themes, and connections across different analytical approaches.
+Format as JSON:
+{
+  "overallInsight": "Comprehensive summary integrating all perspectives",
+  "themes": [ {"title": "Theme 1", "description": "Description of theme"} ],
+  "connections": ["Connection 1", "Connection 2"],
+  "contradictions": ["Contradiction 1", "Contradiction 2"]
+}
+Ensure the output is ONLY the JSON object.`;
+
+type CachedResponse = { timestamp: number; response: MythVerificationResult; expiresAt: number };
 const responseCache: Map<string, CachedResponse> = !building ? new Map() : new Map();
+const CACHE_EXPIRATION_MS = 24 * 60 * 60 * 1000;
 
-// Cache expiration time in milliseconds (24 hours)
-const CACHE_EXPIRATION_MS = 24 * 60 * 60 * 1000; // 24 hours
-
-/**
- * Retrieves a cached response if it exists and is still valid.
- * @param key The cache key (typically the lowercased, trimmed myth string).
- * @returns The cached response object or null if no valid entry is found.
- */
-function getCachedResponse(key: string): any | null {
+function getCachedResponse(key: string): MythVerificationResult | null {
 	const now = Date.now();
 	const cachedData = responseCache.get(key);
-	console.log(`[getCachedResponse] Key: "${key}", Found in cache map: ${!!cachedData}`);
-
-	// If no data is found for the key, return null
 	if (!cachedData) {
+		console.log(`[CACHE] Miss for key: ${key}`);
 		return null;
 	}
-
-	console.log(
-		`[getCachedResponse] Key: "${key}", Now: ${now}, ExpiresAt: ${cachedData.expiresAt}, IsExpired: ${now >= cachedData.expiresAt}`
-	);
-	// Check if the cache entry has expired
 	if (now >= cachedData.expiresAt) {
-		// Remove the expired cache entry
 		responseCache.delete(key);
-		console.log(`[getCachedResponse] Key: "${key}", Deleted expired entry.`);
+		console.log(`[CACHE] Expired for key: ${key}`);
 		return null;
 	}
-
-	// Return the valid cached response
-	console.log(`[getCachedResponse] Key: "${key}", Returning valid cached response.`);
+	console.log(`[CACHE] Hit for key: ${key}`);
 	return cachedData.response;
 }
 
-/**
- * Caches a response with an expiration timestamp.
- * @param key The cache key (typically the lowercased, trimmed myth string).
- * @param response The response object to cache.
- */
-function cacheResponse(key: string, response: any): void {
+function cacheResponse(key: string, response: MythVerificationResult): void {
+	if (building) return;
 	const now = Date.now();
-	const expiresAt = now + CACHE_EXPIRATION_MS;
-	responseCache.set(key, {
-		timestamp: now,
-		response,
-		expiresAt
-	});
-	console.log(`[cacheResponse] Caching response for key: "${key}", ExpiresAt: ${expiresAt}`);
+	responseCache.set(key, { timestamp: now, response, expiresAt: now + CACHE_EXPIRATION_MS });
+	console.log(`[CACHE] Set for key: ${key}`);
 }
 
-// Import for SvelteKit's server-side load function type
-import type { PageServerLoad } from './$types';
+async function makePerplexityRequest<T>(
+	apiKey: string,
+	payload: object,
+	actionName: string
+): Promise<{ answer: PerplexityRawResponse; parsedContent: T }> {
+	console.log(`[${actionName}] Making API request. Payload:`, JSON.stringify(payload, null, 2));
+	const resp = await fetch(PERPLEXITY_API_URL, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+		body: JSON.stringify(payload)
+	});
+	console.log(`[${actionName}] API Response Status: ${resp.status} ${resp.statusText}`);
 
-/**
- * Core logic for verifying a myth using the Perplexity API.
- * This function is called by both the load function and the verifyMyth action.
- * @param myth The myth string to verify.
- * @returns A structured response object containing the verification result.
- */
+	if (!resp.ok) {
+		let errorBody = '';
+		try {
+			errorBody = await resp.text();
+		} catch (e: unknown) {
+			console.warn(
+				`[${actionName}] Failed to get error body text:`,
+				e instanceof Error ? e.message : String(e)
+			);
+		}
+		console.error(`[${actionName}] API Error ${resp.status}:`, errorBody);
+		throw new Error(`API error ${resp.status}${errorBody ? `: ${errorBody}` : '.'}`);
+	}
+
+	const answer: PerplexityRawResponse = await resp.json();
+	console.log(`[${actionName}] API Raw Response JSON:`, JSON.stringify(answer, null, 2));
+
+	const contentFromAPI: string | object | undefined = answer.choices?.[0]?.message?.content;
+	let parsedContent: T;
+
+	if (typeof contentFromAPI === 'string') {
+		try {
+			parsedContent = JSON.parse(contentFromAPI) as T;
+		} catch (e: unknown) {
+			const errorMessage = e instanceof Error ? e.message : String(e);
+			console.error(
+				`[${actionName}] Failed to parse content string as JSON:`,
+				contentFromAPI,
+				errorMessage
+			);
+			throw new Error(`Invalid API response: Content string not valid JSON. ${errorMessage}`);
+		}
+	} else if (typeof contentFromAPI === 'object' && contentFromAPI !== null) {
+		parsedContent = contentFromAPI as T;
+	} else {
+		console.error(
+			`[${actionName}] API response content is not a string or suitable object. Content:`,
+			contentFromAPI
+		);
+		throw new Error('API response format error: Expected content to be a JSON string or object.');
+	}
+
+	if (typeof parsedContent !== 'object' || parsedContent === null) {
+		console.error(
+			`[${actionName}] API response content is not a JSON object after processing. Processed Content:`,
+			parsedContent
+		);
+		throw new Error('API response format error: Expected a JSON object after processing.');
+	}
+
+	console.log(`[${actionName}] Parsed API content (JSON object):`, parsedContent);
+	return { answer, parsedContent };
+}
+
 async function verifyMythLogic(myth: string): Promise<MythVerificationResult> {
-	// Validate the myth input (basic check, more robust validation might be needed)
+	const actionName = 'verifyMythLogic';
+	console.log(`[${actionName}] Verifying myth: "${myth}"`);
 	if (typeof myth !== 'string' || !myth.trim()) {
-		// Although the load function handles the initial check,
-		// this provides a safeguard if called directly with invalid input.
+		console.error(`[${actionName}] Invalid input: Myth is required.`);
 		return { success: false, error: 'Myth is required.' };
 	}
 
-	console.log('Verifying myth:', myth);
-
-	// Retrieve the API key from environment variables
 	const apiKey = PERPLEXITY_API_KEY;
-	console.log('Using API Key:', apiKey ? '[REDACTED]' : 'MISSING');
-
-	// Check if the API key is available
 	if (!apiKey) {
-		console.error('Missing Perplexity API key on server.');
+		console.error(`[${actionName}] API key missing.`);
 		return {
 			success: false,
-			error: 'Missing Perplexity API key on server.',
+			error: 'Missing Perplexity API key.',
 			data: {
 				verdict: 'inconclusive',
-				explanation: 'Server configuration error: API key is missing.',
+				explanation: 'Server config error',
 				citations: [],
 				mythOrigin: '',
 				relatedMyth: '',
@@ -151,289 +269,191 @@ async function verifyMythLogic(myth: string): Promise<MythVerificationResult> {
 		};
 	}
 
-	// Generate a cache key from the myth string
-	const cacheKey = myth.trim().toLowerCase();
-	console.log('[verifyMythLogic] Attempting to get from cache with key:', cacheKey);
-
-	// Check if a cached response exists and is valid for this myth
+	const cacheKey = `verifyMyth:${myth.trim().toLowerCase()}`;
 	const cachedResponse = getCachedResponse(cacheKey);
-
-	// If a valid cached response is found, return it immediately
 	if (cachedResponse) {
-		console.log('Using cached response for myth');
-		// Return the cached response, explicitly setting 'cached' flag to true
-		return {
-			...cachedResponse,
-			cached: true
-		};
+		console.log(`[${actionName}] Returning cached response for: "${myth}"`);
+		return { ...cachedResponse, cached: true };
 	}
+	console.log(`[${actionName}] No cache hit for: "${myth}"`);
 
-	// Prepare the payload for the Perplexity API request
 	const payload = {
-		model: 'sonar', // Specify the AI model to use
+		model: 'sonar',
 		messages: [
-			{ role: 'system', content: SYSTEM_PROMPT }, // Include the system prompt
-			{ role: 'user', content: myth } // Include the user's myth statement
+			{ role: 'system', content: VERIFY_MYTH_SYSTEM_PROMPT },
+			{ role: 'user', content: myth }
 		],
-		temperature: 0.2, // Lower temperature for more factual, deterministic responses
-		max_tokens: 4000, // Control response length
-		web_search_options: {
-			search_context_size: 'medium' // Use medium context for comprehensive myth analysis
-		},
-		return_images: false, // We don't need images for myth verification
-		return_related_questions: false // Focus on the specific myth only
-	};
-	console.log('Payload to Perplexity:', JSON.stringify(payload, null, 2));
-
-	try {
-		// Make the POST request to the Perplexity API
-		const resp = await fetch(PERPLEXITY_API_URL, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${apiKey}` // Include the API key in the Authorization header
-			},
-			body: JSON.stringify(payload) // Send the payload as a JSON string
-		});
-
-		console.log('Perplexity API status:', resp.status);
-
-		// Check if the API response indicates an error
-		if (!resp.ok) {
-			console.error(`API returned error status: ${resp.status}`);
-
-			// Return a structured error response for the frontend
-			return {
-				success: false,
-				error: `API returned status ${resp.status}`,
-				data: {
-					verdict: 'inconclusive',
-					explanation:
-						'Unable to verify this myth due to an API error. Please try again later or contact support if the issue persists.',
-					citations: [],
-					mythOrigin: '',
-					relatedMyth: '', // Include new fields in error response
-					whyBelieved: '' // Include new fields in error response
-				}
-			};
-		}
-
-		// Parse the JSON response from the API
-		let answer;
-		try {
-			answer = await resp.json();
-		} catch (jsonError) {
-			console.error('Failed to parse JSON response:', jsonError);
-
-			// Return a structured error response for JSON parsing issues
-			return {
-				success: false,
-				error: 'Invalid response from API',
-				data: {
-					verdict: 'inconclusive',
-					explanation:
-						'Unable to verify this myth due to an error processing the response. Please try again later.',
-					citations: [],
-					mythOrigin: '',
-					relatedMyth: '', // Include new fields in error response
-					whyBelieved: '' // Include new fields in error response
-				}
-			};
-		}
-
-		console.log('Perplexity API response:', JSON.stringify(answer, null, 2));
-
-		// Process the API response to extract and format the data for the frontend
-		let verdict: 'true' | 'false' | 'inconclusive' = 'inconclusive';
-		let explanation = '';
-		let citations = [];
-		let mythOrigin = '';
-		let relatedMyth = ''; // Initialize new field
-		let whyBelieved = ''; // Initialize new field
-
-		try {
-			// Extract the main content and citations from the API response
-			const content = answer.choices?.[0]?.message?.content;
-			console.log('Raw content from Perplexity:', content);
-			console.log('Citations from Perplexity:', answer.citations);
-
-			// Format citations provided directly by the API
-			const apiCitations =
-				answer.citations?.map((url: string, index: number) => ({
-					title: `Source ${index + 1}`,
-					url
-				})) || [];
-
-			// If content exists, attempt to parse the embedded JSON
-			if (content) {
-				const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
-				if (jsonMatch && jsonMatch[1]) {
-					const parsedContent = JSON.parse(jsonMatch[1]);
-					console.log('Parsed content:', parsedContent);
-
-					// Extract verdict, explanation, myth origin, related myth, and why believed from parsed JSON
-					if (parsedContent.verdict === true || parsedContent.verdict === 'true') {
-						verdict = 'true';
-					} else if (parsedContent.verdict === false || parsedContent.verdict === 'false') {
-						verdict = 'false';
-					}
-
-					explanation = parsedContent.explanation || '';
-					mythOrigin = parsedContent.mythOrigin || '';
-					relatedMyth = parsedContent.relatedMyth || ''; // Extract new field
-					whyBelieved = parsedContent.whyBelieved || ''; // Extract new field
-
-					// Get citations from the parsed JSON content
-					const jsonCitations = parsedContent.citations || [];
-
-					// Merge citations from both API and parsed JSON, removing duplicates by URL
-					const citationMap = new Map();
-
-					// Add JSON citations first (they may have titles)
-					jsonCitations.forEach((citation: { title: string; url: string }) => {
-						citationMap.set(citation.url, citation);
-					});
-
-					// Then add API citations, but only if not already in the map
-					apiCitations.forEach((citation: { title: string; url: string }) => {
-						if (!citationMap.has(citation.url)) {
-							citationMap.set(citation.url, citation);
-						}
-					});
-
-					citations = Array.from(citationMap.values());
+		temperature: 0.2,
+		max_tokens: 4000,
+		web_search_options: { search_context_size: 'low' },
+		return_images: false,
+		return_related_questions: false,
+		response_format: {
+			type: 'json_schema',
+			json_schema: {
+				schema: {
+					type: 'object',
+					properties: {
+						verdict: { type: 'string', enum: ['true', 'false', 'inconclusive'] },
+						explanation: { type: 'string' },
+						citations: {
+							type: 'array',
+							items: {
+								type: 'object',
+								properties: { title: { type: 'string' }, url: { type: 'string' } },
+								required: ['title', 'url']
+							}
+						},
+						mythOrigin: { type: 'string' },
+						relatedMyth: { type: 'string' },
+						whyBelieved: { type: 'string' }
+					},
+					required: ['verdict', 'explanation', 'citations'],
+					additionalProperties: false
 				}
 			}
-		} catch (error) {
-			console.error('Error extracting content:', error);
+		}
+	};
+
+	try {
+		const { answer, parsedContent } = await makePerplexityRequest<VerifyMythResponse>(
+			apiKey,
+			payload,
+			actionName
+		);
+
+		if (
+			typeof parsedContent.verdict !== 'string' ||
+			!['true', 'false', 'inconclusive'].includes(parsedContent.verdict) ||
+			typeof parsedContent.explanation !== 'string' ||
+			!isValidCitationsArray(parsedContent.citations) ||
+			(parsedContent.mythOrigin !== undefined && typeof parsedContent.mythOrigin !== 'string') ||
+			(parsedContent.relatedMyth !== undefined && typeof parsedContent.relatedMyth !== 'string') ||
+			(parsedContent.whyBelieved !== undefined && typeof parsedContent.whyBelieved !== 'string')
+		) {
+			console.error(`[${actionName}] Parsed content validation failed:`, parsedContent);
+			throw new Error('Parsed API response does not match expected VerifyMythResponse structure.');
 		}
 
-		console.log('Final verdict being sent to frontend:', verdict);
+		const verdict: 'true' | 'false' | 'inconclusive' = parsedContent.verdict;
 
-		// Structure the final response data for the frontend
-		const responseData = {
+		const apiCitations: Citation[] = [];
+		if (answer.citations) {
+			answer.citations.forEach(
+				(citation: string | { title?: string; url: string }, index: number) => {
+					if (typeof citation === 'string') {
+						apiCitations.push({ title: `Source ${index + 1}`, url: citation });
+					} else if (typeof citation === 'object' && citation.url) {
+						apiCitations.push({
+							title: citation.title || `Source ${index + 1}`,
+							url: citation.url
+						});
+					}
+				}
+			);
+		}
+
+		const citationMap = new Map<string, { title: string; url: string }>();
+		(parsedContent.citations || []).forEach((c: Citation) => {
+			if (c.url) citationMap.set(c.url, c);
+		});
+		apiCitations.forEach((c: Citation) => {
+			if (c.url && !citationMap.has(c.url)) citationMap.set(c.url, c);
+		});
+
+		const responseData: MythVerificationResult = {
 			success: true,
-			cached: false, // Indicate this is not from cache
-			myth, // Include the original myth
+			cached: false,
+			myth,
 			data: {
-				answer, // Include the raw API response (optional, for debugging/completeness)
-				explanation,
-				citations,
-				mythOrigin,
-				relatedMyth, // Include new field
-				whyBelieved, // Include new field
+				answer,
+				explanation: parsedContent.explanation,
+				citations: Array.from(citationMap.values()),
+				mythOrigin: parsedContent.mythOrigin || '',
+				relatedMyth: parsedContent.relatedMyth || '',
+				whyBelieved: parsedContent.whyBelieved || '',
 				verdict
 			}
 		};
-
-		// Cache the successful response
 		cacheResponse(cacheKey, responseData);
-
-		console.log('Returning response data:', responseData);
-
-		// Return the structured response data
+		console.log(`[${actionName}] Successfully verified myth: "${myth}". Returning data.`);
 		return responseData;
-	} catch (err) {
-		console.error('Failed to contact Perplexity API:', err);
-		// Return a structured error response for API contact failure
+	} catch (err: unknown) {
+		const errorMessage = err instanceof Error ? err.message : 'Failed to verify myth.';
+		console.error(`[${actionName}] Error verifying myth "${myth}":`, errorMessage);
 		return {
 			success: false,
-			error: 'Failed to contact Perplexity API',
+			error: errorMessage,
 			data: {
 				verdict: 'inconclusive',
-				explanation:
-					'Unable to verify this myth due to an error contacting the API. Please try again later or contact support if the issue persists.',
+				explanation: `Error: ${errorMessage}`,
 				citations: [],
 				mythOrigin: '',
-				relatedMyth: '', // Include new fields in error response
-				whyBelieved: '' // Include new fields in error response
+				relatedMyth: '',
+				whyBelieved: ''
 			}
 		};
 	}
 }
 
-// The load function runs on the server before the page is rendered.
-// It's used here to check for a 'myth' query parameter and potentially
-// fetch and return myth verification data directly on page load.
-export const load: PageServerLoad = async ({ url }): Promise<MythVerificationResult | {}> => {
-	const myth = url.searchParams.get('myth');
+import type { PageServerLoad } from './$types';
 
-	// If a myth query parameter exists, verify the myth and return the result
+export const load: PageServerLoad = async ({ url }) => {
+	const myth = url.searchParams.get('myth');
 	if (myth) {
-		console.log('Myth found in URL, verifying:', myth);
+		console.log(`[PageLoad] Myth parameter found in URL: "${myth}". Verifying...`);
 		return await verifyMythLogic(myth);
 	}
-
-	// If no myth query parameter, return an empty object
+	console.log(`[PageLoad] No myth parameter in URL.`);
 	return {};
 };
 
-// SvelteKit actions for handling form submissions (POST requests)
 export const actions: Actions = {
-	// Action to verify a myth using the Perplexity API
-	verifyMyth: async ({
-		request
-	}): Promise<MythVerificationResult | { status: number; body: { error: string } }> => {
-		// Extract form data from the request
+	verifyMyth: async ({ request }) => {
+		console.log("[Action] 'verifyMyth' called.");
 		const data = await request.formData();
-		const myth = data.get('myth');
-
-		// Validate the myth input
+		const myth = data.get('myth') as string;
 		if (typeof myth !== 'string' || !myth.trim()) {
+			console.error('[Action verifyMyth] Invalid input: Myth is required.');
 			return { status: 400, body: { error: 'Myth is required.' } };
 		}
-
-		console.log('Received myth for action:', myth);
-
-		// Call the core myth verification logic
+		console.log(`[Action verifyMyth] Received myth: "${myth}"`);
 		return await verifyMythLogic(myth);
 	},
 
-	// Action to research a myth from a specific lens/perspective
 	researchLens: async ({ request }) => {
+		const actionName = 'researchLens';
+		console.log(`[Action ${actionName}] Called.`);
 		const data = await request.formData();
-		const mythStatement = data.get('mythStatement');
-		const lensType = data.get('lensType');
-		const lensName = data.get('lensName');
-		const customQuery = data.get('customQuery');
+		const mythStatement = data.get('mythStatement') as string;
+		const lensType = data.get('lensType') as string;
+		const lensName = data.get('lensName') as string;
+		const customQuery = data.get('customQuery') as string | null;
 
-		console.log('[researchLens] Action started. Received data:', {
+		console.log(`[Action ${actionName}] Received data:`, {
 			mythStatement,
 			lensType,
 			lensName,
 			customQuery
 		});
 
-		if (typeof mythStatement !== 'string' || !mythStatement.trim()) {
-			console.error('[researchLens] Error: Myth statement is required.');
-			return { success: false, error: 'Myth statement is required.' };
+		if (!mythStatement?.trim() || !lensType?.trim() || !lensName?.trim()) {
+			console.error(
+				`[Action ${actionName}] Invalid input: Myth statement, lens type, and lens name are required.`
+			);
+			return { success: false, error: 'Myth statement, lens type, and lens name are required.' };
 		}
-
-		if (typeof lensType !== 'string' || !lensType.trim()) {
-			console.error('[researchLens] Error: Lens type is required.');
-			return { success: false, error: 'Lens type is required.' };
-		}
-
-		if (typeof lensName !== 'string' || !lensName.trim()) {
-			console.error('[researchLens] Error: Lens name is required.');
-			return { success: false, error: 'Lens name is required.' };
-		}
-
-		console.log('[researchLens] Researching myth from lens:', lensType, lensName);
-
 		const apiKey = PERPLEXITY_API_KEY;
 		if (!apiKey) {
-			console.error('[researchLens] Error: Missing Perplexity API key on server.');
-			return { success: false, error: 'Missing Perplexity API key on server.' };
+			console.error(`[Action ${actionName}] API key missing.`);
+			return { success: false, error: 'Missing API key.' };
 		}
-		console.log('[researchLens] Perplexity API key found.');
 
-		// Construct lens-specific prompt
 		let lensPrompt = '';
 		if (lensType === 'custom' && customQuery) {
 			lensPrompt = `Analyze the myth "${mythStatement}" from this specific perspective: ${customQuery}. Provide detailed analysis and cite relevant sources.`;
 		} else {
-			const lensPrompts = {
+			const lensPrompts: Record<string, string> = {
 				historical: `Examine the myth "${mythStatement}" from a historical perspective. Analyze its origins, how it developed over time, and the historical context that may have influenced its creation or spread.`,
 				scientific: `Analyze the myth "${mythStatement}" from a scientific standpoint. Examine the evidence, methodologies, and scientific consensus related to this claim.`,
 				cultural: `Explore the myth "${mythStatement}" from a cultural and social perspective. How does this belief vary across different cultures and societies?`,
@@ -441,204 +461,129 @@ export const actions: Actions = {
 				economic: `Examine the myth "${mythStatement}" from an economic perspective. Are there financial interests, market forces, or economic factors that influence this belief?`,
 				political: `Analyze the myth "${mythStatement}" from a political perspective. How might political ideologies, power structures, or governance relate to this belief?`
 			};
-			lensPrompt = lensPrompts[lensType as keyof typeof lensPrompts] || lensPrompts.scientific;
+			lensPrompt = lensPrompts[lensType] || lensPrompts.scientific;
 		}
-		console.log('[researchLens] Constructed lensPrompt:', lensPrompt);
+		console.log(`[Action ${actionName}] Constructed lensPrompt: "${lensPrompt}"`);
 
 		const payload = {
 			model: 'sonar',
 			messages: [
-				{
-					role: 'system',
-					content: `You are an expert researcher analyzing myths and claims from specific perspectives.
-
-					Provide a detailed analysis that includes:
-					1. Key insights from this perspective
-					2. Supporting evidence with proper citations
-					3. Any contradictory evidence
-					4. Nuanced conclusions
-
-					Format your response as JSON:
-					{
-						"explanation": "Detailed analysis from this perspective",
-						"keyInsights": ["Insight 1", "Insight 2", "Insight 3"],
-						"citations": [{"title": "Source title", "url": "URL"}]
-					}`
-				},
-				{
-					role: 'user',
-					content: lensPrompt
-				}
+				{ role: 'system', content: RESEARCH_LENS_SYSTEM_PROMPT },
+				{ role: 'user', content: lensPrompt }
 			],
-			temperature: 0.3, // Slightly higher for research analysis
+			temperature: 0.3,
 			max_tokens: 3000,
-			web_search_options: {
-				search_context_size: 'medium' // Medium for comprehensive research
-			},
+			web_search_options: { search_context_size: 'low' },
 			return_images: false,
-			return_related_questions: false
+			return_related_questions: false,
+			response_format: {
+				type: 'json_schema',
+				json_schema: {
+					schema: {
+						type: 'object',
+						properties: {
+							explanation: { type: 'string' },
+							keyInsights: { type: 'array', items: { type: 'string' } },
+							citations: {
+								type: 'array',
+								items: {
+									type: 'object',
+									properties: { title: { type: 'string' }, url: { type: 'string' } },
+									required: ['title', 'url']
+								}
+							}
+						},
+						required: ['explanation', 'keyInsights', 'citations'],
+						additionalProperties: false
+					}
+				}
+			}
 		};
-		console.log('[researchLens] API Payload:', JSON.stringify(payload, null, 2));
 
 		try {
-			console.log('[researchLens] Sending request to Perplexity API...');
-			const resp = await fetch(PERPLEXITY_API_URL, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${apiKey}`
-				},
-				body: JSON.stringify(payload)
-			});
-			console.log('[researchLens] API Response Status:', resp.status, resp.statusText);
+			const { answer, parsedContent } = await makePerplexityRequest<ResearchLensResponse>(
+				apiKey,
+				payload,
+				actionName
+			);
 
-			if (!resp.ok) {
-				const errorText = await resp.text();
+			if (
+				typeof parsedContent.explanation !== 'string' ||
+				!Array.isArray(parsedContent.keyInsights) ||
+				!parsedContent.keyInsights.every((k: string) => typeof k === 'string') ||
+				!isValidCitationsArray(parsedContent.citations)
+			) {
 				console.error(
-					`[researchLens] Error: API returned status ${resp.status}. Response: ${errorText}`
+					`[${actionName}] Parsed JSON for ResearchLensResponse does not match expected structure.`,
+					parsedContent
 				);
-				return { success: false, error: `API returned status ${resp.status}` };
+				throw new Error(
+					'API response validation failed: Incorrect structure for ResearchLensResponse.'
+				);
 			}
 
-			const answer = await resp.json();
-			console.log('[researchLens] API Response JSON:', JSON.stringify(answer, null, 2));
-			const content = answer.choices?.[0]?.message?.content;
-			console.log('[researchLens] API Response Content:', content);
-
-			let explanation = '';
-			let keyInsights: string[] = [];
-			let parsedContentCitations: { title: string; url: string }[] = [];
-
-			if (content) {
-				console.log('[researchLens] Raw API content:', content);
-				let parsedData = null;
-
-				// Attempt 1: Check for ```json ... ``` block
-				try {
-					const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
-					if (jsonMatch && jsonMatch[1]) {
-						parsedData = JSON.parse(jsonMatch[1]);
-						console.log('[researchLens] Successfully parsed from ```json block.');
+			const apiCitations: Citation[] = [];
+			if (answer.citations) {
+				answer.citations.forEach(
+					(citation: string | { title?: string; url: string }, index: number) => {
+						if (typeof citation === 'string') {
+							apiCitations.push({ title: `Source ${index + 1}`, url: citation });
+						} else if (typeof citation === 'object' && citation.url) {
+							apiCitations.push({
+								title: citation.title || `Source ${index + 1}`,
+								url: citation.url
+							});
+						}
 					}
-				} catch (e) {
-					console.warn(
-						'[researchLens] Failed to parse from ```json block, will try direct parse.',
-						e
-					);
-				}
-
-				// Attempt 2: Try parsing the whole content as JSON if not successful above
-				if (!parsedData) {
-					try {
-						parsedData = JSON.parse(content);
-						console.log('[researchLens] Successfully parsed direct content string.');
-					} catch (e) {
-						console.log(
-							'[researchLens] Direct content string is not JSON. Treating as plain text explanation.'
-						);
-						// No error, content will be used as plain text if parsedData remains null
-					}
-				}
-
-				// Now, process parsedData or use content as fallback
-				if (parsedData && typeof parsedData === 'object' && parsedData !== null) {
-					if (typeof parsedData.explanation === 'string') {
-						explanation = parsedData.explanation;
-					} else {
-						// If parsedData is an object but .explanation isn't a string,
-						// this implies the API returned a JSON structure we weren't fully expecting for the explanation.
-						// We should not use the whole 'content' string if 'content' was the JSON that 'parsedData' came from.
-						// Instead, if 'explanation' is missing or not a string, it's better to have an empty explanation
-						// or a specific message, rather than potentially re-printing the whole JSON object.
-						console.warn(
-							'[researchLens] Parsed data is missing a string "explanation" field or it was not a string. Content was:',
-							content,
-							'Parsed data:',
-							parsedData
-						);
-						explanation = ''; // Default to empty or a message like "Explanation not available in expected format."
-					}
-
-					keyInsights = Array.isArray(parsedData.keyInsights)
-						? parsedData.keyInsights.filter((item: any) => typeof item === 'string')
-						: [];
-					parsedContentCitations = Array.isArray(parsedData.citations)
-						? parsedData.citations.filter(
-								(c: any) => c && typeof c.title === 'string' && typeof c.url === 'string'
-							)
-						: [];
-
-					console.log('[researchLens] Extracted from parsed data:', {
-						explanation,
-						keyInsights,
-						parsedContentCitations_COUNT: parsedContentCitations.length
-					});
-				} else if (typeof content === 'string') {
-					// content is not parsable JSON (or was an empty JSON object like {}), treat as plain text explanation
-					explanation = content;
-					keyInsights = [];
-					parsedContentCitations = [];
-					console.log('[researchLens] Using content as plain text explanation.');
-				} else {
-					console.error('[researchLens] API content was not a string or a usable JSON object.');
-					explanation = 'Error: Could not process API response content.';
-					keyInsights = [];
-					parsedContentCitations = [];
-				}
-			} else {
-				explanation = 'No content received from API.';
+				);
 			}
 
-			// API-provided citations (outside the message content)
-			const apiCitations =
-				answer.citations?.map((url: string, index: number) => ({
-					title: `Source ${index + 1}`,
-					url
-				})) || [];
-			console.log('[researchLens] API-provided citations (answer.citations):', apiCitations);
-
-			// Merge citations
 			const citationMap = new Map<string, { title: string; url: string }>();
-			parsedContentCitations.forEach((citation) => {
-				if (citation.url) citationMap.set(citation.url, citation);
+			(parsedContent.citations || []).forEach((c: Citation) => {
+				if (c.url) citationMap.set(c.url, c);
 			});
-			apiCitations.forEach((citation: { title: string; url: string }) => {
-				if (citation.url && !citationMap.has(citation.url)) {
-					citationMap.set(citation.url, citation);
-				}
+			apiCitations.forEach((c: Citation) => {
+				if (c.url && !citationMap.has(c.url)) citationMap.set(c.url, c);
 			});
-			const finalCitations = Array.from(citationMap.values());
-			console.log('[researchLens] Merged final citations:', finalCitations);
 
 			const resultData = {
 				success: true,
 				lensId: lensType,
 				result: {
-					explanation,
-					keyInsights,
-					citations: finalCitations
+					explanation: parsedContent.explanation,
+					keyInsights: parsedContent.keyInsights,
+					citations: Array.from(citationMap.values())
 				}
 			};
-			console.log(
-				'[researchLens] Returning successful result:',
-				JSON.stringify(resultData, null, 2)
-			);
+			console.log(`[Action ${actionName}] Successfully researched lens. Returning data.`);
 			return resultData;
-		} catch (err) {
-			console.error('[researchLens] Failed to research lens:', err);
-			return { success: false, error: 'Failed to contact API for lens research' };
+		} catch (err: unknown) {
+			const errorMessage = err instanceof Error ? err.message : `Failed to research lens.`;
+			console.error(`[Action ${actionName}] Error:`, errorMessage);
+			return { success: false, error: errorMessage };
 		}
 	},
+
 	analyzeSource: async ({ request }) => {
+		const actionName = 'analyzeSource';
+		console.log(`[Action ${actionName}] Called.`);
 		const data = await request.formData();
-		const sourceUrl = data.get('sourceUrl');
-		const sourceName = data.get('sourceName');
-		const mythContext = data.get('mythContext');
+		const sourceUrl = data.get('sourceUrl') as string;
+		const sourceName = data.get('sourceName') as string;
+		const mythContext = data.get('mythContext') as string;
 		const analysisType = data.get('analysisType') as string | null;
 		const customQuery = data.get('customQuery') as string | null;
 
+		console.log(`[Action ${actionName}] Received data:`, {
+			sourceUrl,
+			sourceName,
+			mythContext,
+			analysisType,
+			customQuery
+		});
+
 		let analysisTypeNameForDisplay = 'General Analysis';
-		if (analysisType === 'custom' && customQuery && customQuery.trim()) {
+		if (analysisType === 'custom' && customQuery?.trim()) {
 			analysisTypeNameForDisplay = `Custom Query: "${customQuery.trim()}"`;
 		} else if (analysisType) {
 			const typeMap: Record<string, string> = {
@@ -650,418 +595,252 @@ export const actions: Actions = {
 			analysisTypeNameForDisplay = typeMap[analysisType] || `Analysis: ${analysisType}`;
 		}
 
-
-		if (typeof sourceUrl !== 'string' || !sourceUrl.trim()) {
-			return { success: false, error: 'Source URL is required.' };
+		if (!sourceUrl?.trim() || !mythContext?.trim()) {
+			console.error(
+				`[Action ${actionName}] Invalid input: Source URL and myth context are required.`
+			);
+			return { success: false, error: 'Source URL and myth context are required.' };
 		}
-
-		if (typeof mythContext !== 'string' || !mythContext.trim()) {
-			return { success: false, error: 'Myth context is required.' };
-		}
-
-		console.log('Analyzing source:', sourceUrl, 'for myth:', mythContext);
-
 		const apiKey = PERPLEXITY_API_KEY;
 		if (!apiKey) {
-			return { success: false, error: 'Missing Perplexity API key on server.' };
+			console.error(`[Action ${actionName}] API key missing.`);
+			return { success: false, error: 'Missing API key.' };
 		}
 
-		// Construct analysis prompt based on type
 		let analysisPrompt = '';
 		if (analysisType === 'custom' && customQuery) {
-			analysisPrompt = `Analyze the source at ${sourceUrl} in the context of the myth "${mythContext}". ${customQuery}`;
+			analysisPrompt = `Analyze the source at ${sourceUrl} (titled: "${sourceName || 'N/A'}") in the context of the myth "${mythContext}". Specifically: ${customQuery}`;
 		} else {
-			const analysisTypes = {
-				reliability: `Evaluate the reliability and credibility of the source at ${sourceUrl} in relation to the myth "${mythContext}". Consider the author's expertise, publication venue, peer review status, and potential biases.`,
-				methodology: `Examine the methodology used in the source at ${sourceUrl} related to the myth "${mythContext}". Analyze the research methods, sample sizes, experimental design, and whether conclusions are supported by the data.`,
-				contradictions: `Find evidence that contradicts or challenges the claims made in the source at ${sourceUrl} about the myth "${mythContext}". Look for conflicting studies, opposing viewpoints, or limitations in the source's claims.`,
-				corroboration: `Find additional sources and evidence that support or corroborate the claims made in the source at ${sourceUrl} about the myth "${mythContext}". Look for independent verification and consensus.`
+			const analysisTypesPrompts: Record<string, string> = {
+				reliability: `Evaluate the reliability and credibility of the source at ${sourceUrl} (titled: "${sourceName || 'N/A'}") in relation to the myth "${mythContext}". Consider the author's expertise, publication venue, peer review status, and potential biases.`,
+				methodology: `Examine the methodology used in the source at ${sourceUrl} (titled: "${sourceName || 'N/A'}") related to the myth "${mythContext}". Analyze the research methods, sample sizes, experimental design, and whether conclusions are supported by the data.`,
+				contradictions: `Find evidence that contradicts or challenges the claims made in the source at ${sourceUrl} (titled: "${sourceName || 'N/A'}") about the myth "${mythContext}". Look for conflicting studies, opposing viewpoints, or limitations in the source's claims.`,
+				corroboration: `Find additional sources and evidence that support or corroborate the claims made in the source at ${sourceUrl} (titled: "${sourceName || 'N/A'}") about the myth "${mythContext}". Look for independent verification and consensus.`
 			};
 			analysisPrompt =
-				analysisTypes[analysisType as keyof typeof analysisTypes] || analysisTypes.reliability;
+				analysisTypesPrompts[analysisType as string] || analysisTypesPrompts.reliability;
 		}
+		console.log(`[Action ${actionName}] Constructed analysisPrompt: "${analysisPrompt}"`);
 
 		const payload = {
 			model: 'sonar',
 			messages: [
-				{
-					role: 'system',
-					content: `You are an expert source analyst evaluating information quality and reliability.
-
-					Provide a detailed analysis formatted as JSON:
-					{
-						"analysis": "Main analysis of the source",
-						"reliability": "Assessment of source reliability (if applicable)",
-						"methodology": "Evaluation of research methods (if applicable)",
-						"corroborating": ["Supporting source 1", "Supporting source 2"],
-						"contradicting": ["Contradicting source 1", "Contradicting source 2"]
-					}`
-				},
-				{
-					role: 'user',
-					content: analysisPrompt
-				}
+				{ role: 'system', content: ANALYZE_SOURCE_SYSTEM_PROMPT },
+				{ role: 'user', content: analysisPrompt }
 			],
-			temperature: 0.2, // Low temperature for analytical precision
+			temperature: 0.2,
 			max_tokens: 3500,
-			web_search_options: {
-				search_context_size: 'medium' // Medium context for focused source analysis
-			},
+			web_search_options: { search_context_size: 'low' },
 			return_images: false,
-			return_related_questions: false
+			return_related_questions: false,
+			response_format: {
+				type: 'json_schema',
+				json_schema: {
+					schema: {
+						type: 'object',
+						properties: {
+							analysis: { type: 'string' },
+							reliability: { type: 'string' },
+							methodology: { type: 'string' },
+							corroborating: { type: 'array', items: { type: 'string' } },
+							contradicting: { type: 'array', items: { type: 'string' } }
+						},
+						required: ['analysis'],
+						additionalProperties: false
+					}
+				}
+			}
 		};
 
 		try {
-			const resp = await fetch(PERPLEXITY_API_URL, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${apiKey}`
-				},
-				body: JSON.stringify(payload)
-			});
+			const { parsedContent } = await makePerplexityRequest<AnalyzeSourceResponse>(
+				apiKey,
+				payload,
+				actionName
+			);
 
-			if (!resp.ok) {
-				return { success: false, error: `API returned status ${resp.status}` };
+			if (
+				typeof parsedContent.analysis !== 'string' ||
+				(parsedContent.reliability !== undefined &&
+					typeof parsedContent.reliability !== 'string') ||
+				(parsedContent.methodology !== undefined &&
+					typeof parsedContent.methodology !== 'string') ||
+				!Array.isArray(parsedContent.corroborating) ||
+				!parsedContent.corroborating.every((item: string) => typeof item === 'string') ||
+				!Array.isArray(parsedContent.contradicting) ||
+				!parsedContent.contradicting.every((item: string) => typeof item === 'string')
+			) {
+				console.error(
+					`[${actionName}] Parsed JSON for AnalyzeSourceResponse does not match expected structure.`,
+					parsedContent
+				);
+				throw new Error(
+					'API response validation failed: Incorrect structure for AnalyzeSourceResponse.'
+				);
 			}
 
-			const answer = await resp.json();
-			const content = answer.choices?.[0]?.message?.content;
-
-			let analysis = '';
-			let reliability = '';
-			let methodology = '';
-			let corroborating: string[] = [];
-			let contradicting: string[] = [];
-
-			if (content && typeof content === 'string') {
-				console.log('[analyzeSource] Raw API content:', content);
-				let parsedData: any = null;
-
-				// Attempt 1: Check for ```json ... ``` block
-				try {
-					const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
-					if (jsonMatch && jsonMatch[1]) {
-						parsedData = JSON.parse(jsonMatch[1]);
-						console.log('[analyzeSource] Successfully parsed from ```json block.');
-					}
-				} catch (e) {
-					console.warn('[analyzeSource] Failed to parse from ```json block, error:', e);
-					// Continue to next attempt
-				}
-
-				// Attempt 2: Try parsing the whole content as JSON if not successful above
-				if (!parsedData) {
-					try {
-						parsedData = JSON.parse(content);
-						console.log('[analyzeSource] Successfully parsed direct content string as JSON.');
-					} catch (e) {
-						console.log('[analyzeSource] Direct content string is not JSON. Treating as plain text analysis.');
-						// parsedData remains null, content will be used as plain text
-					}
-				}
-				
-				// Process parsedData or use content as fallback
-				if (parsedData && typeof parsedData === 'object' && parsedData !== null) {
-					// Check if the 'analysis' field itself contains stringified JSON
-					if (typeof parsedData.analysis === 'string') {
-						try {
-							// Attempt to parse the 'analysis' field if it looks like JSON
-							const nestedJsonMatch = parsedData.analysis.match(/^\s*{[\s\S]*}\s*$/);
-							if (nestedJsonMatch) {
-								const nestedParsed = JSON.parse(parsedData.analysis);
-								console.log('[analyzeSource] Successfully parsed nested JSON from "analysis" field.');
-								// Use fields from the nested JSON object
-								analysis = nestedParsed.analysis || parsedData.analysis || ''; // Fallback to outer analysis string if inner is missing
-								reliability = nestedParsed.reliability || '';
-								methodology = nestedParsed.methodology || '';
-								corroborating = Array.isArray(nestedParsed.corroborating) ? nestedParsed.corroborating.filter((item: any): item is string => typeof item === 'string') : [];
-								contradicting = Array.isArray(nestedParsed.contradicting) ? nestedParsed.contradicting.filter((item: any): item is string => typeof item === 'string') : [];
-							} else {
-								// 'analysis' field is a string but not JSON, use it directly
-								analysis = parsedData.analysis;
-								reliability = parsedData.reliability || '';
-								methodology = parsedData.methodology || '';
-								corroborating = Array.isArray(parsedData.corroborating) ? parsedData.corroborating.filter((item: any): item is string => typeof item === 'string') : [];
-								contradicting = Array.isArray(parsedData.contradicting) ? parsedData.contradicting.filter((item: any): item is string => typeof item === 'string') : [];
-							}
-						} catch (e) {
-							console.warn('[analyzeSource] Failed to parse nested JSON in "analysis" field, using it as string. Error:', e);
-							analysis = parsedData.analysis; // Fallback to the string content of 'analysis'
-							// Populate other fields from the outer parsedData
-							reliability = parsedData.reliability || '';
-							methodology = parsedData.methodology || '';
-							corroborating = Array.isArray(parsedData.corroborating) ? parsedData.corroborating.filter((item: any): item is string => typeof item === 'string') : [];
-							contradicting = Array.isArray(parsedData.contradicting) ? parsedData.contradicting.filter((item: any): item is string => typeof item === 'string') : [];
-						}
-					} else {
-                         // parsedData.analysis is not a string, or missing.
-                         // Populate fields directly from parsedData, analysis might be empty or from another source.
-                        analysis = parsedData.analysis || ''; // if it was e.g. null or undefined
-						reliability = parsedData.reliability || '';
-						methodology = parsedData.methodology || '';
-						corroborating = Array.isArray(parsedData.corroborating) ? parsedData.corroborating.filter((item: any): item is string => typeof item === 'string') : [];
-						contradicting = Array.isArray(parsedData.contradicting) ? parsedData.contradicting.filter((item: any): item is string => typeof item === 'string') : [];
-					}
-				} else if (parsedData === null) { 
-					// Content was not JSON and had no ```json block, treat as plain text analysis.
-					analysis = content; // The whole content is the analysis
-					console.log('[analyzeSource] Using raw content as plain text analysis as no JSON structure found.');
-				} else {
-					console.error('[analyzeSource] API content was not a string or a usable JSON object.');
-					analysis = 'Error: Could not process API response content.';
-				}
-			} else {
-				analysis = 'No content received from API.';
-				console.log('[analyzeSource] No content received from API.');
-			}
-
-			return {
+			const resultData = {
 				success: true,
 				result: {
 					analysisTypeName: analysisTypeNameForDisplay,
-					analysis,
-					reliability,
-					methodology,
-					corroborating,
-					contradicting
+					analysis: parsedContent.analysis,
+					reliability: parsedContent.reliability || '',
+					methodology: parsedContent.methodology || '',
+					corroborating: parsedContent.corroborating,
+					contradicting: parsedContent.contradicting
 				}
 			};
-		} catch (err) {
-			console.error('Failed to analyze source:', err);
-			return { success: false, error: 'Failed to contact API for source analysis' };
+			console.log(`[Action ${actionName}] Successfully analyzed source. Returning data.`);
+			return resultData;
+		} catch (err: unknown) {
+			const errorMessage = err instanceof Error ? err.message : `Failed to analyze source.`;
+			console.error(`[Action ${actionName}] Error:`, errorMessage);
+			return { success: false, error: errorMessage };
 		}
 	},
 
-	// Action to synthesize insights from multiple research angles
 	synthesizeInsights: async ({ request }) => {
+		const actionName = 'synthesizeInsights';
+		console.log(`[Action ${actionName}] Called.`);
 		const data = await request.formData();
-		const mythStatement = data.get('mythStatement');
-		const lensResultsJson = data.get('lensResults');
+		const mythStatement = data.get('mythStatement') as string;
+		const lensResultsJson = data.get('lensResults') as string;
 
-		if (typeof mythStatement !== 'string' || !mythStatement.trim()) {
-			return { success: false, error: 'Myth statement is required.' };
-		}
+		console.log(`[Action ${actionName}] Received mythStatement: "${mythStatement}"`);
 
-		if (typeof lensResultsJson !== 'string' || !lensResultsJson.trim()) {
-			return { success: false, error: 'Lens results are required.' };
-		}
+		if (!mythStatement?.trim()) return { success: false, error: 'Myth statement is required.' };
+		if (!lensResultsJson?.trim()) return { success: false, error: 'Lens results are required.' };
 
 		let lensResults: LensResult[] = [];
 		try {
 			lensResults = JSON.parse(lensResultsJson);
-		} catch (error) {
-			return { success: false, error: 'Invalid lens results format.' };
+		} catch (e: unknown) {
+			const errorMessage = e instanceof Error ? e.message : 'Invalid lens results format.';
+			console.error(`[Action ${actionName}] Error parsing lensResultsJson:`, errorMessage);
+			return { success: false, error: errorMessage };
 		}
-
-		if (lensResults.length < 2) {
-			return { success: false, error: 'At least 2 research angles are needed for synthesis.' };
-		}
-
-		console.log(
-			'Synthesizing insights for myth:',
-			mythStatement,
-			'from',
-			lensResults.length,
-			'lenses'
-		);
+		if (lensResults.length < 2)
+			return { success: false, error: 'At least 2 research angles are needed.' };
 
 		const apiKey = PERPLEXITY_API_KEY;
-		if (!apiKey) {
-			return { success: false, error: 'Missing Perplexity API key on server.' };
-		}
+		if (!apiKey) return { success: false, error: 'Missing API key.' };
 
-		// Construct synthesis prompt
-		const lensData = lensResults.map((lens) => ({
-			perspective: lens.name,
-			insights: lens.result?.keyInsights || [],
-			explanation: lens.result?.explanation || ''
+		const lensDataForPrompt = lensResults.map((lr) => ({
+			perspective: lr.name,
+			insights: lr.result?.keyInsights?.join(', ') || 'N/A',
+			explanation: lr.result?.explanation || 'N/A'
 		}));
 
-		const synthesisPrompt = `Given the myth "${mythStatement}", analyze the following research findings from different perspectives:
-
-${lensData
-	.map(
-		(lens) => `
-**${lens.perspective} Perspective:**
-Key Insights: ${lens.insights.join(', ')}
-Analysis: ${lens.explanation}
-`
-	)
-	.join('\n')}
-
-Provide a comprehensive synthesis that identifies:
-1. Overarching themes that emerge across perspectives
-2. Key connections between different viewpoints
-3. Notable contradictions or tensions
-4. An overall insight that integrates all perspectives
-
-Format as JSON:
-{
-	"overallInsight": "Comprehensive summary integrating all perspectives",
-	"themes": [
-		{"title": "Theme 1", "description": "Description of theme"},
-		{"title": "Theme 2", "description": "Description of theme"}
-	],
-	"connections": ["Connection 1", "Connection 2"],
-	"contradictions": ["Contradiction 1", "Contradiction 2"]
-}`;
+		const userPromptContent = `Given the myth "${mythStatement}", analyze the following research findings from different perspectives:
+		${lensDataForPrompt
+			.map(
+				(lens) => `
+		**${lens.perspective} Perspective:**
+		Key Insights: ${lens.insights}
+		Analysis: ${lens.explanation}
+		`
+			)
+			.join('\n')}
+		Provide a comprehensive synthesis that identifies:
+		1. Overarching themes that emerge across perspectives
+		2. Key connections between different viewpoints
+		3. Notable contradictions or tensions
+		4. An overall insight that integrates all perspectives`;
+		console.log(`[Action ${actionName}] Constructed userPromptContent for synthesis.`);
 
 		const payload = {
 			model: 'sonar',
 			messages: [
-				{
-					role: 'system',
-					content:
-						'You are an expert research synthesizer who integrates findings from multiple perspectives to generate comprehensive insights. Focus on identifying patterns, themes, and connections across different analytical approaches.'
-				},
-				{
-					role: 'user',
-					content: synthesisPrompt
-				}
+				{ role: 'system', content: SYNTHESIZE_INSIGHTS_SYSTEM_PROMPT },
+				{ role: 'user', content: userPromptContent }
 			],
-			temperature: 0.4, // Higher temperature for creative synthesis
+			temperature: 0.4,
 			max_tokens: 3000,
-			web_search_options: {
-				search_context_size: 'low' // Low context since we're synthesizing provided data
-			},
+			web_search_options: { search_context_size: 'low' },
 			return_images: false,
-			return_related_questions: false
+			return_related_questions: false,
+			response_format: {
+				type: 'json_schema',
+				json_schema: {
+					schema: {
+						type: 'object',
+						properties: {
+							overallInsight: { type: 'string' },
+							themes: {
+								type: 'array',
+								items: {
+									type: 'object',
+									properties: { title: { type: 'string' }, description: { type: 'string' } },
+									required: ['title', 'description']
+								}
+							},
+							connections: { type: 'array', items: { type: 'string' } },
+							contradictions: { type: 'array', items: { type: 'string' } }
+						},
+						required: ['overallInsight', 'themes', 'connections', 'contradictions'],
+						additionalProperties: false
+					}
+				}
+			}
 		};
 
 		try {
-			const resp = await fetch(PERPLEXITY_API_URL, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${apiKey}`
-				},
-				body: JSON.stringify(payload)
-			});
+			const { parsedContent } = await makePerplexityRequest<SynthesizeInsightsResponse>(
+				apiKey,
+				payload,
+				actionName
+			);
 
-			if (!resp.ok) {
-				return { success: false, error: `API returned status ${resp.status}` };
+			if (
+				typeof parsedContent.overallInsight !== 'string' ||
+				!Array.isArray(parsedContent.themes) ||
+				!parsedContent.themes.every(
+					(theme: { title: string; description: string }) =>
+						typeof theme === 'object' &&
+						theme !== null &&
+						typeof theme.title === 'string' &&
+						typeof theme.description === 'string'
+				) ||
+				!Array.isArray(parsedContent.connections) ||
+				!parsedContent.connections.every((conn: string) => typeof conn === 'string') ||
+				!Array.isArray(parsedContent.contradictions) ||
+				!parsedContent.contradictions.every((contr: string) => typeof contr === 'string')
+			) {
+				console.error(
+					`[${actionName}] Parsed JSON for SynthesizeInsightsResponse does not match expected structure.`,
+					parsedContent
+				);
+				throw new Error(
+					'API response validation failed: Incorrect structure for SynthesizeInsightsResponse.'
+				);
 			}
 
-			const answer = await resp.json();
-			const content = answer.choices?.[0]?.message?.content;
-
-			let overallInsight = '';
-			let themes: Array<{ title: string; description: string }> = [];
-			let connections: string[] = [];
-			let contradictions: string[] = [];
-
-			if (content) {
-				console.log('[synthesizeInsights] Raw API content:', content);
-				let parsedData = null;
-
-				// Attempt 1: Check for ```json ... ``` block
-				try {
-					const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
-					if (jsonMatch && jsonMatch[1]) {
-						parsedData = JSON.parse(jsonMatch[1]);
-						console.log('[synthesizeInsights] Successfully parsed from ```json block.');
-					}
-				} catch (e) {
-					console.warn(
-						'[synthesizeInsights] Failed to parse from ```json block, will try direct parse.',
-						e
-					);
-				}
-
-				// Attempt 2: Try parsing the whole content as JSON if not successful above
-				if (!parsedData) {
-					try {
-						parsedData = JSON.parse(content);
-						console.log('[synthesizeInsights] Successfully parsed direct content string.');
-					} catch (e) {
-						console.log(
-							'[synthesizeInsights] Direct content string is not JSON. Treating as plain text for overallInsight or error.'
-						);
-					}
-				}
-
-				// Now, process parsedData or use content as fallback
-				if (parsedData && typeof parsedData === 'object' && parsedData !== null) {
-					overallInsight =
-						typeof parsedData.overallInsight === 'string' ? parsedData.overallInsight : '';
-					themes = Array.isArray(parsedData.themes)
-						? parsedData.themes.filter(
-								(t: any) => t && typeof t.title === 'string' && typeof t.description === 'string'
-							)
-						: [];
-					connections = Array.isArray(parsedData.connections)
-						? parsedData.connections.filter((item: any) => typeof item === 'string')
-						: [];
-					contradictions = Array.isArray(parsedData.contradictions)
-						? parsedData.contradictions.filter((item: any) => typeof item === 'string')
-						: [];
-
-					if (typeof parsedData.overallInsight !== 'string' && overallInsight === '') {
-						console.warn(
-							'[synthesizeInsights] Parsed data is missing a string "overallInsight" field. Content was:',
-							content,
-							'Parsed data:',
-							parsedData
-						);
-					}
-					console.log('[synthesizeInsights] Extracted from parsed data:', {
-						overallInsight,
-						themes_count: themes.length,
-						connections_count: connections.length,
-						contradictions_count: contradictions.length
-					});
-				} else if (typeof content === 'string') {
-					// content is not parsable JSON, treat as plain text for overallInsight if it seems like a sentence.
-					// Otherwise, it might be an error or unexpected format.
-					overallInsight = content; // Default to content if it's just a string
-					themes = [];
-					connections = [];
-					contradictions = [];
-					console.log(
-						'[synthesizeInsights] Using content as plain text for overallInsight, other fields empty.'
-					);
-				} else {
-					console.error(
-						'[synthesizeInsights] API content was not a string or a usable JSON object for synthesis.'
-					);
-					overallInsight = 'Error: Could not process synthesis response content.';
-					themes = [];
-					connections = [];
-					contradictions = [];
-				}
-			} else {
-				overallInsight = 'No content received from API for synthesis.';
-			}
-
-			return {
+			const resultData = {
 				success: true,
 				result: {
-					overallInsight,
-					themes,
-					connections,
-					contradictions
+					overallInsight: parsedContent.overallInsight,
+					themes: parsedContent.themes,
+					connections: parsedContent.connections,
+					contradictions: parsedContent.contradictions
 				}
 			};
-		} catch (err) {
-			console.error('Failed to synthesize insights:', err);
-			return { success: false, error: 'Failed to contact API for insight synthesis' };
+			console.log(`[Action ${actionName}] Successfully synthesized insights. Returning data.`);
+			return resultData;
+		} catch (err: unknown) {
+			const errorMessage = err instanceof Error ? err.message : `Failed to synthesize insights.`;
+			console.error(`[Action ${actionName}] Error:`, errorMessage);
+			return { success: false, error: errorMessage };
 		}
 	},
 
-	// Action to clear the server-side API response cache
 	clearServerCache: () => {
-		console.log('Clearing server API response cache');
-		responseCache.clear(); // Clear all entries from the cache Map
+		console.log('[Action clearServerCache] Called. Clearing response cache.');
+		responseCache.clear();
 		return { success: true, message: 'Server API response cache cleared successfully.' };
 	},
 
-	// Action to signal a page reset, primarily for client-side state clearing via enhance
 	resetPage: async () => {
-		console.log('[resetPage] Action called. Returning minimal success.');
-		// This action doesn't need to do much. Its completion will trigger client-side updates.
-		// It could return specific data if needed to influence pageFormProp,
-		// but for a simple clear, an empty success is often enough.
-		return { success: true, reset: true }; // Sending a marker
+		console.log('[Action resetPage] Called.');
+		return { success: true, reset: true };
 	}
 };
