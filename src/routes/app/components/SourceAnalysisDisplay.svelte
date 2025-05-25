@@ -277,7 +277,7 @@
 											</div>
 										</Accordion.Trigger>
 										<Accordion.Content
-											class="prose prose-sm dark:prose-invert max-w-none px-4 pb-4 pt-1 text-muted-foreground"
+											class="prose prose-sm dark:prose-invert max-w-none px-4 pb-4 pt-1 text-muted-foreground break-words"
 										>
 											{#if section.type === 'text'}
 												<p class="whitespace-pre-wrap leading-relaxed">
@@ -286,7 +286,7 @@
 											{:else if section.type === 'list' && Array.isArray(section.content)}
 												<ul class="list-disc space-y-1.5 pl-5">
 													{#each section.content as item (item)}
-														<li>
+														<li class="break-words">
 															{#if typeof item === 'string' && isValidUrl(item)}
 																<a
 																	href={item}

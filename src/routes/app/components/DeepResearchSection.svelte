@@ -130,10 +130,24 @@
 						</Card.Content>
 					{:else if lens.error}
 						<Card.Content class="p-0">
-							<Alert.Root variant="destructive" class="m-4 border-destructive/50 text-destructive">
-								<AlertTriangle class="h-4 w-4" />
-								<Alert.Title>Analysis Error</Alert.Title>
+							<Alert.Root variant="destructive" class="m-4 border-destructive/50 text-destructive flex flex-col space-y-3">
+								<div class="flex items-center gap-2">
+									<AlertTriangle class="h-4 w-4" />
+									<Alert.Title>Analysis Error</Alert.Title>
+								</div>
 								<Alert.Description>{lens.error}</Alert.Description>
+								<!-- Add Try Again Button -->
+								<form method="POST" action="?/researchLens" use:enhance={analyzeLensEnhancer}>
+									<input type="hidden" name="mythStatement" value={mythStatement || ''} />
+									<input type="hidden" name="lensType" value={lens.id} />
+									<input type="hidden" name="lensName" value={lens.name} />
+									{#if lens.isCustom}
+										<input type="hidden" name="customQuery" value={lens.name} />
+									{/if}
+									<Button type="submit" variant="outline" class="mt-2 w-full md:w-auto">
+										<Microscope class="mr-2 h-4 w-4" /> Try Again
+									</Button>
+								</form>
 							</Alert.Root>
 						</Card.Content>
 					{:else if lens.result}
@@ -143,7 +157,7 @@
 						<Card.Content class="space-y-6">
 							<div>
 								<h6 class="mb-2 text-base font-semibold">Explanation:</h6>
-								<p class="text-sm leading-relaxed text-muted-foreground">
+								<p class="text-sm leading-relaxed text-muted-foreground break-words">
 									{lens.result.explanation}
 								</p>
 							</div>
@@ -154,7 +168,7 @@
 										{#each lens.result.keyInsights as insight}
 											<li class="flex items-start">
 												<CheckCircle2 class="mr-2 mt-1 h-4 w-4 shrink-0 text-primary" />
-												<span class="text-muted-foreground">{insight}</span>
+												<span class="text-muted-foreground break-words">{insight}</span>
 											</li>
 										{/each}
 									</ul>
@@ -245,7 +259,7 @@
 											href={citation.url}
 											target="_blank"
 											rel="noopener noreferrer"
-											class="flex-grow truncate text-primary hover:underline"
+											class="flex-grow break-words text-primary hover:underline"
 											title={citation.title}
 										>
 											{citation.title}
