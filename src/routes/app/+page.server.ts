@@ -634,8 +634,22 @@ export const actions: Actions = {
 		const sourceUrl = data.get('sourceUrl');
 		const sourceName = data.get('sourceName');
 		const mythContext = data.get('mythContext');
-		const analysisType = data.get('analysisType');
-		const customQuery = data.get('customQuery');
+		const analysisType = data.get('analysisType') as string | null;
+		const customQuery = data.get('customQuery') as string | null;
+
+		let analysisTypeNameForDisplay = 'General Analysis';
+		if (analysisType === 'custom' && customQuery && customQuery.trim()) {
+			analysisTypeNameForDisplay = `Custom Query: "${customQuery.trim()}"`;
+		} else if (analysisType) {
+			const typeMap: Record<string, string> = {
+				reliability: 'Reliability Assessment',
+				methodology: 'Methodology Evaluation',
+				contradictions: 'Contradiction Check',
+				corroboration: 'Corroboration Check'
+			};
+			analysisTypeNameForDisplay = typeMap[analysisType] || `Analysis: ${analysisType}`;
+		}
+
 
 		if (typeof sourceUrl !== 'string' || !sourceUrl.trim()) {
 			return { success: false, error: 'Source URL is required.' };
@@ -720,27 +734,92 @@ export const actions: Actions = {
 			let corroborating: string[] = [];
 			let contradicting: string[] = [];
 
-			if (content) {
+			if (content && typeof content === 'string') {
+				console.log('[analyzeSource] Raw API content:', content);
+				let parsedData: any = null;
+
+				// Attempt 1: Check for ```json ... ``` block
 				try {
-					const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
+					const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
 					if (jsonMatch && jsonMatch[1]) {
-						const parsed = JSON.parse(jsonMatch[1]);
-						analysis = parsed.analysis || '';
-						reliability = parsed.reliability || '';
-						methodology = parsed.methodology || '';
-						corroborating = parsed.corroborating || [];
-						contradicting = parsed.contradicting || [];
-					} else {
-						analysis = content;
+						parsedData = JSON.parse(jsonMatch[1]);
+						console.log('[analyzeSource] Successfully parsed from ```json block.');
 					}
-				} catch (error) {
-					analysis = content;
+				} catch (e) {
+					console.warn('[analyzeSource] Failed to parse from ```json block, error:', e);
+					// Continue to next attempt
 				}
+
+				// Attempt 2: Try parsing the whole content as JSON if not successful above
+				if (!parsedData) {
+					try {
+						parsedData = JSON.parse(content);
+						console.log('[analyzeSource] Successfully parsed direct content string as JSON.');
+					} catch (e) {
+						console.log('[analyzeSource] Direct content string is not JSON. Treating as plain text analysis.');
+						// parsedData remains null, content will be used as plain text
+					}
+				}
+				
+				// Process parsedData or use content as fallback
+				if (parsedData && typeof parsedData === 'object' && parsedData !== null) {
+					// Check if the 'analysis' field itself contains stringified JSON
+					if (typeof parsedData.analysis === 'string') {
+						try {
+							// Attempt to parse the 'analysis' field if it looks like JSON
+							const nestedJsonMatch = parsedData.analysis.match(/^\s*{[\s\S]*}\s*$/);
+							if (nestedJsonMatch) {
+								const nestedParsed = JSON.parse(parsedData.analysis);
+								console.log('[analyzeSource] Successfully parsed nested JSON from "analysis" field.');
+								// Use fields from the nested JSON object
+								analysis = nestedParsed.analysis || parsedData.analysis || ''; // Fallback to outer analysis string if inner is missing
+								reliability = nestedParsed.reliability || '';
+								methodology = nestedParsed.methodology || '';
+								corroborating = Array.isArray(nestedParsed.corroborating) ? nestedParsed.corroborating.filter((item: any): item is string => typeof item === 'string') : [];
+								contradicting = Array.isArray(nestedParsed.contradicting) ? nestedParsed.contradicting.filter((item: any): item is string => typeof item === 'string') : [];
+							} else {
+								// 'analysis' field is a string but not JSON, use it directly
+								analysis = parsedData.analysis;
+								reliability = parsedData.reliability || '';
+								methodology = parsedData.methodology || '';
+								corroborating = Array.isArray(parsedData.corroborating) ? parsedData.corroborating.filter((item: any): item is string => typeof item === 'string') : [];
+								contradicting = Array.isArray(parsedData.contradicting) ? parsedData.contradicting.filter((item: any): item is string => typeof item === 'string') : [];
+							}
+						} catch (e) {
+							console.warn('[analyzeSource] Failed to parse nested JSON in "analysis" field, using it as string. Error:', e);
+							analysis = parsedData.analysis; // Fallback to the string content of 'analysis'
+							// Populate other fields from the outer parsedData
+							reliability = parsedData.reliability || '';
+							methodology = parsedData.methodology || '';
+							corroborating = Array.isArray(parsedData.corroborating) ? parsedData.corroborating.filter((item: any): item is string => typeof item === 'string') : [];
+							contradicting = Array.isArray(parsedData.contradicting) ? parsedData.contradicting.filter((item: any): item is string => typeof item === 'string') : [];
+						}
+					} else {
+                         // parsedData.analysis is not a string, or missing.
+                         // Populate fields directly from parsedData, analysis might be empty or from another source.
+                        analysis = parsedData.analysis || ''; // if it was e.g. null or undefined
+						reliability = parsedData.reliability || '';
+						methodology = parsedData.methodology || '';
+						corroborating = Array.isArray(parsedData.corroborating) ? parsedData.corroborating.filter((item: any): item is string => typeof item === 'string') : [];
+						contradicting = Array.isArray(parsedData.contradicting) ? parsedData.contradicting.filter((item: any): item is string => typeof item === 'string') : [];
+					}
+				} else if (parsedData === null) { 
+					// Content was not JSON and had no ```json block, treat as plain text analysis.
+					analysis = content; // The whole content is the analysis
+					console.log('[analyzeSource] Using raw content as plain text analysis as no JSON structure found.');
+				} else {
+					console.error('[analyzeSource] API content was not a string or a usable JSON object.');
+					analysis = 'Error: Could not process API response content.';
+				}
+			} else {
+				analysis = 'No content received from API.';
+				console.log('[analyzeSource] No content received from API.');
 			}
 
 			return {
 				success: true,
 				result: {
+					analysisTypeName: analysisTypeNameForDisplay,
 					analysis,
 					reliability,
 					methodology,

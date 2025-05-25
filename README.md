@@ -12,7 +12,7 @@ Myth Buster is an interactive web application transforming myth verification int
 
 Distinguishing fact from fiction requires more than simple true/false. Misinformation often has deep roots and nuanced contexts. Myth Buster provides **sophisticated tools for deep exploration**, turning users into active investigators.
 
-Our strategy for this hackathon is detailed here: [Hackathon Submission Strategy](./plan_reformed/hackathon_submission_strategy.md).
+
 
 ## Core Deep Research Capabilities (Hackathon Focus - `/app`)
 

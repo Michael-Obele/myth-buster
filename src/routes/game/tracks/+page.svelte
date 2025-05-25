@@ -33,6 +33,20 @@
 		Default: BookOpen // Fallback icon
 	};
 
+	// Map track categories to icon names
+	const categoryIconMap: Record<string, string> = {
+		'Science': 'FlaskConical',
+		'History': 'ScrollText',
+		'Technology': 'Laptop',
+		'Arts & Culture': 'Palette',
+		'Geography': 'Globe',
+		'Society': 'Scale',
+		'Psychology': 'Brain',
+		'Entertainment': 'Video',
+		'Literature': 'BookOpen',
+		// Add more mappings as needed based on your track categories
+	};
+
 	function getDifficultyClass(difficulty: 'easy' | 'medium' | 'hard' | undefined) {
 		switch (difficulty) {
 			case 'easy':
@@ -74,7 +88,8 @@
 	{#if data.tracks && data.tracks.length > 0}
 		<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 			{#each data.tracks as track (track.id)}
-				{@const Icon = iconMap[track.icon || 'Default']}
+				{@const iconName = categoryIconMap[track.category] || 'Default'}
+				{@const Icon = iconMap[iconName]}
 				<Card.Root
 					class="flex flex-col overflow-hidden border-border/50 bg-card/80 shadow-lg transition-all hover:shadow-primary/30"
 				>

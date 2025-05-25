@@ -44,6 +44,7 @@
 		loading: boolean;
 		success?: boolean;
 		data?: {
+			analysisTypeName?: string; // Added to display the type of analysis performed
 			analysis: string;
 			reliability?: string;
 			methodology?: string;
@@ -256,6 +257,13 @@
 								<Alert.Description>{internalDisplayState.error}</Alert.Description>
 							</Alert.Root>
 						{:else if internalDisplayState.data && sections().length > 0}
+							{#if internalDisplayState.data.analysisTypeName}
+								<div class="px-4 pt-3 pb-2">
+									<p class="text-sm font-medium text-muted-foreground">
+										Showing results for: <span class="text-primary">{internalDisplayState.data.analysisTypeName}</span>
+									</p>
+								</div>
+							{/if}
 							<Accordion.Root type="multiple" class="w-full" value={sections().map((s) => s.title)}>
 								{#each sections() as section (section.title)}
 									{@const IconComponent = section.icon}
