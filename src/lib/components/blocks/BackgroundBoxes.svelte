@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
+	import { onMount } from 'svelte';
 
 	let {
 		className = '',
@@ -32,7 +33,7 @@
 	let boxes: Box[] = $state([]);
 
 	// Generate random boxes
-	$effect(() => {
+	onMount(() => {
 		const newBoxes: Box[] = [];
 		for (let i = 0; i < quantity; i++) {
 			newBoxes.push({

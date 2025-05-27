@@ -90,82 +90,82 @@
 	<!-- Grid pattern overlay -->
 	<div class="bg-grid-black/[0.07] dark:bg-grid-white/[0.05] absolute inset-0"></div>
 
-	<!-- Background boxes for additional visual effect -->
-	<BackgroundBoxes
-		className="opacity-50"
-		boxClassName="border border-slate-700/20"
-		pattern="grid"
-		patternColor="slate-700"
-		quantity={8}
+	<!-- Main content -->
+	<main
+		class="text-foreground relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-start px-4 py-16"
 	>
-		<!-- Main content -->
-		<main
-			class="text-foreground relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-start px-4 py-16"
+		<!-- Header -->
+		<div class="mb-12 flex flex-col items-center text-center">
+			<div class="mb-6 flex items-center gap-3">
+				<SparklesText
+					text="About Myth Buster"
+					class="font-underdog text-primary text-5xl font-bold tracking-tight md:text-6xl"
+				/>
+			</div>
+
+			<p class="text-muted-foreground max-w-2xl text-center text-lg">
+				Discover the story behind our AI-powered myth-busting tool, designed to help you uncover the
+				truth with reliable information and engaging visuals.
+			</p>
+		</div>
+
+		<!-- Tabs for different sections -->
+		<Tabs.Root value="about" class="my-12 w-full max-w-4xl">
+			<Tabs.List class="flex gap-4">
+				<Tabs.Trigger value="about">
+					<div class="flex items-center gap-2">
+						<BookOpen class="h-4 w-4" />
+						<span>About</span>
+					</div>
+				</Tabs.Trigger>
+				<Tabs.Trigger value="features">
+					<div class="flex items-center gap-2">
+						<Check class="h-4 w-4" />
+						<span>Features</span>
+					</div>
+				</Tabs.Trigger>
+				<Tabs.Trigger value="tech">
+					<div class="flex items-center gap-2">
+						<Code class="h-4 w-4" />
+						<span>Tech Stack</span>
+					</div>
+				</Tabs.Trigger>
+			</Tabs.List>
+
+			<div class="mt-6">
+				<Tabs.Content value="about">
+					<AboutTab {team} />
+				</Tabs.Content>
+
+				<Tabs.Content value="features">
+					<FeaturesTab {features} />
+				</Tabs.Content>
+
+				<Tabs.Content value="tech">
+					<TechStackTab />
+				</Tabs.Content>
+			</div>
+		</Tabs.Root>
+
+		<!-- CTA Section -->
+		<div class="mt-16 text-center">
+			<h2 class="mb-4 text-2xl font-bold">Ready to start busting myths?</h2>
+			<p class="text-muted-foreground mb-6">Try our interactive myth verification tool now</p>
+			<Button href="/app" class="px-6 py-2">
+				Start Busting Myths
+				<ArrowRight class="ml-2 h-4 w-4" />
+			</Button>
+		</div>
+	</main>
+	<!-- Background boxes for additional visual effect -->
+	<!-- <BackgroundBoxes
+			className="opacity-50"
+			boxClassName="border border-slate-700/20"
+			pattern="grid"
+			patternColor="slate-700"
+			quantity={8}
 		>
-			<!-- Header -->
-			<div class="mb-12 flex flex-col items-center text-center">
-				<div class="mb-6 flex items-center gap-3">
-					<SparklesText
-						text="About Myth Buster"
-						class="font-underdog text-primary text-5xl font-bold tracking-tight md:text-6xl"
-					/>
-				</div>
-
-				<p class="text-muted-foreground max-w-2xl text-center text-lg">
-					Discover the story behind our AI-powered myth-busting tool, designed to help you uncover
-					the truth with reliable information and engaging visuals.
-				</p>
-			</div>
-
-			<!-- Tabs for different sections -->
-			<Tabs.Root value="about" class="my-12 w-full max-w-4xl">
-				<Tabs.List class="flex gap-4">
-					<Tabs.Trigger value="about">
-						<div class="flex items-center gap-2">
-							<BookOpen class="h-4 w-4" />
-							<span>About</span>
-						</div>
-					</Tabs.Trigger>
-					<Tabs.Trigger value="features">
-						<div class="flex items-center gap-2">
-							<Check class="h-4 w-4" />
-							<span>Features</span>
-						</div>
-					</Tabs.Trigger>
-					<Tabs.Trigger value="tech">
-						<div class="flex items-center gap-2">
-							<Code class="h-4 w-4" />
-							<span>Tech Stack</span>
-						</div>
-					</Tabs.Trigger>
-				</Tabs.List>
-
-				<div class="mt-6">
-					<Tabs.Content value="about">
-						<AboutTab {team} />
-					</Tabs.Content>
-
-					<Tabs.Content value="features">
-						<FeaturesTab {features} />
-					</Tabs.Content>
-
-					<Tabs.Content value="tech">
-						<TechStackTab />
-					</Tabs.Content>
-				</div>
-			</Tabs.Root>
-
-			<!-- CTA Section -->
-			<div class="mt-16 text-center">
-				<h2 class="mb-4 text-2xl font-bold">Ready to start busting myths?</h2>
-				<p class="text-muted-foreground mb-6">Try our interactive myth verification tool now</p>
-				<Button href="/app" class="px-6 py-2">
-					Start Busting Myths
-					<ArrowRight class="ml-2 h-4 w-4" />
-				</Button>
-			</div>
-		</main>
-	</BackgroundBoxes>
+	</BackgroundBoxes> -->
 	<style>
 		.floating-particle {
 			position: absolute;

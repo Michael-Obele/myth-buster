@@ -23,16 +23,24 @@
 <div class="min-h-screen overflow-hidden bg-linear-to-br from-slate-900 to-slate-800">
 	<!-- Grid pattern overlay -->
 	<div class="bg-grid-black/[0.07] dark:bg-grid-white/[0.05] absolute inset-0"></div>
-
 	<!-- Main content -->
 	<main
 		class="text-foreground relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 py-16"
 	>
-		<!-- Enhanced Hero Section (using component) -->
-		<EnhancedHero />
+		<!-- Background boxes for additional visual effect -->
+		<BackgroundBoxes
+			className="opacity-50"
+			boxClassName="border border-slate-700/20"
+			pattern="grid"
+			patternColor="slate-700"
+			quantity={5}
+		>
+			<!-- Enhanced Hero Section (using component) -->
+			<EnhancedHero />
 
-		<!-- Stats Highlight Section -->
-		<StatsHighlight />
+			<!-- Stats Highlight Section -->
+			<StatsHighlight />
+		</BackgroundBoxes>
 
 		<!-- Mini-Myth Quick Check Feature -->
 		<MiniMythCheck />
@@ -45,20 +53,19 @@
 		<!-- Game Preview Section -->
 		<GamePreview />
 
-		<!-- New How It Works Section with Resizable Component -->
-		<HowItWorks />
+		<BackgroundBoxes
+			className="opacity-50"
+			boxClassName="border border-slate-700/20"
+			pattern="grid"
+			patternColor="slate-700"
+			quantity={4}
+		>
+			<!-- New How It Works Section with Resizable Component -->
+			<HowItWorks />
 
-		<GlobalImpactSection />
+			<GlobalImpactSection />
+		</BackgroundBoxes>
 	</main>
-	<!-- Background boxes for additional visual effect -->
-	<!-- <BackgroundBoxes
-	className="opacity-50"
-	boxClassName="border border-slate-700/20"
-	pattern="grid"
-	patternColor="slate-700"
-	quantity={15}
->
-	</BackgroundBoxes> -->
 </div>
 
 <style>
