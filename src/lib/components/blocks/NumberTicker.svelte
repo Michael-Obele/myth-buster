@@ -1,4 +1,5 @@
-<!-- 
+<!--
+@component
 The `NumberTicker` component is used to display a numeric value that animates from an initial value to a target value. It supports customization for animation direction, duration, and additional styling.
 
 ### Props
@@ -87,8 +88,11 @@ The `NumberTicker` component is used to display a numeric value that animates fr
 	let targetNode = $state<HTMLElement>()!;
 	const inViewport = new IsInViewport(() => targetNode);
 	// Use $effect to react to changes in numericValue or direction and update the tween target
-	onMount(() => {
-		num.set(numericValue);
+	$effect(() => {
+		if (inViewport.current) {
+			// Start animation when in viewport
+			num.set(numericValue);
+		}
 	});
 
 	// if (inViewport.current) {
