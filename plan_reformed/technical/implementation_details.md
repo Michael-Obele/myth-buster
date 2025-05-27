@@ -224,7 +224,7 @@ Example usage in `myth-buster/src/routes/game/+page.svelte`:
     ```myth-buster/src/routes/app/components/MythInput.svelte#L2-6
     	import { Textarea } from '$lib/components/ui/textarea';
     	import { Button } from '$lib/components/ui/button';
-    	import { Mic, SendIcon } from 'lucide-svelte';
+    	import { Mic, SendIcon } from '@lucide/svelte';
     	import { enhance } from '$app/forms';
     	import type { SubmitFunction } from '@sveltejs/kit';
     ```

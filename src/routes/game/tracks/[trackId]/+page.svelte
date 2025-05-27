@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
-	import type { SvelteComponent } from 'svelte';
 	import type { PageData } from './$types';
 	import type {
 		GameActionData,
