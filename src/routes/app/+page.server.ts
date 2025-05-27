@@ -412,7 +412,7 @@ export const actions: Actions = {
 	verifyMyth: async ({ request }) => {
 		console.log("[Action] 'verifyMyth' called.");
 		const data = await request.formData();
-		const myth = data.get('myth') as string;
+		const myth = (data.get('myth') as string).trim();
 		if (typeof myth !== 'string' || !myth.trim()) {
 			console.error('[Action verifyMyth] Invalid input: Myth is required.');
 			return { status: 400, body: { error: 'Myth is required.' } };
