@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { animate } from 'svelte-motion';
-	import { Check, X, HelpCircle, Share2 } from 'lucide-svelte';
+	import { Check, X, HelpCircle, Share2 } from '@lucide/svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
@@ -83,7 +83,7 @@
 </script>
 
 <div class="space-y-4">
-	<div class="rounded-lg border border-primary/20 bg-gradient-to-br {verdictGradient} p-6">
+	<div class="rounded-lg border border-primary/20 bg-linear-to-br {verdictGradient} p-6">
 		<div class="mb-4 flex w-full items-center gap-3 px-14">
 			<div
 				class="mx-4 flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg {verdictColor}"

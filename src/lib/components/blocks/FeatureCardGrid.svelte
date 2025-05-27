@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
-	import { Check, X, BookOpen } from 'lucide-svelte';
+	import { Check, X, BookOpen } from '@lucide/svelte';
 
 	const featureCards: {
 		hoverKey: Key;
@@ -17,7 +17,7 @@
 	}[] = [
 		{
 			hoverKey: 'card1',
-			gradient: 'bg-gradient-to-r from-emerald-600 to-emerald-400',
+			gradient: 'bg-linear-to-r from-emerald-600 to-emerald-400',
 			border: 'border-emerald-500/30',
 			icon: Check,
 			iconBg: 'bg-emerald-500/20',
@@ -31,7 +31,7 @@
 		},
 		{
 			hoverKey: 'card2',
-			gradient: 'bg-gradient-to-r from-red-600 to-red-400',
+			gradient: 'bg-linear-to-r from-red-600 to-red-400',
 			border: 'border-red-500/30',
 			icon: X,
 			iconBg: 'bg-red-500/20',
@@ -46,7 +46,7 @@
 		},
 		{
 			hoverKey: 'card3',
-			gradient: 'bg-gradient-to-r from-purple-600 to-purple-400',
+			gradient: 'bg-linear-to-r from-purple-600 to-purple-400',
 			border: 'border-purple-500/30',
 			icon: BookOpen,
 			iconBg: 'bg-purple-500/20',

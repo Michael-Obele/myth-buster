@@ -4,7 +4,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import type { SubmitFunction, ActionResult } from '@sveltejs/kit';
-	import { DatabaseZap } from 'lucide-svelte';
+	import { DatabaseZap } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 	import { PersistedState } from 'runed';
@@ -12,7 +12,7 @@
 		MythHistoryEntry,
 		MythVerificationResult,
 		LensResult,
-		SourceAnalysisResult, 
+		SourceAnalysisResult,
 		SynthesisResult
 	} from '$lib/types';
 	import { enhance } from '$app/forms';
@@ -388,7 +388,7 @@
 	keywords={['myth buster game', 'trivia', 'fact or fiction', 'knowledge test', 'ai game']}
 />
 
-<div class="min-h-screen bg-gradient-to-br from-background to-background/50">
+<div class="min-h-screen bg-linear-to-br from-background to-background/50">
 	<main class="relative mx-auto min-h-screen w-full">
 		<h3 class="p-6 text-center text-2xl font-bold md:text-5xl">
 			Verify <AuroraText>Myths</AuroraText>

@@ -106,6 +106,13 @@ Standard Bun/Node.js setup.
 bun install
 ```
 
+### Configuration
+
+```bash
+cp .env.example .env
+```
+
+
 ### Running Dev Server
 
 Add `PERPLEXITY_API_KEY` to `.env`.
@@ -122,7 +129,7 @@ bun run build
 
 ## Future Vision
 
-Expand deep research (Comparative Analysis, Longitudinal Trace - [Deep Research Overview](./plan_reformed/deep_research/deep_research_overview.md)), enhance error handling/caching ([Future Enhancements Roadmap](./plan_reformed/future_enhancements/roadmap.md)), improve onboarding, and implement community features. Aim to be a premier tool for guided, deep inquiry.
+Expand deep research (Comparative Analysis, Longitudinal Trace - [Deep Research Overview](./plan_reformed/deep_research/deep_research_overview.md)), enhance error handling/caching ([Future Enhancements Roadmap](./plan_reformed/future_enhancements/roadmap.md)), improve onboarding, and implement community features. Aim to be a premier tool for guided, deep inquiry, with consideration for expanded capabilities and premium access in the future.
 
 More feature ideas: [Additional Suggested Features](./plan_reformed/future_enhancements/additional_suggested_features.md) and [Sonar API-Focused Future Features](./plan_reformed/future_enhancements/sonar_focused_features.md).
 

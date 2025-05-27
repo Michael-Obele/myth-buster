@@ -13,7 +13,7 @@
 	}>();
 </script>
 
-<div class={cn('relative space-y-8 before:absolute before:inset-0 before:left-9 before:ml-px before:h-full before:w-[1px] before:bg-border', className)}>
+<div class={cn('relative space-y-8 before:absolute before:inset-0 before:left-9 before:ml-px before:h-full before:w-px before:bg-border', className)}>
 	{#each items as item, i}
 		<Motion
 			let:motion

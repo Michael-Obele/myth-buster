@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
-	import { ArrowRight } from 'lucide-svelte';
+	import { ArrowRight } from '@lucide/svelte';
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
 	import SparklesText from '$lib/components/blocks/SparklesText.svelte';
 	import InteractiveHover from '$lib/components/blocks/InteractiveHover.svelte';
@@ -31,7 +31,7 @@
 				trigger="loop"
 				stroke="thick"
 				target="section"
-				class="relative top-[1.2rem] size-14 shrink-0 md:top-[2rem] md:size-20"
+				class="relative top-[1.2rem] size-14 shrink-0 md:top-8 md:size-20"
 			/>
 
 			<a href="/" class="group flex items-center transition-all">
@@ -46,25 +46,25 @@
 				/>
 				<SparklesText
 					text="Myth Buster"
-					class=" font-underdog text-4xl font-bold tracking-tight text-primary md:text-6xl"
+					class=" font-underdog text-primary text-4xl font-bold tracking-tight md:text-6xl"
 				/>
 			</a>
 
-			<Badge class="hidden bg-primary/20 text-xs text-primary hover:text-white md:block"
+			<Badge class="bg-primary/20 text-primary hidden text-xs hover:text-white md:block"
 				>AI Powered</Badge
 			>
 		</div>
 	</div>
 
-	<p class="mb-8 max-w-2xl text-center text-xl leading-loose text-muted-foreground">
-		<span class="text-2xl font-semibold text-primary">Uncover</span>
+	<p class="text-muted-foreground mb-8 max-w-2xl text-center text-xl leading-loose">
+		<span class="text-primary text-2xl font-semibold">Uncover</span>
 		the
-		<span class="handwritten-underline relative z-10 text-2xl font-semibold text-primary">
+		<span class="handwritten-underline text-primary relative z-10 text-2xl font-semibold">
 			truth
 		</span>
 		behind common myths and misconceptions with our AI-powered fact-checking tool. Harness the power
 		of
-		<span class="text-2xl font-semibold italic text-primary">Sonar API</span>
+		<span class="text-primary text-2xl font-semibold italic">Sonar API</span>
 		to verify claims instantly.
 	</p>
 
@@ -73,9 +73,9 @@
 		<div class="absolute inset-0 overflow-hidden">
 			{#each Array(8) as _, i}
 				<div
-					class="floating-particle absolute rounded-full bg-primary/20"
-					style="width: {8 + Math.random() * 8}px; height: {8 + Math.random() * 8}px; 
-							left: {10 + Math.random() * 80}%; top: {Math.random() * 100}%; 
+					class="floating-particle bg-primary/20 absolute rounded-full"
+					style="width: {8 + Math.random() * 8}px; height: {8 + Math.random() * 8}px;
+							left: {10 + Math.random() * 80}%; top: {Math.random() * 100}%;
 							opacity: {0.3 + Math.random() * 0.3};
 							animation-duration: {10 + Math.random() * 10}s;
 							animation-delay: {-Math.random() * 10}s;"
@@ -100,7 +100,7 @@
 			text="Start Busting Myths"
 		/>
 
-		<p class="mt-4 max-w-md text-sm text-muted-foreground">
+		<p class="text-muted-foreground mt-4 max-w-md text-sm">
 			Join thousands of educators, students, and curious minds in the quest for factual accuracy.
 		</p>
 	</div>

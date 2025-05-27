@@ -14,7 +14,7 @@
 		Brain,
 		Lightbulb,
 		Sparkles
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { toast } from 'svelte-sonner';
 	import { PersistedState } from 'runed';
@@ -117,7 +117,7 @@
 			</Button>
 		{/if}
 	</div>
-	<ScrollArea class="h-[30rem] rounded-md border p-4">
+	<ScrollArea class="h-120 rounded-md border p-4">
 		<div class="space-y-4">
 			{#if historyItems.length === 0}
 				<div
@@ -137,7 +137,7 @@
 								<div class="flex-1 space-y-1">
 									<div class="flex items-center gap-2">
 										<Icon
-											class={`h-5 w-5 flex-shrink-0 ${getVerdictColor(item.result.data?.verdict)}`}
+											class={`h-5 w-5 shrink-0 ${getVerdictColor(item.result.data?.verdict)}`}
 										/>
 										<Card.Title class="line-clamp-2 text-base font-semibold">
 											{item.myth}

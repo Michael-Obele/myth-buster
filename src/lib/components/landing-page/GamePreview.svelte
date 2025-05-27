@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
-	import { ArrowRight, Trophy, Brain, Zap } from 'lucide-svelte';
+	import { ArrowRight, Trophy, Brain, Zap } from '@lucide/svelte';
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
 	import InteractiveHover from '../blocks/InteractiveHover.svelte';
 	import { goto } from '$app/navigation';
@@ -34,7 +34,7 @@
 </script>
 
 <section
-	class="relative my-12 h-fit w-full rounded-xl bg-gradient-to-b from-slate-900 to-slate-800 py-16"
+	class="relative my-12 h-fit w-full rounded-xl bg-linear-to-b from-slate-900 to-slate-800 py-16"
 >
 	<div class="absolute inset-0 bg-grid-white/[0.05]"></div>
 	<div class="relative z-10 mx-auto max-w-7xl px-4">

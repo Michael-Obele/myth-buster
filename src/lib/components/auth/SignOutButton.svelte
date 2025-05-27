@@ -2,7 +2,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { invalidateAll } from '$app/navigation';
 	import { enhance } from '$app/forms';
-	import { LogOut } from 'lucide-svelte';
+	import { LogOut } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {

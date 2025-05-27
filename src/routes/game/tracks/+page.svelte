@@ -15,7 +15,7 @@
 		ScrollText,
 		Video,
 		type Icon as IconType
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -35,15 +35,15 @@
 
 	// Map track categories to icon names
 	const categoryIconMap: Record<string, string> = {
-		'Science': 'FlaskConical',
-		'History': 'ScrollText',
-		'Technology': 'Laptop',
+		Science: 'FlaskConical',
+		History: 'ScrollText',
+		Technology: 'Laptop',
 		'Arts & Culture': 'Palette',
-		'Geography': 'Globe',
-		'Society': 'Scale',
-		'Psychology': 'Brain',
-		'Entertainment': 'Video',
-		'Literature': 'BookOpen',
+		Geography: 'Globe',
+		Society: 'Scale',
+		Psychology: 'Brain',
+		Entertainment: 'Video',
+		Literature: 'BookOpen'
 		// Add more mappings as needed based on your track categories
 	};
 
@@ -64,7 +64,7 @@
 <RouteHead
 	title="Learning Tracks - Myth Buster"
 	description="Choose a learning track and test your knowledge on specific topics."
-	keywords={["learning tracks", "quiz", "knowledge test", "myth buster", "education", "topics"]}
+	keywords={['learning tracks', 'quiz', 'knowledge test', 'myth buster', 'education', 'topics']}
 	author="Myth Buster Team"
 	ogTitle="Learning Tracks - Myth Buster"
 	ogDescription="Choose a learning track and test your knowledge on specific topics."

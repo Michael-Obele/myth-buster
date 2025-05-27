@@ -16,48 +16,49 @@
 <RouteHead
 	title="Myth Buster - AI-Powered Fact Verification"
 	description="Verify myths and uncover the truth with our AI-powered fact verification tool. Get explanations and sources for common misconceptions."
-	keywords={["myth busting", "fact checking", "AI", "verify", "misconceptions"]}
+	keywords={['myth busting', 'fact checking', 'AI', 'verify', 'misconceptions']}
 />
 
 <!-- Animated background with grid pattern -->
-<div class="min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800">
+<div class="min-h-screen overflow-hidden bg-linear-to-br from-slate-900 to-slate-800">
 	<!-- Grid pattern overlay -->
 	<div class="bg-grid-black/[0.07] dark:bg-grid-white/[0.05] absolute inset-0"></div>
-	<!-- Background boxes for additional visual effect -->
-	<BackgroundBoxes
-		className="opacity-50"
-		boxClassName="border border-slate-700/20"
-		pattern="grid"
-		patternColor="slate-700"
-		quantity={15}
+
+	<!-- Main content -->
+	<main
+		class="text-foreground relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 py-16"
 	>
-		<!-- Main content -->
-		<main
-			class="text-foreground relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 py-16"
-		>
-			<!-- Enhanced Hero Section (using component) -->
-			<EnhancedHero />
+		<!-- Enhanced Hero Section (using component) -->
+		<EnhancedHero />
 
-			<!-- Stats Highlight Section -->
-			<StatsHighlight />
-			
-			<!-- Mini-Myth Quick Check Feature -->
-			<MiniMythCheck />
+		<!-- Stats Highlight Section -->
+		<StatsHighlight />
 
-			<FeatureCardGrid />
+		<!-- Mini-Myth Quick Check Feature -->
+		<MiniMythCheck />
 
-			<!-- First Alternating Feature Section -->
-			<AlternatingFeatureSection />
+		<FeatureCardGrid />
 
-			<!-- Game Preview Section -->
-			<GamePreview />
+		<!-- First Alternating Feature Section -->
+		<AlternatingFeatureSection />
 
-			<!-- New How It Works Section with Resizable Component -->
-			<HowItWorks />
+		<!-- Game Preview Section -->
+		<GamePreview />
 
-			<GlobalImpactSection />
-		</main>
-	</BackgroundBoxes>
+		<!-- New How It Works Section with Resizable Component -->
+		<HowItWorks />
+
+		<GlobalImpactSection />
+	</main>
+	<!-- Background boxes for additional visual effect -->
+	<!-- <BackgroundBoxes
+	className="opacity-50"
+	boxClassName="border border-slate-700/20"
+	pattern="grid"
+	patternColor="slate-700"
+	quantity={15}
+>
+	</BackgroundBoxes> -->
 </div>
 
 <style>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Check, Search, FileText } from 'lucide-svelte';
+	import { Check, Search, FileText } from '@lucide/svelte';
 	import FeatureCard from '$lib/components/blocks/FeatureCard.svelte';
 
 	const cycle = '/lottie/cycle.json';
@@ -43,7 +43,7 @@
 		<div class="space-y-8 md:hidden">
 			{#each howItWorksData as step, i}
 				<div class="flex items-start space-x-4">
-					<div class="flex-shrink-0">
+					<div class="shrink-0">
 						<div
 							class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white"
 						>
@@ -87,7 +87,7 @@
 			<!-- Connection line between steps -->
 			<!-- <div class="relative mt-8 hidden md:block">
 				<div
-					class="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-primary via-purple-500 to-emerald-500"
+					class="absolute left-0 top-0 h-1 w-full bg-linear-to-r from-primary via-purple-500 to-emerald-500"
 				></div>
 			</div> -->
 		</div>

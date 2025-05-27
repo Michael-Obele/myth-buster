@@ -198,7 +198,7 @@ Tabs provide a standard pattern for organizing different views of related conten
 
     {#if showCustomLensInput}
       <div class="mt-4 flex gap-2">
-        <Input bind:value={customLensInput} placeholder="Enter custom research angle (e.g., 'Economic impact')" class="flex-grow" />
+        <Input bind:value={customLensInput} placeholder="Enter custom research angle (e.g., 'Economic impact')" class="grow" />
         <Button onclick={addCustomLens}>Analyze</Button>
       </div>
     {/if}

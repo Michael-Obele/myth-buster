@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as HoverCard from '$lib/components/ui/hover-card';
-	import { ExternalLink, Sparkles } from 'lucide-svelte';
+	import { ExternalLink, Sparkles } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { toast } from 'svelte-sonner';
 

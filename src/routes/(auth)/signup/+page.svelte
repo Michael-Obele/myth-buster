@@ -7,7 +7,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import { Eye, EyeOff, AlertCircle } from 'lucide-svelte';
+	import { Eye, EyeOff, AlertCircle } from '@lucide/svelte';
 	import {
 		Card,
 		CardContent,

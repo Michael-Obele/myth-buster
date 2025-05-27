@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { animate } from 'svelte-motion';
-	import { ArrowRight } from 'lucide-svelte';
+	import { ArrowRight } from '@lucide/svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { onMount } from 'svelte';
@@ -17,7 +17,7 @@
 <div class="rounded-lg border border-primary/20 p-4">
 	<h3 class="mb-3 text-lg font-medium">Related Myth</h3>
 
-	<ScrollArea class="min-h-[30rem] rounded-md border p-4">
+	<ScrollArea class="min-h-120 rounded-md border p-4">
 		<div class="space-y-3">
 			{#if relatedMyth}
 				<div class="myth-item">
