@@ -13,7 +13,8 @@
 		ExternalLink,
 		Brain,
 		Lightbulb,
-		Sparkles
+		Sparkles,
+		Loader2
 	} from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { toast } from 'svelte-sonner';
@@ -26,6 +27,7 @@
 	import CitationList from './CitationList.svelte';
 	import RelatedMyths from './RelatedMyths.svelte';
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
+	import { enhance } from '$app/forms'; // Import enhance
 
 	// Props
 	let { mythHistory }: { mythHistory: PersistedState<MythHistoryEntry[]> } = $props();
@@ -36,18 +38,30 @@
 	// Ensure mythHistory is defined before accessing .current
 	let historyItems: MythHistoryEntry[] = $derived(mythHistory ? mythHistory.current || [] : []);
 
+	// Local state to track loading status for individual history items
+	let loadingStates: Map<string, boolean> = $state(new Map());
+
+	// Function to get the loading state for a specific item
+	function getItemLoading(itemId: string): boolean {
+		return loadingStates.get(itemId) || false;
+	}
+
+	const bookmarkedIds = new PersistedState<string[]>('myth-bookmarks', []);
+
+	function isBookmarked(id: string) {
+		return bookmarkedIds.current.includes(id);
+	}
+
 	// Toggle bookmark status
 	function toggleBookmark(id: string) {
-		const currentItems = mythHistory.current || [];
-		const updatedItems = currentItems.map((item) =>
-			item.id === id ? { ...item, isBookmarked: !item.isBookmarked } : item
-		);
-		mythHistory.current = updatedItems;
-		toast.success(
-			updatedItems.find((item) => item.id === id)?.isBookmarked
-				? 'Myth bookmarked!'
-				: 'Bookmark removed.'
-		);
+		const idx = bookmarkedIds.current.indexOf(id);
+		if (idx === -1) {
+			bookmarkedIds.current = [...bookmarkedIds.current, id];
+			toast.success('Myth bookmarked!');
+		} else {
+			bookmarkedIds.current = bookmarkedIds.current.filter((x) => x !== id);
+			toast.success('Bookmark removed.');
+		}
 	}
 
 	// Format date for display
@@ -97,9 +111,18 @@
 			});
 		}
 	}
+
+	// Enhance function for re-verifying from history
+	const handleReverifyEnhance = (itemId: string) => {
+		loadingStates.set(itemId, true); // Set loading state for this item
+		return async ({ update, result }) => {
+			await update(); // Let SvelteKit handle the form result and page update
+			loadingStates.set(itemId, false); // Reset loading state for this item
+		};
+	};
 </script>
 
-<div class="rounded-lg border border-primary/20 p-4">
+<div class="border-primary/20 rounded-lg border p-4">
 	<div class="mb-3 flex items-center justify-between">
 		<h3 class="flex items-center gap-2 text-lg font-medium">
 			<Clock class="h-4 w-4" />
@@ -121,9 +144,9 @@
 		<div class="space-y-4">
 			{#if historyItems.length === 0}
 				<div
-					class="rounded-md border border-primary/10 bg-muted/30 p-6 text-center text-muted-foreground"
+					class="border-primary/10 bg-muted/30 text-muted-foreground rounded-md border p-6 text-center"
 				>
-					<HelpCircle class="mx-auto mb-2 h-8 w-8 text-primary/50" />
+					<HelpCircle class="text-primary/50 mx-auto mb-2 h-8 w-8" />
 					No verification history yet.
 					<br />
 					Verify some myths to see them here.
@@ -133,7 +156,7 @@
 					{@const Icon = getVerdictIcon(item.result.data?.verdict)}
 					<div class="history-item">
 						<Card.Root class="overflow-hidden">
-							<Card.Header class="flex flex-row items-start justify-between gap-4 bg-muted/20 p-4">
+							<Card.Header class="bg-muted/20 flex flex-row items-start justify-between gap-4 p-4">
 								<div class="flex-1 space-y-1">
 									<div class="flex items-center gap-2">
 										<Icon
@@ -156,17 +179,24 @@
 									<Button
 										variant="ghost"
 										size="icon"
-										class="h-8 w-8 text-muted-foreground hover:text-primary"
+										class="text-muted-foreground h-8 w-8 hover:text-white"
 										onclick={() => toggleBookmark(item.id)}
-										aria-label={item.isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
+										aria-label={isBookmarked(item.id) ? 'Remove bookmark' : 'Add bookmark'}
 									>
-										{#if item.isBookmarked}
+										{#if isBookmarked(item.id)}
 											<BookmarkCheck class="h-4 w-4" />
 										{:else}
 											<Bookmark class="h-4 w-4" />
 										{/if}
 									</Button>
-									<form method="POST" action="?/verifyMyth">
+
+									<!-- Form for re-verifying -->
+									<form
+										method="POST"
+										action="?/verifyMyth"
+										use:enhance={handleReverifyEnhance(item.id)}
+										class="inline-flex"
+									>
 										<input type="hidden" name="myth" value={item.myth} />
 										<Button
 											variant="ghost"
@@ -174,8 +204,13 @@
 											type="submit"
 											class="h-8 w-8"
 											aria-label="Re-verify myth"
+											disabled={getItemLoading(item.id)}
 										>
-											<ArrowRight class="h-4 w-4" />
+											{#if getItemLoading(item.id)}
+												<Loader2 class="h-4 w-4 animate-spin" />
+											{:else}
+												<ArrowRight class="h-4 w-4" />
+											{/if}
 										</Button>
 									</form>
 								</div>
@@ -183,7 +218,7 @@
 							<Card.Content class="p-0">
 								<Accordion.Root type="single" class="w-full">
 									<Accordion.Item value={`details-${item.id}`} class="border-none">
-										<Accordion.Trigger class="px-4 py-3 text-sm hover:bg-muted/30">
+										<Accordion.Trigger class="hover:bg-muted/30 px-4 py-3 text-sm">
 											View Details
 										</Accordion.Trigger>
 										<Accordion.Content class="space-y-4 p-4 pt-0">
@@ -195,26 +230,26 @@
 											{/if}
 
 											{#if item.result.data?.mythOrigin}
-												<div class="rounded-md border border-primary/10 bg-muted/20 p-3">
+												<div class="border-primary/10 bg-muted/20 rounded-md border p-3">
 													<h4
-														class="mb-1 flex items-center gap-1.5 text-sm font-medium text-primary"
+														class="text-primary mb-1 flex items-center gap-1.5 text-sm font-medium"
 													>
 														<Lightbulb class="h-4 w-4" />
 														Origin of the Myth
 													</h4>
-													<p class="text-sm text-muted-foreground">{item.result.data.mythOrigin}</p>
+													<p class="text-muted-foreground text-sm">{item.result.data.mythOrigin}</p>
 												</div>
 											{/if}
 
 											{#if item.result.data?.whyBelieved}
-												<div class="rounded-md border border-primary/10 bg-muted/20 p-3">
+												<div class="border-primary/10 bg-muted/20 rounded-md border p-3">
 													<h4
-														class="mb-1 flex items-center gap-1.5 text-sm font-medium text-primary"
+														class="text-primary mb-1 flex items-center gap-1.5 text-sm font-medium"
 													>
 														<Brain class="h-4 w-4" />
 														Why People Believe This
 													</h4>
-													<p class="text-sm text-muted-foreground">
+													<p class="text-muted-foreground text-sm">
 														{item.result.data.whyBelieved}
 													</p>
 												</div>
@@ -230,7 +265,7 @@
 
 											{#if item.result.error}
 												<div
-													class="rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive"
+													class="border-destructive/20 bg-destructive/10 text-destructive rounded-md border p-3 text-sm"
 												>
 													<p><strong>Error during verification:</strong> {item.result.error}</p>
 												</div>

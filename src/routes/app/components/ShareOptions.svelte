@@ -17,19 +17,25 @@
 
 	// Generate share URL based on the myth
 	let shareUrl = $derived.by(() => {
-		if (typeof window !== 'undefined') {
+		if (typeof window !== 'undefined' && myth) {
 			const encodedMyth = encodeURIComponent(myth);
-			return `${window.location.origin}/share?myth=${encodedMyth}`;
+			// Change the route to /app and pass the myth as a query parameter
+			return `${window.location.origin}/app?myth=${encodedMyth}`;
 		}
 		return '';
 	});
 
 	// Copy share URL to clipboard
 	async function copyToClipboard() {
-		if (typeof navigator !== 'undefined') {
+		if (typeof navigator !== 'undefined' && shareUrl) {
 			await navigator.clipboard.writeText(shareUrl);
 			toast('Link copied!', {
 				description: 'Share link copied to clipboard',
+				duration: 3000
+			});
+		} else {
+			toast.error('Could not copy link.', {
+				description: 'No myth available to generate a share link.',
 				duration: 3000
 			});
 		}
@@ -37,7 +43,7 @@
 
 	// Share to social media platforms
 	async function shareToSocial(platform: string) {
-		if (typeof window === 'undefined') return;
+		if (typeof window === 'undefined' || !shareUrl || !myth) return;
 
 		const text = `I just verified this myth: "${myth}" - The result is ${verdict}!`;
 		let url = '';
