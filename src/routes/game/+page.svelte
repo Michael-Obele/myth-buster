@@ -20,7 +20,7 @@
 		LoaderCircle,
 		Settings,
 		Info
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import type { PageData } from './$types';
 	import { Label } from '$lib/components/ui/label';
 	import type {

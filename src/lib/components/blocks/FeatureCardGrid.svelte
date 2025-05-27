@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
-	import { Check, X, BookOpen } from 'lucide-svelte';
+	import { Check, X, BookOpen } from '@lucide/svelte';
 
 	const featureCards: {
 		hoverKey: Key;

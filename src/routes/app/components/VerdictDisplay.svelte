@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { animate } from 'svelte-motion';
-	import { Check, X, HelpCircle, Share2 } from 'lucide-svelte';
+	import { Check, X, HelpCircle, Share2 } from '@lucide/svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';

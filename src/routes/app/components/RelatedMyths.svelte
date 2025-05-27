@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { animate } from 'svelte-motion';
-	import { ArrowRight } from 'lucide-svelte';
+	import { ArrowRight } from '@lucide/svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { onMount } from 'svelte';

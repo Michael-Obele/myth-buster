@@ -9,7 +9,7 @@
 		DropdownMenuSeparator,
 		DropdownMenuTrigger
 	} from '$lib/components/ui/dropdown-menu';
-	import { User } from 'lucide-svelte';
+	import { User } from '@lucide/svelte';
 	import SignOutButton from './SignOutButton.svelte';
 
 	// Get the current user from the page store

@@ -2,7 +2,7 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Flame, BookOpen, Check, Code, ArrowRight, HelpCircle, Users } from 'lucide-svelte'; // Added HelpCircle, Users
+	import { Flame, BookOpen, Check, Code, ArrowRight, HelpCircle, Users } from '@lucide/svelte'; // Added HelpCircle, Users
 	import SparklesText from '$lib/components/blocks/SparklesText.svelte';
 	import AboutTab from '$lib/components/about/AboutTab.svelte';
 	import FeaturesTab from '$lib/components/about/FeaturesTab.svelte';

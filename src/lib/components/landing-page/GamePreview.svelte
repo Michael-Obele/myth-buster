@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
-	import { ArrowRight, Trophy, Brain, Zap } from 'lucide-svelte';
+	import { ArrowRight, Trophy, Brain, Zap } from '@lucide/svelte';
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
 	import InteractiveHover from '../blocks/InteractiveHover.svelte';
 	import { goto } from '$app/navigation';

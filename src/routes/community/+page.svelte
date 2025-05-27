@@ -11,7 +11,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { toast } from 'svelte-sonner';
 	import { invalidateAll } from '$app/navigation';
-	import { RefreshCw, ArrowUp, MessageSquarePlus, Users, Vote } from 'lucide-svelte';
+	import { RefreshCw, ArrowUp, MessageSquarePlus, Users, Vote } from '@lucide/svelte';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
@@ -358,12 +358,14 @@
 				<CardContent>
 					{#if data.user}
 						<div class="relative">
-							<div class="absolute inset-0 z-10 flex items-center justify-center bg-black/30 rounded-lg">
+							<div
+								class="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-black/30"
+							>
 								<p class="rotate-[-10deg] transform text-2xl font-bold italic text-white">
 									Feature Coming Soon
 								</p>
 							</div>
-							<div class="pointer-events-none opacity-50 rounded-lg">
+							<div class="pointer-events-none rounded-lg opacity-50">
 								<Label for="myth-text" class="mb-2 block font-medium">Your Myth Suggestion:</Label>
 								<Textarea
 									id="myth-text"

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
-	import { ExternalLink, Github } from 'lucide-svelte';
+	import { ExternalLink, Github } from '@lucide/svelte';
 
 	// Tech stack
 	let techStack = $state([

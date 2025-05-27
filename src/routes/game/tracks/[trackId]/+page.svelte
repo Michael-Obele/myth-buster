@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
-	import type { ComponentType, SvelteComponent } from 'svelte';
+	import type { SvelteComponent } from 'svelte';
 	import type { PageData } from './$types';
 	import type {
 		GameActionData,
@@ -16,7 +16,7 @@
 	import { Progress } from '$lib/components/ui/progress';
 	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
 	import { Badge } from '$lib/components/ui/badge';
-	import * as GameDialog from '$lib/components/ui/dialog/index.js';
+	import * as GameDialog from '$lib/components/ui/dialog';
 
 	import {
 		Check,
@@ -37,8 +37,9 @@
 		Scale,
 		ScrollText,
 		Video,
-		ChevronLeft
-	} from 'lucide-svelte';
+		ChevronLeft,
+		type Icon as IconType
+	} from '@lucide/svelte';
 
 	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 
@@ -234,7 +235,7 @@
 	}
 
 	// --- Icon Map for Dynamic Track Icon ---
-	const iconMap: Record<string, ComponentType<SvelteComponent>> = {
+	const iconMap: Record<string, typeof IconType> = {
 		BookOpen,
 		Brain,
 		FlaskConical,

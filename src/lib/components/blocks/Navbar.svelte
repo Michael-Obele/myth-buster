@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Flame, Menu, X, User } from 'lucide-svelte';
+	import { Flame, Menu, X, User } from '@lucide/svelte';
 	import * as Avatar from '$lib/components/ui/avatar';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { beforeNavigate } from '$app/navigation';

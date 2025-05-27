@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
-	import { ArrowRight } from 'lucide-svelte';
+	import { ArrowRight } from '@lucide/svelte';
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
 	import SparklesText from '$lib/components/blocks/SparklesText.svelte';
 	import InteractiveHover from '$lib/components/blocks/InteractiveHover.svelte';

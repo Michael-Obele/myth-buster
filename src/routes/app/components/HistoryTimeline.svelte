@@ -14,7 +14,7 @@
 		Brain,
 		Lightbulb,
 		Sparkles
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { toast } from 'svelte-sonner';
 	import { PersistedState } from 'runed';

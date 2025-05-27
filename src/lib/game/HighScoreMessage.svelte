@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Trophy, Sparkles } from 'lucide-svelte';
+	import { Trophy, Sparkles } from '@lucide/svelte';
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
 
 	interface Props {

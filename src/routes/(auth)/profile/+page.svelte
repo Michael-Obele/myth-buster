@@ -14,7 +14,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Avatar from '$lib/components/ui/avatar';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import { AlertCircle, Eye, EyeOff } from 'lucide-svelte';
+	import { AlertCircle, Eye, EyeOff } from '@lucide/svelte';
 	import SignOutButton from '$lib/components/auth/SignOutButton.svelte';
 	import { redirect } from '@sveltejs/kit';
 	import type { PageProps } from './$types';

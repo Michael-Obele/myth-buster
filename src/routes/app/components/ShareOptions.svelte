@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { toast } from 'svelte-sonner';
-	import { Share2, Copy as CopyIcon, Twitter, Facebook, Download } from 'lucide-svelte';
+	import { Share2, Copy as CopyIcon, Twitter, Facebook, Download } from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
 	// Props using Svelte 5 syntax

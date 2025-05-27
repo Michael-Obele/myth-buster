@@ -4,7 +4,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import type { SubmitFunction, ActionResult } from '@sveltejs/kit';
-	import { DatabaseZap } from 'lucide-svelte';
+	import { DatabaseZap } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 	import RouteHead from '$lib/components/layout/RouteHead.svelte';
 	import { PersistedState } from 'runed';
@@ -12,7 +12,7 @@
 		MythHistoryEntry,
 		MythVerificationResult,
 		LensResult,
-		SourceAnalysisResult, 
+		SourceAnalysisResult,
 		SynthesisResult
 	} from '$lib/types';
 	import { enhance } from '$app/forms';

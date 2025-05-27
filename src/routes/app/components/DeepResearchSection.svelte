@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import { Search, Lightbulb, Microscope, Loader2, ChevronDown } from 'lucide-svelte';
+	import { Search, Lightbulb, Microscope, Loader2, ChevronDown } from '@lucide/svelte';
 	import type { LensResult, SynthesisResult } from '$lib/types';
 	import * as Card from '$lib/components/ui/card';
 	import * as Accordion from '$lib/components/ui/accordion';
@@ -8,7 +8,7 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { AlertTriangle, CheckCircle2, Link2 } from 'lucide-svelte';
+	import { AlertTriangle, CheckCircle2, Link2 } from '@lucide/svelte';
 	import { enhance } from '$app/forms';
 
 	// Props
@@ -130,7 +130,10 @@
 						</Card.Content>
 					{:else if lens.error}
 						<Card.Content class="p-0">
-							<Alert.Root variant="destructive" class="m-4 border-destructive/50 text-destructive flex flex-col space-y-3">
+							<Alert.Root
+								variant="destructive"
+								class="m-4 flex flex-col space-y-3 border-destructive/50 text-destructive"
+							>
 								<div class="flex items-center gap-2">
 									<AlertTriangle class="h-4 w-4" />
 									<Alert.Title>Analysis Error</Alert.Title>
@@ -157,7 +160,7 @@
 						<Card.Content class="space-y-6">
 							<div>
 								<h6 class="mb-2 text-base font-semibold">Explanation:</h6>
-								<p class="text-sm leading-relaxed text-muted-foreground break-words">
+								<p class="break-words text-sm leading-relaxed text-muted-foreground">
 									{lens.result.explanation}
 								</p>
 							</div>
@@ -168,7 +171,7 @@
 										{#each lens.result.keyInsights as insight}
 											<li class="flex items-start">
 												<CheckCircle2 class="mr-2 mt-1 h-4 w-4 shrink-0 text-primary" />
-												<span class="text-muted-foreground break-words">{insight}</span>
+												<span class="break-words text-muted-foreground">{insight}</span>
 											</li>
 										{/each}
 									</ul>

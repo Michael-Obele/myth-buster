@@ -1,7 +1,7 @@
 <script lang="ts">
 	import AlternatingFeature from './AlternatingFeature.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { ArrowRight } from 'lucide-svelte';
+	import { ArrowRight } from '@lucide/svelte';
 	// @ts-expect-error
 	import Approval from '$lib/img/Approval.png?enhanced';
 	// @ts-expect-error

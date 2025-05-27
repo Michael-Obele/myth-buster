@@ -18,7 +18,7 @@
 		ExternalLink,
 		Loader2,
 		Search
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import type { SourceAnalysisResult } from '$lib/types';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';

@@ -5,7 +5,7 @@
 	import * as Progress from '$lib/components/ui/progress/index.js';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import XIcon from '@lucide/svelte/icons/x';
-	import { AlertTriangle, Info, LoaderCircle } from 'lucide-svelte';
+	import { AlertTriangle, Info, LoaderCircle } from '@lucide/svelte';
 	import { fly, fade } from 'svelte/transition';
 
 	type Myth = {

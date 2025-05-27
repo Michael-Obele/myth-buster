@@ -13,7 +13,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import { AlertCircle, Eye, EyeOff } from 'lucide-svelte';
+	import { AlertCircle, Eye, EyeOff } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import type { PageProps } from './$types';
 	import RouteHead from '$lib/components/layout/RouteHead.svelte';

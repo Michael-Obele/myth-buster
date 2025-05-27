@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
 	import { Button } from '$lib/components/ui/button';
-	import { LucideEye, LucideEyeOff } from 'lucide-svelte';
+	import { LucideEye, LucideEyeOff } from '@lucide/svelte';
 	import { cn } from '$lib/utils';
 	import { Input } from '$lib/components/ui/input/index.js';
 

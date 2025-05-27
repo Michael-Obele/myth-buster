@@ -1,6 +1,6 @@
 <script lang="ts">
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
-	import { Flame, CheckCircle2 } from 'lucide-svelte';
+	import { Flame, CheckCircle2 } from '@lucide/svelte';
 
 	const flame = '/lottie/flame.json';
 	interface Props {

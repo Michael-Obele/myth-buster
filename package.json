@@ -76,7 +76,6 @@
 		"cobe": "^0.6.3",
 		"lottie-web": "^5.12.2",
 		"lucia": "^3.2.2",
-		"lucide-svelte": "^0.507.0",
 		"mini-svg-data-uri": "^1.4.4",
 		"mode-watcher": "^1.0.7",
 		"oslo": "^1.2.1",

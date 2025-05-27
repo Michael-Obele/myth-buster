@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Card from '$lib/components/ui/card';
-	import { Brain, Zap, BookOpen, type Icon as IconType } from 'lucide-svelte';
+	import { Brain, Zap, BookOpen, type Icon as IconType } from '@lucide/svelte';
 	import NumberTicker from '$lib/components/blocks/NumberTicker.svelte';
 
 	interface Stat {

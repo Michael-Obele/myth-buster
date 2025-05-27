@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Link, ExternalLink } from 'lucide-svelte';
+	import { Link, ExternalLink } from '@lucide/svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Badge } from '$lib/components/ui/badge';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';

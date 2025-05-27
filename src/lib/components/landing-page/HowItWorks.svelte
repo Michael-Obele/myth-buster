@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Check, Search, FileText } from 'lucide-svelte';
+	import { Check, Search, FileText } from '@lucide/svelte';
 	import FeatureCard from '$lib/components/blocks/FeatureCard.svelte';
 
 	const cycle = '/lottie/cycle.json';

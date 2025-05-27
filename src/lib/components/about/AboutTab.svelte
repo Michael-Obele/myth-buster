@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
-	import { ArrowRight, Zap, Shield, BookOpen, Github, Linkedin, Twitter } from 'lucide-svelte';
+	import { ArrowRight, Zap, Shield, BookOpen, Github, Linkedin, Twitter } from '@lucide/svelte';
 	import { Motion } from 'svelte-motion';
 	import GridBeam from '$lib/components/blocks/GridBeam.svelte';
 	import BackgroundBoxes from '$lib/components/blocks/BackgroundBoxes.svelte';
