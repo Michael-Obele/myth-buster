@@ -1,36 +1,24 @@
-import type { ClassValue } from "clsx";
-import { clsx } from "clsx";
-import { cubicOut } from "svelte/easing";
-import { derived, get, writable } from "svelte/store";
-import type { TransitionConfig } from "svelte/transition";
-import { twMerge } from "tailwind-merge";
-import { error } from "@sveltejs/kit";
+import { type ClassValue, clsx } from 'clsx';
+import { cubicOut } from 'svelte/easing';
+import { derived, get, writable } from 'svelte/store';
+import type { TransitionConfig } from 'svelte/transition';
+import { twMerge } from 'tailwind-merge';
+import { error } from '@sveltejs/kit';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-export const isBrowser = typeof document !== "undefined";
+export const isBrowser = typeof document !== 'undefined';
 
-export function slugFromPath(path: string) {
-	return path.replace("/src/content/", "").replace(".md", "");
-}
-
-
-
-export function updateTheme(activeTheme: string, path: string) {
-	if (!isBrowser) return;
-	document.body.classList.forEach((className) => {
-		if (className.match(/^theme.*/)) {
-			document.body.classList.remove(className);
-		}
-	});
-
-	const theme = path === "/themes" ? activeTheme : null;
-	if (theme) {
-		return document.body.classList.add(`theme-${theme}`);
-	}
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type WithoutChild<T> = T extends { child?: any } ? Omit<T, 'child'> : T;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type WithoutChildren<T> = T extends { children?: any } ? Omit<T, 'children'> : T;
+export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
+export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & {
+	ref?: U | null;
+};
 
 type FlyAndScaleParams = {
 	y?: number;
@@ -43,7 +31,7 @@ export function styleToString(style: Record<string, number | string | undefined>
 	return Object.keys(style).reduce((str, key) => {
 		if (style[key] === undefined) return str;
 		return `${str}${key}:${style[key]};`;
-	}, "");
+	}, '');
 }
 
 export function flyAndScale(
@@ -51,13 +39,9 @@ export function flyAndScale(
 	params: FlyAndScaleParams = { y: -8, x: 0, start: 0.95, duration: 150 }
 ): TransitionConfig {
 	const style = getComputedStyle(node);
-	const transform = style.transform === "none" ? "" : style.transform;
+	const transform = style.transform === 'none' ? '' : style.transform;
 
-	const scaleConversion = (
-		valueA: number,
-		scaleA: [number, number],
-		scaleB: [number, number]
-	) => {
+	const scaleConversion = (valueA: number, scaleA: [number, number], scaleB: [number, number]) => {
 		const [minA, maxA] = scaleA;
 		const [minB, maxB] = scaleB;
 
@@ -77,23 +61,9 @@ export function flyAndScale(
 
 			return styleToString({
 				transform: `${transform} translate3d(${x}px, ${y}px, 0) scale(${scale})`,
-				opacity: t,
+				opacity: t
 			});
 		},
-		easing: cubicOut,
+		easing: cubicOut
 	};
 }
-
-type Modules = Record<string, () => Promise<unknown>>;
-
-
-
-
-
-export function slugFromPathname(pathname: string) {
-	return pathname.split("/").pop() ?? "";
-}
-
-
-
-
