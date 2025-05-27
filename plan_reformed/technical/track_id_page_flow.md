@@ -1,10 +1,10 @@
-# Myth Buster - Learning Track Page Flow (`/game/tracks/[trackId]`)
+# Myth Buster - Learning Track Page Flow (`/tracks/[trackId]`)
 
 This document details the data flow and component interaction for playing a specific learning track in the Myth Buster application.
 
 ## Overview
 
-When a user selects a learning track, they are navigated to the `/game/tracks/[trackId]` page. This page is responsible for:
+When a user selects a learning track, they are navigated to the `/tracks/[trackId]` page. This page is responsible for:
 1.  Loading initial track metadata.
 2.  Sequentially fetching and displaying myths related to that track.
 3.  Allowing the user to answer each myth and see results.
@@ -12,16 +12,16 @@ When a user selects a learning track, they are navigated to the `/game/tracks/[t
 
 ## I. Initial Page Load & Track Metadata
 
-**File:** `myth-buster/src/routes/game/tracks/[trackId]/+page.server.ts`
+**File:** `myth-buster/src/routes/tracks/[trackId]/+page.server.ts`
 
 1.  **SvelteKit `load` Function:**
-    *   When the user navigates to `/game/tracks/[trackId]?title=...&category=...`, SvelteKit's server-side `load` function in `+page.server.ts` is executed.
+    *   When the user navigates to `/tracks/[trackId]?title=...&category=...`, SvelteKit's server-side `load` function in `+page.server.ts` is executed.
     *   It extracts `trackId` from `params` and other track metadata (like `title`, `category`, `difficulty`, `totalMyths`, `icon`) from `url.searchParams`.
     *   It validates these parameters.
     *   It returns an object containing this metadata. This object becomes the `data` prop (referred to as `pageLoadData` in the Svelte component) for `+page.svelte`.
 
     ```typescript
-    // myth-buster/src/routes/game/tracks/[trackId]/+page.server.ts (snippet from load function)
+    // myth-buster/src/routes/tracks/[trackId]/+page.server.ts (snippet from load function)
     export const load: PageServerLoad = async ({ params, url }) => {
         console.log('[TRACK LOAD] Function called.');
         console.log('[TRACK LOAD] Params:', params);
@@ -59,7 +59,7 @@ When a user selects a learning track, they are navigated to the `/game/tracks/[t
 
 ## II. Client-Side Initialization & First Myth Request
 
-**File:** `myth-buster/src/routes/game/tracks/[trackId]/+page.svelte`
+**File:** `myth-buster/src/routes/tracks/[trackId]/+page.svelte`
 
 1.  **Receiving Props:** The Svelte component receives `pageLoadData` (from the server `load` function) and an initial `formProp` (which will be `null` or `undefined` before any actions complete) via `$props()`.
 2.  **`onMount` Hook:**
@@ -69,7 +69,7 @@ When a user selects a learning track, they are navigated to the `/game/tracks/[t
     *   This form POSTs to the `?/generateMyth` action, sending all necessary track metadata (from `pageLoadData`) and `mythIndex: 0` to request the first myth.
 
     ```svelte
-    // myth-buster/src/routes/game/tracks/[trackId]/+page.svelte (snippet from <script>)
+    // myth-buster/src/routes/tracks/[trackId]/+page.svelte (snippet from <script>)
     let { data: pageLoadData, form: formProp }: { data: PageData; form: GameActionData } = $props();
     let generateMythFormElement: HTMLFormElement | null = $state(null);
     // ... other state variables ...
@@ -95,7 +95,7 @@ When a user selects a learning track, they are navigated to the `/game/tracks/[t
 
     The hidden form in the template:
     ```svelte
-    // myth-buster/src/routes/game/tracks/[trackId]/+page.svelte (snippet from template)
+    // myth-buster/src/routes/tracks/[trackId]/+page.svelte (snippet from template)
     <form
         method="POST"
         action="?/generateMyth"
@@ -114,7 +114,7 @@ When a user selects a learning track, they are navigated to the `/game/tracks/[t
         <input type="hidden" name="trackCategory" value={pageLoadData.trackCategory} />
         <!-- ... other hidden inputs ... -->
         <input type="hidden" name="mythIndex" value={hasAnswerResultForDisplay ? currentMythIndexInTrack + 1 : currentMythIndexInTrack} />
-        
+
         <!-- Button to trigger this form, initially shows "Loading Myth..." -->
         <Button type="submit" disabled={isGenerating || ...}>
             {#if isGenerating}
@@ -130,7 +130,7 @@ When a user selects a learning track, they are navigated to the `/game/tracks/[t
 
 ## III. Myth Generation (Server-Side Action)
 
-**File:** `myth-buster/src/routes/game/tracks/[trackId]/+page.server.ts`
+**File:** `myth-buster/src/routes/tracks/[trackId]/+page.server.ts`
 
 1.  **`generateMyth` Action:**
     *   This server action receives the form data submitted by the client.
@@ -152,7 +152,7 @@ When a user selects a learning track, they are navigated to the `/game/tracks/[t
     *   If any other error occurs (API error, parsing error), it returns a `fail(...)` with `success: false` and an error message.
 
     ```typescript
-    // myth-buster/src/routes/game/tracks/[trackId]/+page.server.ts (snippet from generateMyth action)
+    // myth-buster/src/routes/tracks/[trackId]/+page.server.ts (snippet from generateMyth action)
     export const actions: Actions = {
         generateMyth: async ({ request, params }) => {
             // ... (formData parsing and validation) ...
@@ -194,13 +194,13 @@ When a user selects a learning track, they are navigated to the `/game/tracks/[t
 
 ## IV. Processing Action Results & Displaying Myth (Client-Side)
 
-**File:** `myth-buster/src/routes/game/tracks/[trackId]/+page.svelte`
+**File:** `myth-buster/src/routes/tracks/[trackId]/+page.svelte`
 
 1.  **`formProp` Update:** After the `?/generateMyth` action completes, SvelteKit updates the `formProp` in the `+page.svelte` component with the `GenerateActionResult` returned by the server.
 2.  **Refactored Logic (No `$effect`s for form processing):**
     *   The `enhance` callback for the `generateMyth` form will now look like:
         ```typescript
-        // myth-buster/src/routes/game/tracks/[trackId]/+page.svelte (enhance for generateMyth)
+        // myth-buster/src/routes/tracks/[trackId]/+page.svelte (enhance for generateMyth)
         use:enhance={() => {
             isGenerating = true;
             return async ({ result, update }) => {
@@ -241,7 +241,7 @@ When a user selects a learning track, they are navigated to the `/game/tracks/[t
     *   The same pattern applies if `isCheckAnswerResult(actionResult)`.
 
     ```typescript
-    // myth-buster/src/routes/game/tracks/[trackId]/+page.svelte (new function)
+    // myth-buster/src/routes/tracks/[trackId]/+page.svelte (new function)
     function handleFormResult(actionResult: GameActionData) {
         if (!actionResult) {
             // Potentially handle null/undefined if formProp could be reset externally
@@ -262,7 +262,7 @@ When a user selects a learning track, they are navigated to the `/game/tracks/[t
                 isLastMythInTrack = actionResult.isLastMythInTrack ?? false;
                 showTrackCompletedMessage = false;
                 currentAnswerSubmission = null;
-                confidence = 50; 
+                confidence = 50;
             } else if (actionResult.trackCompleted) {
                 showTrackCompletedMessage = true;
                 justFinishedTrackTitle = actionResult.trackTitle || pageLoadData.trackTitle;

@@ -4,9 +4,9 @@ This document outlines the two-stage AI-powered process for generating and playi
 
 ## Stage 1: Track Concept Generation
 
-*   **Responsible Route:** `/game/tracks`
-*   **Server File:** `myth-buster/src/routes/game/tracks/+page.server.ts`
-*   **User Action:** User navigates to the `/game/tracks` page.
+*   **Responsible Route:** `/tracks`
+*   **Server File:** `myth-buster/src/routes/tracks/+page.server.ts`
+*   **User Action:** User navigates to the `/tracks` page.
 *   **Process:**
     1.  The `load` function in `+page.server.ts` is triggered.
     2.  It checks a server-side cache for a list of pre-existing "learning track concepts."
@@ -27,7 +27,7 @@ This document outlines the two-stage AI-powered process for generating and playi
         *   The server parses the AI's JSON response.
         *   The list of generated track concepts is cached on the server (e.g., for 6 hours) to reduce redundant API calls.
         *   The list of track concepts (without the actual myth statements yet) is passed to the client.
-    5.  **Client-Side Display (`/game/tracks/+page.svelte`):**
+    5.  **Client-Side Display (`/tracks/+page.svelte`):**
         *   The page receives the list of track concepts.
         *   Each concept is displayed as a card (showing title, description, icon, etc.).
         *   A "Start Track" button on each card is linked to the main game page (`/game`), passing all details of the selected track concept (id, title, category, difficulty, totalMyths) as URL query parameters.
@@ -36,7 +36,7 @@ This document outlines the two-stage AI-powered process for generating and playi
 
 *   **Responsible Route:** `/game` (when a track is selected)
 *   **Server File:** `myth-buster/src/routes/game/+page.server.ts`
-*   **User Action:** User clicks "Start Track" on the `/game/tracks` page, or "Next Question" while playing a track.
+*   **User Action:** User clicks "Start Track" on the `/tracks` page, or "Next Question" while playing a track.
 *   **Process:**
     1.  **Navigation & Parameter Passing:** The user is navigated to `/game?trackId=...&title=...&category=...&difficulty=...&totalMyths=...`.
     2.  **Client-Side Setup (`/game/+page.svelte`):**
@@ -63,7 +63,7 @@ This document outlines the two-stage AI-powered process for generating and playi
 
 ## Separation of Concerns
 
-*   **`/game/tracks/+page.server.ts`**: Acts as a "curriculum designer," generating high-level ideas and structures for learning tracks. It does *not* generate the individual myth statements.
+*   **`/tracks/+page.server.ts`**: Acts as a "curriculum designer," generating high-level ideas and structures for learning tracks. It does *not* generate the individual myth statements.
 *   **`/game/+page.server.ts`**: Acts as the "content generator" for actual gameplay. When provided with the context of a specific learning track and myth index, it generates that particular myth. If no track context is given, it falls back to generating random myths.
 
 This two-stage dynamic generation approach aims for a balance between providing diverse, themed content and managing API usage efficiently.

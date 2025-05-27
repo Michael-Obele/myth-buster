@@ -1,4 +1,4 @@
-// myth-buster/src/routes/game/tracks/[trackId]/+page.server.ts
+// myth-buster/src/routes/tracks/[trackId]/+page.server.ts
 import { fail, error as SvelteKitError } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 // @ts-expect-error editor-error
@@ -14,7 +14,11 @@ import type {
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
 
 const TRACK_MYTH_GENERATION_SYSTEM_PROMPT_TEMPLATE = (
-	trackTitle: string, trackCategory: string, trackDifficulty: string, currentMythNumber: number, totalMyths: number
+	trackTitle: string,
+	trackCategory: string,
+	trackDifficulty: string,
+	currentMythNumber: number,
+	totalMyths: number
 ) => `You are an AI that generates engaging and verifiable myths for a specific learning track in a myth-busting game, using evidence-based research and authoritative sources.
 
 Track Context:
@@ -58,7 +62,11 @@ Return your response as a JSON object with the following structure:
 
 Ensure the output is ONLY the JSON object.`;
 
-interface CachedGameStatementResponse { timestamp: number; response: GameStatement; expiresAt: number; }
+interface CachedGameStatementResponse {
+	timestamp: number;
+	response: GameStatement;
+	expiresAt: number;
+}
 const trackMythCache: Map<string, CachedGameStatementResponse> = !building ? new Map() : new Map();
 
 function getCachedTrackMyth(key: string): GameStatement | null {
@@ -87,8 +95,13 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	if (isNaN(totalMyths) || totalMyths <= 0) throw SvelteKitError(400, 'Invalid totalMyths.');
 
 	return {
-		trackId, trackTitle: decodeURIComponent(trackTitle), trackCategory: decodeURIComponent(trackCategory),
-		trackDifficulty, trackIcon: decodeURIComponent(icon), totalMythsInTrack: totalMyths, initialMyth: null
+		trackId,
+		trackTitle: decodeURIComponent(trackTitle),
+		trackCategory: decodeURIComponent(trackCategory),
+		trackDifficulty,
+		trackIcon: decodeURIComponent(icon),
+		totalMythsInTrack: totalMyths,
+		initialMyth: null
 	};
 };
 
@@ -103,11 +116,27 @@ export const actions: Actions = {
 		const mythIndex = parseInt(formData.get('mythIndex')?.toString() || '0', 10);
 
 		if (!trackTitle || !trackCategory || !trackDifficulty || !totalMythsInTrackStr) {
-			return fail(400, { error: 'Missing track details.', action: 'generateMyth', success: false, statement: '', isTrue: false, explanation: '', citations: [] });
+			return fail(400, {
+				error: 'Missing track details.',
+				action: 'generateMyth',
+				success: false,
+				statement: '',
+				isTrue: false,
+				explanation: '',
+				citations: []
+			});
 		}
 		const totalMythsInTrack = parseInt(totalMythsInTrackStr, 10);
 		if (isNaN(totalMythsInTrack) || totalMythsInTrack <= 0) {
-			return fail(400, { error: 'Invalid totalMythsInTrack.', action: 'generateMyth', success: false, statement: '', isTrue: false, explanation: '', citations: [] });
+			return fail(400, {
+				error: 'Invalid totalMythsInTrack.',
+				action: 'generateMyth',
+				success: false,
+				statement: '',
+				isTrue: false,
+				explanation: '',
+				citations: []
+			});
 		}
 
 		if (mythIndex >= 0 && mythIndex < totalMythsInTrack) {
@@ -118,67 +147,157 @@ export const actions: Actions = {
 			if (!gameStatement) {
 				fromCache = false;
 				try {
-					const systemPromptContent = TRACK_MYTH_GENERATION_SYSTEM_PROMPT_TEMPLATE(trackTitle, trackCategory, trackDifficulty, mythIndex + 1, totalMythsInTrack);
+					const systemPromptContent = TRACK_MYTH_GENERATION_SYSTEM_PROMPT_TEMPLATE(
+						trackTitle,
+						trackCategory,
+						trackDifficulty,
+						mythIndex + 1,
+						totalMythsInTrack
+					);
 					const apiKey = PERPLEXITY_API_KEY;
 					if (!apiKey) throw new Error('API key is not configured.');
 
 					const payload = {
 						model: 'sonar',
-						messages: [{ role: 'system', content: systemPromptContent }, { role: 'user', content: `Generate myth number ${mythIndex + 1} for track "${trackTitle}".` }],
-						temperature: 0.35, max_tokens: 3500,
+						messages: [
+							{ role: 'system', content: systemPromptContent },
+							{
+								role: 'user',
+								content: `Generate myth number ${mythIndex + 1} for track "${trackTitle}".`
+							}
+						],
+						temperature: 0.35,
+						max_tokens: 3500,
 						web_search_options: { search_context_size: 'low' },
-						return_images: false, return_related_questions: false,
+						return_images: false,
+						return_related_questions: false,
 						response_format: {
 							type: 'json_schema',
 							json_schema: {
 								schema: {
 									type: 'object',
 									properties: {
-										statement: { type: 'string' }, isTrue: { type: 'boolean' }, explanation: { type: 'string' },
-										citations: { type: 'array', items: { type: 'object', properties: { title: { type: 'string' }, url: { type: 'string' } }, required: ['title', 'url'] } }
+										statement: { type: 'string' },
+										isTrue: { type: 'boolean' },
+										explanation: { type: 'string' },
+										citations: {
+											type: 'array',
+											items: {
+												type: 'object',
+												properties: { title: { type: 'string' }, url: { type: 'string' } },
+												required: ['title', 'url']
+											}
+										}
 									},
-									required: ['statement', 'isTrue', 'explanation', 'citations'], additionalProperties: false
+									required: ['statement', 'isTrue', 'explanation', 'citations'],
+									additionalProperties: false
 								}
 							}
 						}
 					};
 
-					const resp = await fetch(PERPLEXITY_API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` }, body: JSON.stringify(payload) });
+					const resp = await fetch(PERPLEXITY_API_URL, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+						body: JSON.stringify(payload)
+					});
 
 					if (!resp.ok) {
-						let errorBody = ''; try { errorBody = await resp.text(); } catch (e) { /* ignore */ }
-						throw new Error(`API request failed: ${resp.status}${errorBody ? `: ${errorBody}` : '.'}`);
+						let errorBody = '';
+						try {
+							errorBody = await resp.text();
+						} catch (e) {
+							/* ignore */
+						}
+						throw new Error(
+							`API request failed: ${resp.status}${errorBody ? `: ${errorBody}` : '.'}`
+						);
 					}
 					const answer = await resp.json();
 					let parsedContent = answer.choices?.[0]?.message?.content;
 
-                    if (typeof parsedContent === 'string') {
-                        try { parsedContent = JSON.parse(parsedContent); } 
-                        catch (e: any) { throw new Error(`Invalid API response: Content string not valid JSON. ${e.message}`); }
-                    }
+					if (typeof parsedContent === 'string') {
+						try {
+							parsedContent = JSON.parse(parsedContent);
+						} catch (e: any) {
+							throw new Error(`Invalid API response: Content string not valid JSON. ${e.message}`);
+						}
+					}
 
 					if (!parsedContent || typeof parsedContent !== 'object') {
 						throw new Error('Invalid API response: Expected JSON object.');
 					}
-					if (typeof parsedContent.statement !== 'string' || typeof parsedContent.isTrue !== 'boolean' || typeof parsedContent.explanation !== 'string' || !Array.isArray(parsedContent.citations)) {
+					if (
+						typeof parsedContent.statement !== 'string' ||
+						typeof parsedContent.isTrue !== 'boolean' ||
+						typeof parsedContent.explanation !== 'string' ||
+						!Array.isArray(parsedContent.citations)
+					) {
 						throw new Error('Parsed JSON does not match GameStatement structure.');
 					}
 					gameStatement = parsedContent as GameStatement;
 					if (gameStatement) cacheTrackMyth(cacheKey, gameStatement);
-
 				} catch (error: any) {
 					console.error('[ACTION generateMyth] Error:', error.message);
-					return fail(500, { error: error.message || 'Failed to generate myth.', action: 'generateMyth', success: false, statement: '', isTrue: false, explanation: 'API Error', citations: [], trackId, trackTitle, currentMythIndex: mythIndex, totalMythsInTrack });
+					return fail(500, {
+						error: error.message || 'Failed to generate myth.',
+						action: 'generateMyth',
+						success: false,
+						statement: '',
+						isTrue: false,
+						explanation: 'API Error',
+						citations: [],
+						trackId,
+						trackTitle,
+						currentMythIndex: mythIndex,
+						totalMythsInTrack
+					});
 				}
 			}
 
 			if (!gameStatement) {
-				return fail(500, { error: 'Failed to retrieve myth.', action: 'generateMyth', success: false, statement: '', isTrue: false, explanation: '', citations: [], trackId, trackTitle, currentMythIndex: mythIndex, totalMythsInTrack });
+				return fail(500, {
+					error: 'Failed to retrieve myth.',
+					action: 'generateMyth',
+					success: false,
+					statement: '',
+					isTrue: false,
+					explanation: '',
+					citations: [],
+					trackId,
+					trackTitle,
+					currentMythIndex: mythIndex,
+					totalMythsInTrack
+				});
 			}
 
-			return { success: true, ...gameStatement, trackId, trackTitle, currentMythIndex: mythIndex, totalMythsInTrack, isLastMythInTrack: mythIndex === totalMythsInTrack - 1, cached: fromCache, action: 'generateMyth' } as GenerateActionResult;
+			return {
+				success: true,
+				...gameStatement,
+				trackId,
+				trackTitle,
+				currentMythIndex: mythIndex,
+				totalMythsInTrack,
+				isLastMythInTrack: mythIndex === totalMythsInTrack - 1,
+				cached: fromCache,
+				action: 'generateMyth'
+			} as GenerateActionResult;
 		} else {
-			return fail(400, { error: 'Track completed or invalid index.', action: 'generateMyth', success: false, statement: '', isTrue: false, explanation: 'Track completed.', citations: [], trackId, trackTitle, currentMythIndex: mythIndex, totalMythsInTrack, trackCompleted: true, isLastMythInTrack: true });
+			return fail(400, {
+				error: 'Track completed or invalid index.',
+				action: 'generateMyth',
+				success: false,
+				statement: '',
+				isTrue: false,
+				explanation: 'Track completed.',
+				citations: [],
+				trackId,
+				trackTitle,
+				currentMythIndex: mythIndex,
+				totalMythsInTrack,
+				trackCompleted: true,
+				isLastMythInTrack: true
+			});
 		}
 	},
 
@@ -192,16 +311,29 @@ export const actions: Actions = {
 		let citations: Citation[] = [];
 		const citationsString = formData.get('citations')?.toString();
 		if (citationsString) {
-			try { 
+			try {
 				const parsed = JSON.parse(citationsString);
-				if(Array.isArray(parsed)) citations = parsed.map((c:any) => ({title: c.title || '', url: c.url || ''}));
-			 } catch (e) { /* ignore */ }
+				if (Array.isArray(parsed))
+					citations = parsed.map((c: any) => ({ title: c.title || '', url: c.url || '' }));
+			} catch (e) {
+				/* ignore */
+			}
 		}
 
 		if (!statement || formData.get('isTrue') === null) {
 			return fail(400, { error: 'Missing statement data.', action: 'checkAnswer', success: false });
 		}
 		const isCorrect = userAnswer === isTrue;
-		return { success: true, result: isCorrect ? 'correct' : 'incorrect', statement, userAnswer, isTrue, explanation, citations, points: isCorrect ? Math.round(confidence) : 0, action: 'checkAnswer' } as CheckAnswerActionResult;
+		return {
+			success: true,
+			result: isCorrect ? 'correct' : 'incorrect',
+			statement,
+			userAnswer,
+			isTrue,
+			explanation,
+			citations,
+			points: isCorrect ? Math.round(confidence) : 0,
+			action: 'checkAnswer'
+		} as CheckAnswerActionResult;
 	}
 };

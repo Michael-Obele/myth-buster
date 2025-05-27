@@ -5,8 +5,6 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { beforeNavigate } from '$app/navigation';
 	import { goto } from '$app/navigation';
-	import MinusIcon from '@lucide/svelte/icons/minus';
-	import PlusIcon from '@lucide/svelte/icons/plus';
 	import * as Drawer from '$lib/components/ui/drawer/index.js';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 
@@ -27,7 +25,7 @@
 		{ href: '/', label: 'Home' },
 		{ href: '/app', label: 'Verify Myths' },
 		{ href: '/game', label: 'Game' },
-		{ href: '/game/tracks', label: 'Tracks' },
+		{ href: '/tracks', label: 'Tracks' },
 		{ href: '/community', label: 'Community' },
 		{ href: '/about', label: 'About' }
 	];
@@ -55,12 +53,12 @@
 </script>
 
 <nav
-	class="fixed left-0 top-0 z-50 w-full border-b border-primary/20 bg-background/80 backdrop-blur-lg"
+	class="border-primary/20 bg-background/80 fixed top-0 left-0 z-50 w-full border-b backdrop-blur-lg"
 >
 	<div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
 		<!-- Logo and brand -->
 		<div class="flex items-center gap-2">
-			<a href="/" class="flex items-center gap-2 text-primary">
+			<a href="/" class="text-primary flex items-center gap-2">
 				<Flame class="h-6 w-6" />
 				<span class="font-underdog text-xl font-bold tracking-tight">Myth Buster</span>
 			</a>
@@ -71,7 +69,7 @@
 			{#each baseNavLinks as link}
 				<a
 					href={link.href}
-					class={`text-sm font-medium transition-colors hover:text-primary ${isActive(link.href) ? 'text-primary' : 'text-muted-foreground'}`}
+					class={`hover:text-primary text-sm font-medium transition-colors ${isActive(link.href) ? 'text-primary' : 'text-muted-foreground'}`}
 				>
 					{link.label}
 				</a>
@@ -102,7 +100,7 @@
 			{:else}
 				<a
 					href="/signin"
-					class={`text-sm font-medium transition-colors hover:text-primary ${isActive('/signin') ? 'text-primary' : 'text-muted-foreground'}`}
+					class={`hover:text-primary text-sm font-medium transition-colors ${isActive('/signin') ? 'text-primary' : 'text-muted-foreground'}`}
 				>
 					Sign In
 				</a>
@@ -113,7 +111,7 @@
 		<Button
 			variant="ghost"
 			size="icon"
-			class="border border-green-400 text-green-400 hover:text-primary-foreground md:hidden"
+			class="hover:text-primary-foreground border border-green-400 text-green-400 md:hidden"
 			onclick={() => (isOpen = true)}
 			aria-label="Toggle menu"
 		>
@@ -133,11 +131,11 @@
 					<Drawer.Title>Menu</Drawer.Title>
 					<Drawer.Description>Navigate through Myth Buster</Drawer.Description>
 				</Drawer.Header>
-				<div class="flex flex-col space-y-3 border-t border-primary/20 bg-background/95">
+				<div class="border-primary/20 bg-background/95 flex flex-col space-y-3 border-t">
 					{#each navLinks as link}
 						<a
 							href={link.href}
-							class={`rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10 hover:text-primary ${isActive(link.href) ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
+							class={`hover:bg-primary/10 hover:text-primary rounded-md px-3 py-2 text-sm font-medium transition-colors ${isActive(link.href) ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
 						>
 							{link.label}
 						</a>
@@ -146,7 +144,7 @@
 					{#if user}
 						<div class="flex items-center gap-2 rounded-md px-3 py-2">
 							<Avatar.Root class="h-6 w-6">
-								<Avatar.Fallback class="bg-primary text-xs text-primary-foreground">
+								<Avatar.Fallback class="bg-primary text-primary-foreground text-xs">
 									{userInitial}
 								</Avatar.Fallback>
 							</Avatar.Root>
@@ -154,7 +152,7 @@
 						</div>
 						<a
 							href="/signout"
-							class="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+							class="text-muted-foreground hover:bg-primary/10 hover:text-primary rounded-md px-3 py-2 text-sm font-medium transition-colors"
 						>
 							Sign out
 						</a>

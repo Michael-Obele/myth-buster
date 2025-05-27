@@ -296,21 +296,21 @@
 		<h1 class="text-center text-3xl font-bold">
 			Track: {pageLoadData.trackTitle}
 		</h1>
-		<p class="text-center text-muted-foreground">
+		<p class="text-muted-foreground text-center">
 			Category: {pageLoadData.trackCategory} | Difficulty: {pageLoadData.trackDifficulty
 				.charAt(0)
 				.toUpperCase() + pageLoadData.trackDifficulty.slice(1)}
 		</p>
 
 		<div class="mt-2 flex gap-2">
-			<Badge variant="outline" class="flex items-center gap-1 bg-primary/5">
-				<TrophyIcon class="h-3.5 w-3.5 text-primary" /> Score: {score}
+			<Badge variant="outline" class="bg-primary/5 flex items-center gap-1">
+				<TrophyIcon class="text-primary h-3.5 w-3.5" /> Score: {score}
 			</Badge>
-			<Badge variant="outline" class="flex items-center gap-1 bg-primary/5">
-				<Flame class="h-3.5 w-3.5 text-primary" /> Streak: {streak}
+			<Badge variant="outline" class="bg-primary/5 flex items-center gap-1">
+				<Flame class="text-primary h-3.5 w-3.5" /> Streak: {streak}
 			</Badge>
-			<Badge variant="outline" class="flex items-center gap-1 bg-primary/5">
-				<Sparkles class="h-3.5 w-3.5 text-primary" /> High Score: {highScore}
+			<Badge variant="outline" class="bg-primary/5 flex items-center gap-1">
+				<Sparkles class="text-primary h-3.5 w-3.5" /> High Score: {highScore}
 			</Badge>
 		</div>
 	</div>
@@ -320,7 +320,7 @@
 			<Card.Title class="flex items-center justify-center gap-2 text-2xl font-bold">
 				{#if iconMap[pageLoadData.trackIcon || 'Default']}
 					{@const Icon = iconMap[pageLoadData.trackIcon || 'Default']}
-					<Icon class="h-6 w-6 text-primary" />
+					<Icon class="text-primary h-6 w-6" />
 				{/if}
 				Myth #{currentMythIndexInTrack + 1} of {pageLoadData.totalMythsInTrack}
 
@@ -333,7 +333,7 @@
 				Is the statement true or false? How confident are you?
 			</Card.Description>
 			{#if pageLoadData.totalMythsInTrack > 0}
-				<div class="px-6 pb-0 pt-2">
+				<div class="px-6 pt-2 pb-0">
 					<Progress
 						value={((currentMythIndexInTrack + (hasAnswerResultForDisplay ? 1 : 0)) /
 							pageLoadData.totalMythsInTrack) *
@@ -374,7 +374,7 @@
 					</GameDialog.Header>
 					<div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
 						<Button
-							href="/game/tracks"
+							href="/tracks"
 							variant="outline"
 							onclick={() => (showTrackCompletedMessage = false)}>Back to Tracks</Button
 						>
@@ -510,8 +510,8 @@
 			{:else if hasValidStatementForDisplay}
 				<!-- State 2: Show Statement and Answer Buttons -->
 				<div>
-					<div class="mb-6 rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-						<h2 class="text-center text-xl font-semibold text-primary">"{currentMythStatement}"</h2>
+					<div class="bg-card text-card-foreground mb-6 rounded-lg border p-4 shadow-sm">
+						<h2 class="text-primary text-center text-xl font-semibold">"{currentMythStatement}"</h2>
 					</div>
 					<form
 						method="POST"
@@ -639,7 +639,7 @@
 	</Card.Root>
 
 	<div class="mt-12 text-center">
-		<Button href="/game/tracks" variant="link" class="text-primary hover:text-primary/90">
+		<Button href="/tracks" variant="link" class="text-primary hover:text-primary/90">
 			<ChevronLeft class="mr-2 h-4 w-4" />
 			Back to All Tracks</Button
 		>

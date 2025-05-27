@@ -80,7 +80,7 @@
 <div class="container mx-auto min-h-screen max-w-5xl px-4 py-8 text-white">
 	<div class="mb-8 text-center">
 		<h1 class="text-4xl font-bold tracking-tight">Learning Tracks</h1>
-		<p class="mt-2 text-lg text-muted-foreground">
+		<p class="text-muted-foreground mt-2 text-lg">
 			Deepen your knowledge by tackling themed myth challenges.
 		</p>
 	</div>
@@ -91,16 +91,16 @@
 				{@const iconName = categoryIconMap[track.category] || 'Default'}
 				{@const Icon = iconMap[iconName]}
 				<Card.Root
-					class="flex flex-col overflow-hidden border-border/50 bg-card/80 shadow-lg transition-all hover:shadow-primary/30"
+					class="border-border/50 bg-card/80 hover:shadow-primary/30 flex flex-col overflow-hidden shadow-lg transition-all"
 				>
 					<Card.Header class="flex flex-row items-start gap-4 space-y-0 p-4 pb-3">
 						<div
-							class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary"
+							class="bg-primary/10 text-primary flex h-12 w-12 items-center justify-center rounded-lg"
 						>
 							<Icon class="h-6 w-6" />
 						</div>
 						<div class="flex-1">
-							<Card.Title class="text-lg font-semibold group-hover:text-primary">
+							<Card.Title class="group-hover:text-primary text-lg font-semibold">
 								{track.title}
 							</Card.Title>
 							<div class="mt-1 flex items-center gap-2">
@@ -112,12 +112,12 @@
 						</div>
 					</Card.Header>
 					<Card.Content class="flex-1 p-4 pt-0">
-						<p class="text-sm text-muted-foreground">{track.description}</p>
+						<p class="text-muted-foreground text-sm">{track.description}</p>
 					</Card.Content>
 					<Card.Footer class="p-4 pt-2">
 						<Button
-							href={`/game/tracks/${track.id}?title=${encodeURIComponent(track.title)}&category=${encodeURIComponent(track.category)}&difficulty=${track.difficulty}&totalMyths=${track.totalMyths || 0}&icon=${encodeURIComponent(track.icon || 'BookOpen')}`}
-							class="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+							href={`/tracks/${track.id}?title=${encodeURIComponent(track.title)}&category=${encodeURIComponent(track.category)}&difficulty=${track.difficulty}&totalMyths=${track.totalMyths || 0}&icon=${encodeURIComponent(track.icon || 'BookOpen')}`}
+							class="bg-primary text-primary-foreground hover:bg-primary/90 w-full"
 						>
 							Start Track ({track.totalMyths || 0} Myths)
 						</Button>
@@ -127,9 +127,9 @@
 		</div>
 	{:else}
 		<div class="mt-16 flex flex-col items-center justify-center text-center">
-			<BookOpen class="mb-4 h-16 w-16 text-muted-foreground" />
+			<BookOpen class="text-muted-foreground mb-4 h-16 w-16" />
 			<h2 class="text-2xl font-semibold">No Learning Tracks Available Yet</h2>
-			<p class="mt-2 text-muted-foreground">Please check back later as we add new challenges!</p>
+			<p class="text-muted-foreground mt-2">Please check back later as we add new challenges!</p>
 			<Button href="/game" variant="outline" class="mt-6">Back to Main Game</Button>
 		</div>
 	{/if}

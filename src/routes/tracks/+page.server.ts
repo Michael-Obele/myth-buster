@@ -1,10 +1,10 @@
-// myth-buster/src/routes/game/tracks/+page.server.ts
+// myth-buster/src/routes/tracks/+page.server.ts
 import { fail } from '@sveltejs/kit';
 // @ts-expect-error editor-error
 import { PERPLEXITY_API_KEY } from '$env/static/private';
 import { building } from '$app/environment';
 import type { PageServerLoad } from './$types';
-import type { LearningTrack } from '$lib/game/tracks'; // Assuming LearningTrack interface is in tracks.ts
+import type { LearningTrack } from '$lib/tracks'; // Assuming LearningTrack interface is in tracks.ts
 
 // API Configuration
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
@@ -29,7 +29,7 @@ For each track concept, provide:
 4. "category": Select from these evidence-rich categories: "Science", "History", "Health", "Technology", "Nature", "Psychology", "Space", "Culture"
 5. "difficulty": Calibrate difficulty appropriately:
    - "easy": Well-known topics with clear misconceptions
-   - "medium": Moderately specialized knowledge or subtle misconceptions  
+   - "medium": Moderately specialized knowledge or subtle misconceptions
    - "hard": Specialized domains requiring deeper understanding
 6. "icon": Choose the most relevant icon from: "BookOpen", "Brain", "FlaskConical", "Globe", "Laptop", "Palette", "Scale", "ScrollText", "Video", "Heart", "Atom", "Telescope"
 7. "totalMyths": Number of statements (3-5) based on topic richness and complexity

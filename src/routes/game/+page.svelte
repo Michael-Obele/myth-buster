@@ -435,13 +435,13 @@
 <div class="container mx-auto min-h-screen max-w-3xl px-4 py-8 text-white">
 	<div class="mb-6 flex flex-col items-center justify-center gap-2">
 		<h1 class="text-center text-3xl font-bold">Myth Buster Challenge</h1>
-		<p class="text-center text-muted-foreground">
+		<p class="text-muted-foreground text-center">
 			Test your knowledge by determining if statements are true or false
 		</p>
 
 		<div class="mt-2 flex gap-2">
-			<Badge variant="outline" class="flex items-center gap-1 bg-primary/5">
-				<Trophy class="h-3.5 w-3.5 text-primary" />
+			<Badge variant="outline" class="bg-primary/5 flex items-center gap-1">
+				<Trophy class="text-primary h-3.5 w-3.5" />
 				<span class="font-medium">Score: {score}</span>
 			</Badge>
 
@@ -472,7 +472,7 @@
 	<Card.Root class="mb-6 border-2 shadow-lg">
 		<Card.Header class="px-6 py-5">
 			<Card.Title class="flex items-center justify-center gap-2 text-2xl font-bold">
-				<Sparkles class="h-6 w-6 text-primary" />
+				<Sparkles class="text-primary h-6 w-6" />
 				Test Your Knowledge
 
 				<GameDialog.Root>
@@ -568,7 +568,7 @@
 								<!-- Show settings dropdown if there's a statement or result -->
 								<DropdownMenu.Root>
 									<DropdownMenu.Trigger
-										class="inline-flex h-10 w-10 items-center justify-center whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+										class="border-input bg-background ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-10 w-10 items-center justify-center rounded-md border text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
 										onclick={() => {
 											// Initialize temp values when opening dropdown
 											console.log('Settings dropdown opened');
@@ -579,7 +579,7 @@
 										<Settings class="h-4 w-4" />
 										<span class="sr-only">Open Settings</span>
 									</DropdownMenu.Trigger>
-									<DropdownMenu.Content class="w-64 bg-card text-primary">
+									<DropdownMenu.Content class="bg-card text-primary w-64">
 										<DropdownMenu.Label>Game Settings</DropdownMenu.Label>
 										<DropdownMenu.Separator />
 
@@ -644,11 +644,7 @@
 							{/if}
 						</div>
 						<div class="mt-4 text-center">
-							<Button
-								href="/game/tracks"
-								variant="link"
-								class="text-sm text-primary hover:underline"
-							>
+							<Button href="/tracks" variant="link" class="text-primary text-sm hover:underline">
 								Explore Learning Tracks →
 							</Button>
 						</div>
@@ -656,8 +652,8 @@
 				</form>
 			{:else if hasStatement && !hasResult && form && isGenerateResult(form)}
 				<div>
-					<div class="mb-6 rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-						<h2 class="text-center text-xl font-semibold text-primary">"{form.statement}"</h2>
+					<div class="bg-card text-card-foreground mb-6 rounded-lg border p-4 shadow-sm">
+						<h2 class="text-primary text-center text-xl font-semibold">"{form.statement}"</h2>
 					</div>
 					<form method="POST" action="?/checkAnswer" use:enhance={handleAnswerSubmit}>
 						<input
@@ -849,7 +845,7 @@
 	<div class="flex items-center justify-between px-6 text-center">
 		<div>
 			<p class="text-lg font-semibold">Score</p>
-			<p class="text-2xl font-bold text-primary">{score}</p>
+			<p class="text-primary text-2xl font-bold">{score}</p>
 		</div>
 		<div>
 			<p class="text-lg font-semibold">Streak</p>
