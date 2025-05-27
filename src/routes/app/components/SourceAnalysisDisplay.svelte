@@ -184,7 +184,7 @@
 			{/if}
 		</Dialog.Header>
 
-		<ScrollArea class="max-h-[calc(80vh_-_100px)] md:max-h-[calc(70vh_-_100px)]">
+		<ScrollArea class="max-h-[calc(80vh-100px)] md:max-h-[calc(70vh-100px)]">
 			<div class="grid gap-6 px-6 py-4">
 				<form method="POST" action="?/analyzeSource" use:enhance={handleInternalSubmit}>
 					<input type="hidden" name="sourceUrl" value={sourceDetails?.url || ''} />
@@ -269,7 +269,7 @@
 									{@const IconComponent = section.icon}
 									<Accordion.Item value={section.title} class="border-b-0 last:border-b-0">
 										<Accordion.Trigger
-											class="px-4 py-3 text-base font-medium hover:bg-muted/30 [&[data-state=open]]:bg-muted/20"
+											class="px-4 py-3 text-base font-medium hover:bg-muted/30 data-[state=open]:bg-muted/20"
 										>
 											<div class="flex items-center">
 												<IconComponent class="mr-3 h-5 w-5 text-primary" />

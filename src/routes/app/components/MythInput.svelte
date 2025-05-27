@@ -94,7 +94,7 @@
 	</div>
 	<Button
 		type="submit"
-		class="w-full bg-gradient-to-r from-primary to-purple-600 transition-all duration-300 hover:shadow-lg"
+		class="w-full bg-linear-to-r from-primary to-purple-600 transition-all duration-300 hover:shadow-lg"
 		disabled={!isValid || loading}
 	>
 		{#if loading}

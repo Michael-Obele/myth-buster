@@ -134,7 +134,7 @@
 						<!-- <img
 							src={data[currentIndex].image}
 							alt="feature"
-							class="aspect-auto size-full rounded-xl border border-neutral-300/50 object-cover object-left-top p-1 shadow-lg"
+							class="aspect-auto size-full rounded-xl border border-neutral-300/50 object-cover object-top-left p-1 shadow-lg"
 						/> -->
 						<div>
 							<LordIcon
@@ -164,7 +164,7 @@
 				</div>
 
 				<div
-					class="relative -mb-8 pb-0.5 [-webkit-mask-image:linear-gradient(90deg,transparent,black_20%,white_80%,transparent)] [mask-image:linear-gradient(90deg,transparent,black_20%,white_80%,transparent)] md:hidden"
+					class="relative -mb-8 pb-0.5 [-webkit-mask-image:linear-gradient(90deg,transparent,black_20%,white_80%,transparent)] mask-[linear-gradient(90deg,transparent,black_20%,white_80%,transparent)] md:hidden"
 				>
 					{#each data, index}
 						<div
@@ -182,7 +182,7 @@
 				</div>
 				<ul
 					bind:this={carouselRef}
-					class="relative flex h-full snap-x snap-mandatory flex-nowrap overflow-x-auto px-4 pl-20 [-ms-overflow-style:none] [-webkit-mask-image:linear-gradient(90deg,transparent,black_20%,white_80%,transparent)] [mask-image:linear-gradient(90deg,transparent,black_20%,white_80%,transparent)] [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden"
+					class="relative flex h-full snap-x snap-mandatory flex-nowrap overflow-x-auto px-4 pl-20 [-ms-overflow-style:none] [-webkit-mask-image:linear-gradient(90deg,transparent,black_20%,white_80%,transparent)] mask-[linear-gradient(90deg,transparent,black_20%,white_80%,transparent)] [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden"
 				>
 					{#each data as item, index}
 						<!-- svelte-ignore a11y_click_events_have_key_events -->

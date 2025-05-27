@@ -33,7 +33,7 @@
 			alt={name}
 			class="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
 		/>
-		<div class="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
+		<div class="absolute inset-0 bg-linear-to-t from-background/80 to-transparent"></div>
 	</div>
 	<Card.Content class="p-6">
 		<div class="mb-2 flex items-center justify-between">

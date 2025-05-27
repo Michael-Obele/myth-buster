@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import GridBeam from '$lib/components/blocks/GridBeam.svelte';
 
 	let {
 		className = '',
@@ -49,24 +48,42 @@
 		boxes = newBoxes;
 	});
 
-	// Get the pattern class based on the pattern prop
-	const getPatternClass = () => {
+	const svgToDataUri = (svg: string) =>
+		`data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
+
+	// Define SVG templates
+	const gridSvg = (color: string) =>
+		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="${color}"><path d="M0 .5H31.5V32"/></svg>`;
+
+	const gridSmallSvg = (color: string) =>
+		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="8" height="8" fill="none" stroke="${color}"><path d="M0 .5H31.5V32"/></svg>`;
+
+	const dotSvg = (color: string) =>
+		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="16" height="16" fill="none"><circle fill="${color}" id="pattern-circle" cx="10" cy="10" r="1.6257413380501518"></circle></svg>`;
+
+	// Derived background image style
+	const backgroundImageStyle = $derived.by(() => {
+		let svgString;
 		switch (pattern) {
 			case 'grid':
-				return `bg-grid-${patternColor}`;
+				svgString = gridSvg(patternColor);
+				break;
 			case 'grid-small':
-				return `bg-grid-small-${patternColor}`;
+				svgString = gridSmallSvg(patternColor);
+				break;
 			case 'dot':
-				return `bg-dot-${patternColor}`;
+				svgString = dotSvg(patternColor);
+				break;
 			default:
-				return `bg-grid-${patternColor}`;
+				svgString = gridSvg(patternColor); // Default to grid
 		}
-	};
+		return `background-image: url("${svgToDataUri(svgString)}")`;
+	});
 </script>
 
 <div class={cn('relative overflow-hidden', containerClassName)}>
 	<!-- Background with pattern -->
-	<div class={cn('absolute inset-0', getPatternClass())}></div>
+	<div class={cn('absolute inset-0')} style={backgroundImageStyle}></div>
 
 	<!-- Animated boxes -->
 	<div class={cn('absolute inset-0 z-0', className)}>
@@ -83,13 +100,13 @@
 				`}
 			>
 				{#if box.showBeam}
-					<GridBeam>
-						{#if box.id % 2 === 0}
-							<div class="p-2 text-xs text-white/70">Myth</div>
-						{:else if box.id % 2 === 1}
-							<div class="p-2 text-xs text-white/70">Buster</div>
-						{/if}
-					</GridBeam>
+					{#if box.id % 2 === 0}
+						<div class="p-2 text-xs text-white/70">Myth</div>
+					{:else if box.id % 2 === 1}
+						<div class="p-2 text-xs text-white/70">Buster</div>
+					{/if}
+					<!-- <GridBeam>
+					</GridBeam> -->
 				{/if}
 			</div>
 		{/each}

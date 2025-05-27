@@ -2,20 +2,27 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Flame, BookOpen, Check, Code, ArrowRight, HelpCircle, Users } from '@lucide/svelte'; // Added HelpCircle, Users
+	import {
+		Flame,
+		BookOpen,
+		Check,
+		Code,
+		ArrowRight,
+		HelpCircle,
+		type Icon as IconType
+	} from '@lucide/svelte'; // Added HelpCircle, Users
 	import SparklesText from '$lib/components/blocks/SparklesText.svelte';
 	import AboutTab from '$lib/components/about/AboutTab.svelte';
 	import FeaturesTab from '$lib/components/about/FeaturesTab.svelte';
 	import TechStackTab from '$lib/components/about/TechStackTab.svelte';
 	import BackgroundBoxes from '$lib/components/blocks/BackgroundBoxes.svelte';
 	import RouteHead from '$lib/components/layout/RouteHead.svelte';
-	import type { ComponentType } from 'svelte';
 
 	// Define Feature type
 	type Feature = {
 		title: string;
 		description: string;
-		icon: ComponentType;
+		icon: typeof IconType;
 		priority: 'core' | 'nice' | 'important';
 	};
 
@@ -79,9 +86,9 @@
 />
 
 <!-- Animated background with grid pattern -->
-<div class="min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800">
+<div class="min-h-screen overflow-hidden bg-linear-to-br from-slate-900 to-slate-800">
 	<!-- Grid pattern overlay -->
-	<div class="absolute inset-0 bg-grid-black/[0.07] dark:bg-grid-white/[0.05]"></div>
+	<div class="bg-grid-black/[0.07] dark:bg-grid-white/[0.05] absolute inset-0"></div>
 
 	<!-- Background boxes for additional visual effect -->
 	<BackgroundBoxes
@@ -89,22 +96,22 @@
 		boxClassName="border border-slate-700/20"
 		pattern="grid"
 		patternColor="slate-700"
-		quantity={15}
+		quantity={8}
 	>
 		<!-- Main content -->
 		<main
-			class="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-start px-4 py-16 text-foreground"
+			class="text-foreground relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-start px-4 py-16"
 		>
 			<!-- Header -->
 			<div class="mb-12 flex flex-col items-center text-center">
 				<div class="mb-6 flex items-center gap-3">
 					<SparklesText
 						text="About Myth Buster"
-						class="font-underdog text-5xl font-bold tracking-tight text-primary md:text-6xl"
+						class="font-underdog text-primary text-5xl font-bold tracking-tight md:text-6xl"
 					/>
 				</div>
 
-				<p class="max-w-2xl text-center text-lg text-muted-foreground">
+				<p class="text-muted-foreground max-w-2xl text-center text-lg">
 					Discover the story behind our AI-powered myth-busting tool, designed to help you uncover
 					the truth with reliable information and engaging visuals.
 				</p>
@@ -151,7 +158,7 @@
 			<!-- CTA Section -->
 			<div class="mt-16 text-center">
 				<h2 class="mb-4 text-2xl font-bold">Ready to start busting myths?</h2>
-				<p class="mb-6 text-muted-foreground">Try our interactive myth verification tool now</p>
+				<p class="text-muted-foreground mb-6">Try our interactive myth verification tool now</p>
 				<Button href="/app" class="px-6 py-2">
 					Start Busting Myths
 					<ArrowRight class="ml-2 h-4 w-4" />

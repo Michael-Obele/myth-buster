@@ -388,7 +388,7 @@
 	keywords={['myth buster game', 'trivia', 'fact or fiction', 'knowledge test', 'ai game']}
 />
 
-<div class="min-h-screen bg-gradient-to-br from-background to-background/50">
+<div class="min-h-screen bg-linear-to-br from-background to-background/50">
 	<main class="relative mx-auto min-h-screen w-full">
 		<h3 class="p-6 text-center text-2xl font-bold md:text-5xl">
 			Verify <AuroraText>Myths</AuroraText>

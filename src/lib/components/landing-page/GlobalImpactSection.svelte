@@ -74,14 +74,14 @@
 		</div>
 
 		<div
-			class="relative mx-auto flex h-fit w-full max-w-[32rem] items-center justify-center overflow-hidden rounded-lg border bg-background px-4 pb-40 pt-8 md:pb-60 md:shadow-xl"
+			class="relative mx-auto flex h-fit w-full max-w-lg items-center justify-center overflow-hidden rounded-lg border bg-background px-4 pb-40 pt-8 md:pb-60 md:shadow-xl"
 		>
 			<span
-				class="pointer-events-none select-none whitespace-pre-wrap bg-gradient-to-b from-primary to-accent/80 bg-clip-text text-center text-6xl font-semibold leading-none text-transparent"
+				class="pointer-events-none select-none whitespace-pre-wrap bg-linear-to-b from-primary to-accent/80 bg-clip-text text-center text-6xl font-semibold leading-none text-transparent"
 			>
 				Truth Worldwide
 			</span>
-			<main class="absolute inset-0 top-28 mx-auto aspect-[1/1] w-full max-w-[600px]">
+			<main class="absolute inset-0 top-28 mx-auto aspect-square w-full max-w-[600px]">
 				<!-- Your Globe component here -->
 				<Globe />
 			</main>

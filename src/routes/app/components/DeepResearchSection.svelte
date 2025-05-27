@@ -97,7 +97,7 @@
 					type="text"
 					bind:value={customLensInput}
 					placeholder="Enter custom research angle (e.g., 'Environmental impact')"
-					class="flex-grow"
+					class="grow"
 				/>
 				<Button onclick={addCustomLensFunction}>Add</Button>
 			</div>
@@ -183,13 +183,13 @@
 									<ul class="space-y-2 text-sm">
 										{#each lens.result.citations as citation}
 											<li class="flex items-start justify-between">
-												<div class="flex flex-grow items-start">
+												<div class="flex grow items-start">
 													<Link2 class="mr-2 mt-1 h-4 w-4 shrink-0 text-primary" />
 													<a
 														href={citation.url}
 														target="_blank"
 														rel="noopener noreferrer"
-														class="flex-grow break-words text-primary hover:underline"
+														class="grow break-words text-primary hover:underline"
 														title={citation.title}
 													>
 														{citation.title}
@@ -262,7 +262,7 @@
 											href={citation.url}
 											target="_blank"
 											rel="noopener noreferrer"
-											class="flex-grow break-words text-primary hover:underline"
+											class="grow break-words text-primary hover:underline"
 											title={citation.title}
 										>
 											{citation.title}

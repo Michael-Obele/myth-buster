@@ -26,13 +26,13 @@
 		</Card.Title>
 	</Card.Header>
 	<Card.Content class="px-4 pb-4 pt-1">
-		<ScrollArea class="min-h-[30rem] rounded-md border p-4">
+		<ScrollArea class="min-h-120 rounded-md border p-4">
 			<ul class="space-y-3">
 				{#each citations as citation, i}
 					<li
 						class="flex items-start gap-3 rounded-md border border-primary/20 bg-muted/30 p-3 transition-colors hover:bg-muted/50"
 					>
-						<Badge variant="outline" class="mt-0.5 h-5 flex-shrink-0 text-primary">
+						<Badge variant="outline" class="mt-0.5 h-5 shrink-0 text-primary">
 							{i + 1}
 						</Badge>
 						<div>

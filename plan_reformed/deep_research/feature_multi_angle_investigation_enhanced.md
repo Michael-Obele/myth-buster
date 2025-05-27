@@ -198,7 +198,7 @@ Using components like shadcn-svelte `Tabs` or `Card` is preferred:
     <form method="POST" action="?/researchLens" use:enhance={handleResearchLensSubmit} class="mt-4 flex gap-2 p-4 border rounded-md">
         <input type="hidden" name="mythStatement" value={currentMythStatement} />
         <input type="hidden" name="lensType" value="custom" />
-        <Input name="lensName" bind:value={customLensInput} placeholder="Enter custom research angle (e.g., 'Economic impact')" class="flex-grow" />
+        <Input name="lensName" bind:value={customLensInput} placeholder="Enter custom research angle (e.g., 'Economic impact')" class="grow" />
         <input type="hidden" name="customQuery" value={customLensInput} /> {/* Or make lensName the query if simpler */}
         <Button type="submit">Analyze Custom Angle</Button>
     </form>

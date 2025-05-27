@@ -47,7 +47,7 @@
 		</div>
 
 		<Resizable.PaneGroup
-			class="m-2 mx-5 flex size-52 max-h-[75vw] max-w-[75vw] items-center justify-center rounded-lg bg-gradient-to-br from-primary/50 via-accent/5 to-primary/70 text-center md:size-96"
+			class="m-2 mx-5 flex size-52 max-h-[75vw] max-w-[75vw] items-center justify-center rounded-lg bg-linear-to-br from-primary/50 via-accent/5 to-primary/70 text-center md:size-96"
 			direction="horizontal"
 		>
 			<Resizable.Pane defaultSize={30}>

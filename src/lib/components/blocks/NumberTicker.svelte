@@ -1,5 +1,4 @@
-<!--
-@component
+<!-- 
 The `NumberTicker` component is used to display a numeric value that animates from an initial value to a target value. It supports customization for animation direction, duration, and additional styling.
 
 ### Props
@@ -20,7 +19,8 @@ The `NumberTicker` component is used to display a numeric value that animates fr
   class="text-lg font-bold"
   direction="up"
 />
- -->
+-->
+
 <script lang="ts">
 	import { cubicOut } from 'svelte/easing';
 	import { onMount } from 'svelte';
@@ -87,23 +87,25 @@ The `NumberTicker` component is used to display a numeric value that animates fr
 	let targetNode = $state<HTMLElement>()!;
 	const inViewport = new IsInViewport(() => targetNode);
 	// Use $effect to react to changes in numericValue or direction and update the tween target
-	$effect(() => {
-		if (inViewport.current) {
-			// Start animation when in viewport
-			num.set(numericValue);
-		} else {
-			// Reset to initial value when leaving viewport
-			const resetValue =
-				direction === 'down'
-					? startValue !== undefined && typeof startValue === 'number'
-						? startValue
-						: 100
-					: startValue !== undefined && typeof startValue === 'number'
-						? startValue
-						: initial;
-			num.set(resetValue);
-		}
+	onMount(() => {
+		num.set(numericValue);
 	});
+
+	// if (inViewport.current) {
+	// 	// Start animation when in viewport
+	// 	num.set(numericValue);
+	// } else {
+	// 	// Reset to initial value when leaving viewport
+	// 	const resetValue =
+	// 		direction === 'down'
+	// 			? startValue !== undefined && typeof startValue === 'number'
+	// 				? startValue
+	// 				: 100
+	// 			: startValue !== undefined && typeof startValue === 'number'
+	// 				? startValue
+	// 				: initial;
+	// 	num.set(resetValue);
+	// }
 </script>
 
 <div

@@ -34,7 +34,7 @@
 </script>
 
 <section
-	class="relative my-12 h-fit w-full rounded-xl bg-gradient-to-b from-slate-900 to-slate-800 py-16"
+	class="relative my-12 h-fit w-full rounded-xl bg-linear-to-b from-slate-900 to-slate-800 py-16"
 >
 	<div class="absolute inset-0 bg-grid-white/[0.05]"></div>
 	<div class="relative z-10 mx-auto max-w-7xl px-4">
