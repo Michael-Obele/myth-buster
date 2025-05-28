@@ -1,9 +1,7 @@
 import { json, type RequestEvent } from '@sveltejs/kit';
 // @ts-ignore
-import { PERPLEXITY_API_KEY } from '$env/static/private';
+import { PERPLEXITY_API_KEY, PERPLEXITY_API_URL, PERPLEXITY_QUALITY } from '$env/static/private';
 import { building } from '$app/environment';
-
-const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
 
 const MINI_MYTH_BATCH_SYSTEM_PROMPT = `You are a highly accurate, evidence-based myth-busting AI.
 Your task is to generate a batch of exactly 5 distinct, common myth statements and provide a brief, factual verification for each.
@@ -105,7 +103,7 @@ async function fetchAndVerifyRandomMythsBatch(apiKey: string): Promise<MiniMyth[
 		temperature: 0.4, // A little variety in myths, but grounded in fact
 		max_tokens: 1200, // Adequate tokens for 5 statements and brief explanations
 		web_search_options: {
-			search_context_size: 'low' // Low context for finding common myths and verifying them
+			search_context_size: PERPLEXITY_QUALITY // Low context for finding common myths and verifying them
 		},
 		return_images: false, // Not needed for this task
 		return_related_questions: false // Not needed for this task

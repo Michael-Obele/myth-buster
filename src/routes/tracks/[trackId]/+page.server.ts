@@ -2,7 +2,7 @@
 import { fail, error as SvelteKitError } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 // @ts-expect-error editor-error
-import { PERPLEXITY_API_KEY } from '$env/static/private';
+import { PERPLEXITY_API_KEY, PERPLEXITY_API_URL, PERPLEXITY_QUALITY } from '$env/static/private';
 import { building } from '$app/environment';
 import type {
 	GameStatement,
@@ -10,8 +10,6 @@ import type {
 	GenerateActionResult,
 	CheckAnswerActionResult
 } from '$lib/game/types';
-
-const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
 
 const TRACK_MYTH_GENERATION_SYSTEM_PROMPT_TEMPLATE = (
 	trackTitle: string,
@@ -168,7 +166,7 @@ export const actions: Actions = {
 						],
 						temperature: 0.35,
 						max_tokens: 3500,
-						web_search_options: { search_context_size: 'low' },
+						web_search_options: { search_context_size: PERPLEXITY_QUALITY },
 						return_images: false,
 						return_related_questions: false,
 						response_format: {

@@ -1,13 +1,13 @@
 // myth-buster/src/routes/tracks/+page.server.ts
 import { fail } from '@sveltejs/kit';
 // @ts-expect-error editor-error
-import { PERPLEXITY_API_KEY } from '$env/static/private';
+import { PERPLEXITY_API_KEY, PERPLEXITY_API_URL, PERPLEXITY_QUALITY } from '$env/static/private';
 import { building } from '$app/environment';
 import type { PageServerLoad } from './$types';
-import type { LearningTrack } from '$lib/tracks'; // Assuming LearningTrack interface is in tracks.ts
+import type { LearningTrack } from '$lib/game/tracks'; // Assuming LearningTrack interface is in tracks.ts
 
 // API Configuration
-const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
+
 const NUMBER_OF_TRACK_CONCEPTS_TO_GENERATE = 5; // Or make this configurable
 
 // System prompt for the AI to generate learning track concepts
@@ -120,7 +120,7 @@ async function generateTrackConceptsFromAPI(): Promise<LearningTrack[]> {
 		temperature: 0.4, // Balanced creativity for diverse topics while maintaining educational focus
 		max_tokens: 3500, // Adequate space for detailed track concepts
 		web_search_options: {
-			search_context_size: 'low' // Medium context to research current misconceptions and trending topics
+			search_context_size: PERPLEXITY_QUALITY // Medium context to research current misconceptions and trending topics
 		},
 		return_images: false,
 		return_related_questions: false

@@ -1,12 +1,9 @@
 // Imports for SvelteKit server-side functionality and environment variables
 import type { Actions } from './$types';
 // @ts-expect-error editor error
-import { PERPLEXITY_API_KEY } from '$env/static/private';
+import { PERPLEXITY_API_KEY, PERPLEXITY_API_URL, PERPLEXITY_QUALITY } from '$env/static/private';
 import { building } from '$app/environment';
 import type { MythVerificationResult, LensResult } from '$lib/types'; // Import from shared types
-
-// Base URL for the Perplexity AI chat completions API
-const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
 
 interface Citation {
 	title: string;
@@ -285,7 +282,7 @@ async function verifyMythLogic(myth: string): Promise<MythVerificationResult> {
 		],
 		temperature: 0.2,
 		max_tokens: 4000,
-		web_search_options: { search_context_size: 'low' },
+		web_search_options: { search_context_size: PERPLEXITY_QUALITY },
 		return_images: false,
 		return_related_questions: false,
 		response_format: {
@@ -473,7 +470,7 @@ export const actions: Actions = {
 			],
 			temperature: 0.3,
 			max_tokens: 3000,
-			web_search_options: { search_context_size: 'low' },
+			web_search_options: { search_context_size: PERPLEXITY_QUALITY },
 			return_images: false,
 			return_related_questions: false,
 			response_format: {
@@ -630,7 +627,7 @@ export const actions: Actions = {
 			],
 			temperature: 0.2,
 			max_tokens: 3500,
-			web_search_options: { search_context_size: 'low' },
+			web_search_options: { search_context_size: PERPLEXITY_QUALITY },
 			return_images: false,
 			return_related_questions: false,
 			response_format: {
@@ -756,7 +753,7 @@ export const actions: Actions = {
 			],
 			temperature: 0.4,
 			max_tokens: 3000,
-			web_search_options: { search_context_size: 'low' },
+			web_search_options: { search_context_size: PERPLEXITY_QUALITY },
 			return_images: false,
 			return_related_questions: false,
 			response_format: {

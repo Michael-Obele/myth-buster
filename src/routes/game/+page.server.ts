@@ -2,7 +2,7 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 // @ts-expect-error editor-error
-import { PERPLEXITY_API_KEY } from '$env/static/private';
+import { PERPLEXITY_API_KEY, PERPLEXITY_API_URL, PERPLEXITY_QUALITY } from '$env/static/private';
 import { building } from '$app/environment';
 import type {
 	Citation,
@@ -12,7 +12,6 @@ import type {
 } from '$lib/game/types';
 
 // API Configuration
-const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
 
 // --- Game Configuration & State ---
 const GAME_SYSTEM_PROMPT = `You are an AI that generates engaging and verifiable statements for a myth-busting game using evidence-based research.
@@ -130,7 +129,7 @@ async function generateStatementFromAPI(
 		],
 		temperature: 0.8, // Increased temperature for more randomness
 		max_tokens: 3000,
-		web_search_options: { search_context_size: 'low' }, // Retained from previous, good for grounding
+		web_search_options: { search_context_size: PERPLEXITY_QUALITY }, // Retained from previous, good for grounding
 		return_images: false,
 		return_related_questions: false,
 		response_format: {
