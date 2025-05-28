@@ -32,11 +32,13 @@
 	import { Confetti } from 'svelte-confetti';
 	import { PersistedState } from 'runed';
 	import { toast } from 'svelte-sonner';
+	import { onMount } from 'svelte';
 	import GameAbout from '$lib/game/GameAbout.svelte';
 	import * as GameDialog from '$lib/components/ui/dialog/index.js';
 	import StreakMessage from '$lib/game/StreakMessage.svelte';
 	import HighScoreMessage from '$lib/game/HighScoreMessage.svelte';
 	import OopsMessage from '$lib/game/OopsMessage.svelte'; // Import the new component
+	import HowToPlayDialog from '$lib/game/HowToPlayDialog.svelte';
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
 	const flame = '/lottie/flame.json';
 
@@ -53,6 +55,7 @@
 	const categoryState = new PersistedState('mythBusterCategory', 'general');
 	const difficultyState = new PersistedState('mythBusterDifficulty', 'medium');
 	const confidenceState = new PersistedState('mythBusterConfidence', 50);
+	const howToPlaySeenState = new PersistedState('mythBusterHowToPlaySeen_v1', false);
 
 	const difficulties = [
 		{ label: 'Easy', value: 'easy' },
@@ -125,6 +128,8 @@
 	let showStreakAnimation: boolean = $state(false);
 	let isGenerating: boolean = $state(false);
 	let isAnswering: boolean = $state(false);
+	let showHowToPlayDialog = $state(false);
+	let wasDialogAutoOpened = false; // To track if onMount opened the dialog
 
 	// --- Derived values with Svelte 5 (simplified for random game) ---
 	// Type guard functions to safely check form data types
@@ -261,7 +266,22 @@
 		return 'primary:#10B981,secondary:#10b981'; // Default color
 	}
 
-	// onMount is no longer needed here for track loading
+	onMount(() => {
+		if (!howToPlaySeenState.current) {
+			showHowToPlayDialog = true;
+			wasDialogAutoOpened = true; // Mark that it was auto-opened by onMount
+			console.log('[GamePage] Auto-showing How to Play dialog for the first time.');
+		}
+	});
+
+	$effect(() => {
+		if (!showHowToPlayDialog && wasDialogAutoOpened) {
+			// If the dialog is closed AND it was the one auto-opened by onMount
+			howToPlaySeenState.current = true;
+			wasDialogAutoOpened = false; // Reset the flag, so manual open/close doesn't re-trigger this
+			console.log('[GamePage] How to Play dialog (auto-shown) closed and marked as seen.');
+		}
+	});
 
 	// --- Form Submit Handlers ---
 	const handleGenerateSubmit: SubmitFunction = () => {
@@ -485,14 +505,15 @@
 				<Sparkles class="text-primary h-6 w-6" />
 				Test Your Knowledge
 
-				<GameDialog.Root>
+				<!-- <GameDialog.Root>
 					<GameDialog.Trigger>
 						<Info />
 					</GameDialog.Trigger>
 					<GameDialog.Content>
 						<GameAbout />
 					</GameDialog.Content>
-				</GameDialog.Root>
+				</GameDialog.Root> -->
+				<HowToPlayDialog bind:open={showHowToPlayDialog} />
 			</Card.Title>
 			<Card.Description class="mt-2 text-center text-base font-medium">
 				Is the statement true or false? How confident are you in your answer?
