@@ -34,7 +34,7 @@
 			icon: Wand2,
 			content: [
 				'To begin, you can select a preferred "Difficulty" (Easy, Medium, Hard) and "Category" (e.g., Science, History).',
-				'Once you\'ve set your preferences, click the "Generate Statement" button.',
+				'Once you\\\'ve set your preferences, click the "Generate Statement" button.',
 				'A new myth or fact will be presented to you.'
 			]
 		},
@@ -97,10 +97,6 @@
 		}
 	];
 
-	function handleTriggerClick() {
-		open = true;
-	}
-
 	// This effect ensures that if the dialog is closed by means other than the explicit close button
 	// (e.g., Escape key, clicking outside), the `open` prop is correctly updated.
 	// However, Dialog.Root's two-way binding with `bind:open` should handle this.
@@ -110,9 +106,9 @@
 <Dialog.Root bind:open>
 	<Dialog.Trigger>
 		<Button
-			onclick={handleTriggerClick}
 			variant="outline"
 			size="icon"
+			onclick={() => (open = true)}
 			class="h-8 w-8"
 			aria-label="How to Play"
 		>
