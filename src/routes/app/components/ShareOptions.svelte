@@ -7,12 +7,10 @@
 	// Props using Svelte 5 syntax
 	let {
 		verdict = '',
-		myth = '',
-		explanation = ''
+		myth = ''
 	}: {
 		verdict: string;
 		myth: string | undefined;
-		explanation: string;
 	} = $props();
 
 	// Generate share URL based on the myth

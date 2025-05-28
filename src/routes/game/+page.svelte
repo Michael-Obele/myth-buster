@@ -36,6 +36,7 @@
 	import * as GameDialog from '$lib/components/ui/dialog/index.js';
 	import StreakMessage from '$lib/game/StreakMessage.svelte';
 	import HighScoreMessage from '$lib/game/HighScoreMessage.svelte';
+	import OopsMessage from '$lib/game/OopsMessage.svelte'; // Import the new component
 	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
 	const flame = '/lottie/flame.json';
 
@@ -96,7 +97,7 @@
 		if (newStreak >= 1) {
 			toast.success(StreakMessage, {
 				componentProps: { streak: newStreak },
-				duration: 3500
+				duration: 3000
 			});
 		}
 	}
@@ -199,6 +200,15 @@
 				} else {
 					console.log('Incorrect answer, resetting streak');
 					updateStreak(0);
+					// Show toast notification for incorrect answer
+					toast.error(`That's not quite right! You lost ${Math.abs(formResult.points)} points.`, {
+						// More constructive message
+						duration: 3000
+					});
+					// Show secondary "Oops!" message using custom component
+					toast(OopsMessage, {
+						duration: 3500 // Same duration as the main message
+					});
 				}
 			}
 		}

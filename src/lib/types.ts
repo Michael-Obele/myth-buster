@@ -29,6 +29,7 @@ export type MythHistoryEntry = {
 	timestamp: number; // Timestamp of when the verification occurred (client-side)
 	result: MythVerificationResult; // The full result from the server
 	isBookmarked: boolean; // Flag for bookmarking
+	loading?: boolean; // Indicates if this history item is currently being re-verified
 };
 
 /**

@@ -8,11 +8,31 @@ Myth Buster is an interactive web application transforming myth verification int
 
 **Live Demo**: [https://myth-buster.netlify.app/](https://myth-buster.netlify.app/)
 
+---
+
+## Table of Contents
+
+- [The Challenge: Nuance in Misinformation](#the-challenge-nuance-in-misinformation)
+- [Core Deep Research Capabilities](#core-deep-research-capabilities-hackathon-focus--app)
+- [Architecture & Sonar API Integration](#architecture--sonar-api-integration)
+- [Other Implemented Features](#other-implemented-features)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Development](#development)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Database Setup (Prisma)](#database-setup-prisma)
+  - [Running Dev Server](#running-dev-server)
+  - [Building](#building)
+- [Future Vision](#future-vision)
+- [Pricing](#pricing)
+- [License](#license)
+
+---
+
 ## The Challenge: Nuance in Misinformation
 
 Distinguishing fact from fiction requires more than simple true/false. Misinformation often has deep roots and nuanced contexts. Myth Buster provides **sophisticated tools for deep exploration**, turning users into active investigators.
-
-
 
 ## Core Deep Research Capabilities (Hackathon Focus - `/app`)
 
@@ -61,19 +81,22 @@ General feature overview: [Myth Buster Overview](./plan_reformed/core/myth_buste
 *   **Animations**: Svelte-motion, Svelte-Magic-UI, Lottie/LordIcon
 *   **Core AI API**: Perplexity Sonar API
 *   **State Management**: Svelte 5 Runes, PersistedState
+*   **Database**: Prisma ORM (PostgreSQL)
 *   **Build Tool**: Vite
 *   **Package Manager**: Bun
 
 Tech stack details: [Technology Stack](./plan_reformed/technical/technology_stack.md).
-Project structure: [Project Structure](./plan_reformed/structure/project_structure.md)
+
+## Project Structure
+
 ```markdown
-mysth-buster/
+myth-buster/
 ├── .svelte-kit/         # SvelteKit build output (generated)
 ├── src/
 │   ├── lib/               # Reusable components, utilities, and server modules
 │   │   ├── components/    # Shared Svelte components (UI, blocks, layout, game)
 │   │   ├── server/        # Server-side logic (auth, db, API helpers)
-│   ��   ├── stores/        # Svelte stores / Runed state management
+│   │   ├── stores/        # Svelte stores / Runed state management
 │   │   └── types.ts       # Shared TypeScript types
 │   ├── routes/            # Application routes (pages and endpoints) - Powered by SvelteKit Layouts and Actions
 │   │   ├── (auth)/        # Authentication routes (signin, signup, profile)
@@ -112,6 +135,52 @@ bun install
 cp .env.example .env
 ```
 
+Update your `.env` file with your API keys and database connection string.
+
+---
+
+### Database Setup (Prisma)
+
+Myth Buster uses Prisma ORM for database management (PostgreSQL recommended).
+
+1. **Update the DATABASE_URL** in your `.env` file:
+
+    ```env
+    DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
+    ```
+
+2. **Initialize your database:**
+
+    ```bash
+    bunx prisma generate  # Generate Prisma Client
+    bunx prisma db push   # Push schema changes to database
+    ```
+
+    For development, you can use Prisma Studio to manage your data:
+
+    ```bash
+    bunx prisma studio
+    ```
+
+<details>
+    <summary>How to Set Up a Local PostgreSQL Database</summary>
+    <ol>
+        <li>Download and install PostgreSQL from the <a href="https://www.postgresql.org/download/">official website</a>.</li>
+        <li>During installation, set a username and password for the PostgreSQL superuser (e.g., <code>postgres</code>).</li>
+        <li>Once installed, open the PostgreSQL shell or a GUI tool like pgAdmin.</li>
+        <li>Create a new database:
+            <pre><code>CREATE DATABASE mythbuster;</code></pre>
+        </li>
+        <li>Update your <code>.env</code> file with the connection string:
+            <pre><code>DATABASE_URL="postgresql://<username>:<password>@localhost:5432/mythbuster"</code></pre>
+        </li>
+        <li>Test the connection by running:
+            <pre><code>bunx prisma db pull</code></pre>
+        </li>
+    </ol>
+</details>
+
+---
 
 ### Running Dev Server
 
@@ -121,11 +190,15 @@ Add `PERPLEXITY_API_KEY` to `.env`.
 bun run dev
 ```
 
+**Note:** The Vite development server runs on port **5173** by default. Access your app at `http://localhost:5173`.
+
 ### Building
 
 ```bash
 bun run build
 ```
+
+---
 
 ## Future Vision
 
@@ -134,6 +207,12 @@ Expand deep research (Comparative Analysis, Longitudinal Trace - [Deep Research 
 More feature ideas: [Additional Suggested Features](./plan_reformed/future_enhancements/additional_suggested_features.md) and [Sonar API-Focused Future Features](./plan_reformed/future_enhancements/sonar_focused_features.md).
 
 ---
+
+## Pricing
+
+See our [Pricing Structure](./plan_reformed/pricing_structure.md) for details on Free, Pro, and Max plans.
+
+## License
 
 **License**: Proprietary 2025 MiniApps. All rights reserved.
 

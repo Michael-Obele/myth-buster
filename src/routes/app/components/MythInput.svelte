@@ -1,11 +1,15 @@
 <script lang="ts">
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Button } from '$lib/components/ui/button';
-	import { Mic, SendIcon } from '@lucide/svelte';
+	import { LoaderCircle, Mic, SendIcon } from '@lucide/svelte';
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { animate } from 'svelte-motion';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import LordIcon from '$lib/components/blocks/LordIcon.svelte';
+	import TextGenerateEffect from '$lib/components/blocks/TextGenerateEffect.svelte'; // Import TextGenerateEffect
+	import { fade } from 'svelte/transition';
+	const flame = '/lottie/flame.json';
 
 	// Use $state for reactive variables
 	let myth: string = $state('');
@@ -74,7 +78,7 @@
 			name="myth"
 			bind:value={myth}
 			placeholder={placeholders[currentPlaceholder]}
-			class="min-h-32 border-primary/90 text-base transition-all duration-300 focus-visible:ring-primary"
+			class="border-primary/90 focus-visible:ring-primary min-h-32 text-base transition-all duration-300"
 			maxlength={maxLength}
 			onkeydown={handleKeyDown}
 		/>
@@ -94,19 +98,39 @@
 	</div>
 	<Button
 		type="submit"
-		class="w-full bg-linear-to-r from-primary to-purple-600 transition-all duration-300 hover:shadow-lg"
+		class="from-primary w-full bg-linear-to-r to-purple-600 transition-all duration-300 hover:shadow-lg"
 		disabled={!isValid || loading}
 	>
-		{#if loading}
-			<div class="flex items-center gap-2">
-				<div
-					class="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"
-				></div>
-				Analyzing...
-			</div>
+		{#if !loading}
+			<span class="flex" transition:fade={{ duration: 400, delay: 100 }}>
+				<!-- Added delay to fade out -->
+				<span>Verify Myth</span>
+				<SendIcon class="ml-2 h-4 w-4" />
+			</span>
 		{:else}
-			<span>Verify Myth</span>
-			<SendIcon class="ml-2 h-4 w-4" />
+			<span class="flex items-center gap-2" transition:fade={{ duration: 300, delay: 100 }}>
+				<!-- Added delay to fade out -->
+				<LoaderCircle class="ml-2 h-4 w-4 animate-spin" />
+				<span>Analyzing...</span>
+			</span>
 		{/if}
 	</Button>
+	{#if loading}
+		<div
+			transition:fade={{ duration: 400 }}
+			class="mx-auto mt-10 flex items-center justify-center gap-2 text-xl font-bold md:text-2xl"
+		>
+			<LordIcon
+				src={flame}
+				colors="primary:#10B981,secondary:#10b981"
+				class={`size-8 md:size-10`}
+			/>
+			<!-- Replaced static text with TextGenerateEffect -->
+			<TextGenerateEffect
+				text="Analyzing your myth... Verifying facts..."
+				duration={0.5}
+				class="text-md text-white md:text-2xl"
+			/>
+		</div>
+	{/if}
 </form>

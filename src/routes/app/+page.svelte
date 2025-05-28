@@ -16,6 +16,7 @@
 		SynthesisResult
 	} from '$lib/types';
 	import { enhance } from '$app/forms';
+	import { fade } from 'svelte/transition';
 
 	// Import our components
 	import MythInput from './components/MythInput.svelte';
@@ -153,9 +154,10 @@
 		};
 	};
 
-	const analyzeSourceActionEnhancer: SubmitFunction<SourceAnalysisResult, SourceAnalysisResult> = (
-		submitOpts
-	) => {
+	const analyzeSourceActionEnhancer: SubmitFunction<
+		SourceAnalysisResult,
+		SourceAnalysisResult
+	> = () => {
 		return async ({ result, update }) => {
 			await update();
 			if (result.type === 'success' && result.data) {
@@ -388,7 +390,7 @@
 	keywords={['myth buster game', 'trivia', 'fact or fiction', 'knowledge test', 'ai game']}
 />
 
-<div class="min-h-screen bg-linear-to-br from-background to-background/50">
+<div class="from-background to-background/50 min-h-screen bg-linear-to-br">
 	<main class="relative mx-auto min-h-screen w-full">
 		<h3 class="p-6 text-center text-2xl font-bold md:text-5xl">
 			Verify <AuroraText>Myths</AuroraText>
@@ -401,85 +403,83 @@
 							<MythInput {loading} {handleSubmit} />
 						</div>
 					{:else if displayData && displayData.data}
-						{#if displayData.cached}
-							<div class="flex w-full items-center justify-end">
-								<Badge variant="outline" class="text-xs text-muted-foreground">
-									<DatabaseZap class="mr-2 h-3 w-3" />
-									Cached Response
-								</Badge>
-							</div>
-						{/if}
+						<div class="flex flex-col space-y-2" transition:fade={{ duration: 500 }}>
+							{#if displayData.cached}
+								<div class="flex w-full items-center justify-end">
+									<Badge variant="outline" class="text-muted-foreground text-xs">
+										<DatabaseZap class="mr-2 h-3 w-3" />
+										Cached Response
+									</Badge>
+								</div>
+							{/if}
 
-						<VerdictDisplay
-							explanation={displayData.data.explanation}
-							verdict={displayData.data.verdict}
-							myth={displayData.myth}
-						/>
-
-						<ExplanationDisplay
-							explanation={displayData.data.explanation}
-							citations={displayData.data.citations}
-						/>
-
-						{#if displayData.data.mythOrigin}
-							<div class="w-full rounded-lg border border-primary/20 bg-muted/30 p-4">
-								<h3 class="mb-2 text-lg font-medium">Origin of the Myth</h3>
-								<p class="text-muted-foreground">{displayData.data.mythOrigin}</p>
-							</div>
-						{/if}
-
-						{#if displayData.data.whyBelieved}
-							<div class="w-full rounded-lg border border-primary/20 bg-muted/30 p-4">
-								<h3 class="mb-2 text-lg font-medium">Why People Believe This Myth</h3>
-								<p class="text-muted-foreground">{displayData.data.whyBelieved}</p>
-							</div>
-						{/if}
-
-						{#if displayData.myth && displayData.data.verdict}
-							<div class="w-full">
-								<ShareOptions
-									myth={displayData.myth}
-									explanation={displayData.data.explanation}
-									verdict={displayData.data.verdict}
-								/>
-							</div>
-						{/if}
-
-						{#if displayData?.success && displayData?.data}
-							<form
-								method="POST"
-								action="?/resetPage"
-								use:enhance={handleResetSubmit}
-								class="w-full"
-							>
-								<Button
-									type="submit"
-									variant="outline"
-									class="w-full border-primary py-6 text-lg text-primary hover:bg-primary/70 hover:text-primary-foreground"
-								>
-									Verify Another Myth
-								</Button>
-							</form>
-						{/if}
-
-						{#if displayData?.success && displayData?.data}
-							<DeepResearchSection
-								mythStatement={displayData?.myth}
-								initialCitations={displayData?.data?.citations}
-								bind:activeLensId
-								predefinedLenses={predefinedLenses.map((lens) => ({ ...lens, isCustom: false }))}
-								activeResearchLensesProp={activeResearchLenses}
-								{allLenses}
-								bind:customLensInput
-								bind:showCustomLensInput
-								addCustomLensFunction={addCustomLens}
-								openSourceAnalysisFunction={openSourceAnalysis}
-								analyzeLensEnhancer={analyzeLens}
-								canSynthesizeSignal={canSynthesize}
-								synthesisResultSignal={synthesisResult}
-								synthesizeInsightsEnhancer={synthesizeInsights}
+							<VerdictDisplay
+								explanation={displayData.data.explanation}
+								verdict={displayData.data.verdict}
+								myth={displayData.myth}
 							/>
-						{/if}
+
+							<ExplanationDisplay
+								explanation={displayData.data.explanation}
+								citations={displayData.data.citations}
+							/>
+
+							{#if displayData.data.mythOrigin}
+								<div class="border-primary/20 bg-muted/30 w-full rounded-lg border p-4">
+									<h3 class="mb-2 text-lg font-medium">Origin of the Myth</h3>
+									<p class="text-muted-foreground">{displayData.data.mythOrigin}</p>
+								</div>
+							{/if}
+
+							{#if displayData.data.whyBelieved}
+								<div class="border-primary/20 bg-muted/30 w-full rounded-lg border p-4">
+									<h3 class="mb-2 text-lg font-medium">Why People Believe This Myth</h3>
+									<p class="text-muted-foreground">{displayData.data.whyBelieved}</p>
+								</div>
+							{/if}
+
+							{#if displayData.myth && displayData.data.verdict}
+								<div class="w-full">
+									<ShareOptions myth={displayData.myth} verdict={displayData.data.verdict} />
+								</div>
+							{/if}
+
+							{#if displayData?.success && displayData?.data}
+								<form
+									method="POST"
+									action="?/resetPage"
+									use:enhance={handleResetSubmit}
+									class="w-full"
+								>
+									<Button
+										type="submit"
+										variant="outline"
+										class="border-primary text-primary hover:bg-primary/70 hover:text-primary-foreground w-full py-6 text-lg"
+									>
+										Verify Another Myth
+									</Button>
+								</form>
+							{/if}
+
+							{#if displayData?.success && displayData?.data}
+								<DeepResearchSection
+									mythStatement={displayData?.myth}
+									initialCitations={displayData?.data?.citations}
+									bind:activeLensId
+									predefinedLenses={predefinedLenses.map((lens) => ({ ...lens, isCustom: false }))}
+									activeResearchLensesProp={activeResearchLenses}
+									{allLenses}
+									bind:customLensInput
+									bind:showCustomLensInput
+									addCustomLensFunction={addCustomLens}
+									openSourceAnalysisFunction={openSourceAnalysis}
+									analyzeLensEnhancer={analyzeLens}
+									canSynthesizeSignal={canSynthesize}
+									synthesisResultSignal={synthesisResult}
+									synthesizeInsightsEnhancer={synthesizeInsights}
+								/>
+							{/if}
+						</div>
 					{/if}
 				</div>
 
@@ -510,7 +510,7 @@
 										<CitationList citations={displayData.data.citations} />
 									{:else}
 										<div
-											class="flex h-40 items-center justify-center rounded-md border border-dashed text-muted-foreground"
+											class="text-muted-foreground flex h-40 items-center justify-center rounded-md border border-dashed"
 										>
 											No citations available for this myth yet.
 										</div>
@@ -520,7 +520,7 @@
 										<RelatedMyths relatedMyth={displayData.data.relatedMyth} />
 									{:else}
 										<div
-											class="flex h-40 items-center justify-center rounded-md border border-dashed text-muted-foreground"
+											class="text-muted-foreground flex h-40 items-center justify-center rounded-md border border-dashed"
 										>
 											No related myths found or analyzed yet.
 										</div>

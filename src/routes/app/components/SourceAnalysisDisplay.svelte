@@ -161,7 +161,7 @@
 		try {
 			const url = new URL(string);
 			return url.protocol === 'http:' || url.protocol === 'https:' || url.protocol === 'ftp:';
-		} catch (_) {
+		} catch (e) {
 			return false;
 		}
 	}
@@ -171,13 +171,13 @@
 	<Dialog.Content class="w-[90vw] max-w-2xl p-0">
 		<Dialog.Header class="border-b px-6 py-4">
 			<Dialog.Title class="flex items-center gap-2 text-xl">
-				<Search class="h-5 w-5 text-primary" />
+				<Search class="text-primary h-5 w-5" />
 				Analyze Source
 			</Dialog.Title>
 			{#if sourceDetails}
-				<Dialog.Description class="pt-1 text-sm text-muted-foreground">
+				<Dialog.Description class="text-muted-foreground pt-1 text-sm">
 					For:
-					<span class="break-all font-medium text-foreground">
+					<span class="text-foreground font-medium break-all">
 						{sourceDetails.name || sourceDetails.url}
 					</span>
 				</Dialog.Description>
@@ -244,10 +244,10 @@
 				</form>
 
 				{#if internalDisplayState}
-					<div class="mt-2 rounded-lg border bg-card p-0.5 shadow-sm">
+					<div class="bg-card mt-2 rounded-lg border p-0.5 shadow-sm">
 						{#if internalDisplayState.loading && !internalDisplayState.data && !internalDisplayState.error}
-							<div class="flex flex-col items-center justify-center p-6 text-muted-foreground">
-								<Loader2 class="h-8 w-8 animate-spin text-primary" />
+							<div class="text-muted-foreground flex flex-col items-center justify-center p-6">
+								<Loader2 class="text-primary h-8 w-8 animate-spin" />
 								<p class="mt-2">Fetching analysis...</p>
 							</div>
 						{:else if internalDisplayState.error}
@@ -259,8 +259,10 @@
 						{:else if internalDisplayState.data && sections().length > 0}
 							{#if internalDisplayState.data.analysisTypeName}
 								<div class="px-4 pt-3 pb-2">
-									<p class="text-sm font-medium text-muted-foreground">
-										Showing results for: <span class="text-primary">{internalDisplayState.data.analysisTypeName}</span>
+									<p class="text-muted-foreground text-sm font-medium">
+										Showing results for: <span class="text-primary"
+											>{internalDisplayState.data.analysisTypeName}</span
+										>
 									</p>
 								</div>
 							{/if}
@@ -269,18 +271,18 @@
 									{@const IconComponent = section.icon}
 									<Accordion.Item value={section.title} class="border-b-0 last:border-b-0">
 										<Accordion.Trigger
-											class="px-4 py-3 text-base font-medium hover:bg-muted/30 data-[state=open]:bg-muted/20"
+											class="hover:bg-muted/30 data-[state=open]:bg-muted/20 px-4 py-3 text-base font-medium"
 										>
 											<div class="flex items-center">
-												<IconComponent class="mr-3 h-5 w-5 text-primary" />
+												<IconComponent class="text-primary mr-3 h-5 w-5" />
 												{section.title}
 											</div>
 										</Accordion.Trigger>
 										<Accordion.Content
-											class="prose prose-sm dark:prose-invert max-w-none px-4 pb-4 pt-1 text-muted-foreground break-words"
+											class="prose prose-sm dark:prose-invert text-muted-foreground max-w-none px-4 pt-1 pb-4 break-words"
 										>
 											{#if section.type === 'text'}
-												<p class="whitespace-pre-wrap leading-relaxed">
+												<p class="leading-relaxed whitespace-pre-wrap">
 													{typeof section.content === 'string' ? section.content : ''}
 												</p>
 											{:else if section.type === 'list' && Array.isArray(section.content)}
@@ -292,7 +294,7 @@
 																	href={item}
 																	target="_blank"
 																	rel="noopener noreferrer"
-																	class="inline-flex items-center text-primary hover:underline"
+																	class="text-primary inline-flex items-center hover:underline"
 																>
 																	{item}
 																	<ExternalLink class="ml-1.5 h-3.5 w-3.5 shrink-0" />
@@ -312,8 +314,8 @@
 								{/each}
 							</Accordion.Root>
 						{:else if !internalDisplayState.loading}
-							<div class="p-6 text-center text-muted-foreground">
-								<FileText class="mx-auto mb-2 h-10 w-10 text-border" />
+							<div class="text-muted-foreground p-6 text-center">
+								<FileText class="text-border mx-auto mb-2 h-10 w-10" />
 								No analysis data returned or the format was unexpected.
 							</div>
 						{/if}

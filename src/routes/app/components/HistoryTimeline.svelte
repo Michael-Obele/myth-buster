@@ -27,24 +27,18 @@
 	import CitationList from './CitationList.svelte';
 	import RelatedMyths from './RelatedMyths.svelte';
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
-	import { enhance } from '$app/forms'; // Import enhance
 
 	// Props
 	let { mythHistory }: { mythHistory: PersistedState<MythHistoryEntry[]> } = $props();
-
-	// console.log('mythHistory prop in HistoryTimeline:', mythHistory); // For debugging
 
 	// Reactive accessor for history items, ensuring it's always an array
 	// Ensure mythHistory is defined before accessing .current
 	let historyItems: MythHistoryEntry[] = $derived(mythHistory ? mythHistory.current || [] : []);
 
-	// Local state to track loading status for individual history items
-	let loadingStates: Map<string, boolean> = $state(new Map());
-
-	// Function to get the loading state for a specific item
-	function getItemLoading(itemId: string): boolean {
-		return loadingStates.get(itemId) || false;
-	}
+	// Log initial state for debugging
+	$inspect(() => {
+		console.log('[HistoryTimeline] Initial historyItems:', historyItems);
+	});
 
 	const bookmarkedIds = new PersistedState<string[]>('myth-bookmarks', []);
 
@@ -111,15 +105,6 @@
 			});
 		}
 	}
-
-	// Enhance function for re-verifying from history
-	const handleReverifyEnhance = (itemId: string) => {
-		loadingStates.set(itemId, true); // Set loading state for this item
-		return async ({ update, result }) => {
-			await update(); // Let SvelteKit handle the form result and page update
-			loadingStates.set(itemId, false); // Reset loading state for this item
-		};
-	};
 </script>
 
 <div class="border-primary/20 rounded-lg border p-4">
@@ -190,13 +175,8 @@
 										{/if}
 									</Button>
 
-									<!-- Form for re-verifying -->
-									<form
-										method="POST"
-										action="?/verifyMyth"
-										use:enhance={handleReverifyEnhance(item.id)}
-										class="inline-flex"
-									>
+									<!-- Form for re-verifying (onclick handles logic, form prevents default) -->
+									<form method="POST" action="?/verifyMyth" class="inline-flex">
 										<input type="hidden" name="myth" value={item.myth} />
 										<Button
 											variant="ghost"
@@ -204,9 +184,9 @@
 											type="submit"
 											class="h-8 w-8"
 											aria-label="Re-verify myth"
-											disabled={getItemLoading(item.id)}
+											disabled={item.loading}
 										>
-											{#if getItemLoading(item.id)}
+											{#if item.loading}
 												<Loader2 class="h-4 w-4 animate-spin" />
 											{:else}
 												<ArrowRight class="h-4 w-4" />
