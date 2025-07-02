@@ -14,7 +14,11 @@
 		"lint": "prettier --check . && eslint .",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
-		"test:e2e": "playwright test"
+		"test:e2e": "playwright test",
+		"db:migrate": "prisma migrate dev",
+		"db:generate": "prisma generate",
+		"db:push": "prisma db push",
+		"db:studio": "prisma studio"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
@@ -47,7 +51,7 @@
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
 		"prettier-plugin-tailwindcss": "^0.6.11",
-		"prisma": "^6.8.2",
+		"prisma": "^6.11.0",
 		"superstruct": "^2.0.2",
 		"svelte": "^5.0.0",
 		"svelte-check": "^4.0.0",
