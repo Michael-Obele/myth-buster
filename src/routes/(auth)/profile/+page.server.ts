@@ -1,18 +1,87 @@
 import { redirect, fail } from '@sveltejs/kit';
-import type { PageServerLoad, Actions } from './$types';
+import type { PageServerLoad, Actions } from './$types'; // Corrected import
+import type { User } from '@prisma/client';
 import { updateUserDetails, updateUserPassword } from '$lib/server/profile';
+import { prisma as db } from '$lib/server/db';
+import type {
+	UserResearchActivity as UserResearchActivityType,
+	PremiumAnalytics as PremiumAnalyticsType
+} from '$lib/types/index';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export interface PageData {
+	user: User | null;
+	userResearchActivities: UserResearchActivityType[];
+	premiumAnalytics: PremiumAnalyticsType | null;
+}
+
+export const load: PageServerLoad<PageData> = async ({ locals }: { locals: App.Locals }) => {
 	// If user is not logged in, redirect to sign in page
 	if (!locals.user) {
 		throw redirect(303, '/signin?redirectTo=/profile');
 	}
 
-	return {};
+	const userResearchActivities = await db.userResearchActivity.findMany({
+		where: { userId: locals.user.id },
+		orderBy: { timestamp: 'desc' },
+		take: 10 // Get recent activities
+	});
+
+	const premiumAnalytics = await db.premiumAnalytics.findFirst({
+		where: { userId: locals.user.id },
+		orderBy: { timestamp: 'desc' }
+	});
+
+	return {
+		user: locals.user, // Add user to the returned data
+		userResearchActivities: userResearchActivities.map((activity) => {
+			let lensUsageMetrics: Record<string, number> | null = null;
+			if (activity.lensUsageMetrics) {
+				if (typeof activity.lensUsageMetrics === 'string') {
+					try {
+						lensUsageMetrics = JSON.parse(activity.lensUsageMetrics) as Record<string, number>;
+					} catch (e) {
+						console.error('Failed to parse lensUsageMetrics JSON:', e);
+					}
+				} else if (
+					typeof activity.lensUsageMetrics === 'object' &&
+					activity.lensUsageMetrics !== null
+				) {
+					lensUsageMetrics = activity.lensUsageMetrics as Record<string, number>;
+				}
+			}
+
+			let mythTopicFrequency: Record<string, number> | null = null;
+			if (activity.mythTopicFrequency) {
+				if (typeof activity.mythTopicFrequency === 'string') {
+					try {
+						mythTopicFrequency = JSON.parse(activity.mythTopicFrequency) as Record<string, number>;
+					} catch (e) {
+						console.error('Failed to parse mythTopicFrequency JSON:', e);
+					}
+				} else if (
+					typeof activity.mythTopicFrequency === 'object' &&
+					activity.mythTopicFrequency !== null
+				) {
+					mythTopicFrequency = activity.mythTopicFrequency as Record<string, number>;
+				}
+			}
+
+			return {
+				...activity,
+				researchSessionId: activity.researchSessionId || null,
+				generatedContentSnippet: activity.generatedContentSnippet || null,
+				mythId: activity.mythId || null,
+				verificationStatus: activity.verificationStatus || null,
+				lensUsageMetrics,
+				mythTopicFrequency
+			} as UserResearchActivityType;
+		}),
+		premiumAnalytics: premiumAnalytics as PremiumAnalyticsType | null
+	};
 };
 
 export const actions: Actions = {
-	updateDetails: async ({ request, locals }) => {
+	updateDetails: async ({ request, locals }: { request: Request; locals: App.Locals }) => {
 		// Ensure user is logged in
 		if (!locals.user) {
 			throw redirect(303, '/signin?redirectTo=/profile');
@@ -73,7 +142,7 @@ export const actions: Actions = {
 		};
 	},
 
-	updatePassword: async ({ request, locals }) => {
+	updatePassword: async ({ request, locals }: { request: Request; locals: App.Locals }) => {
 		// Ensure user is logged in
 		if (!locals.user) {
 			throw redirect(303, '/signin?redirectTo=/profile');

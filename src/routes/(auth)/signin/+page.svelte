@@ -30,6 +30,14 @@
 	// Show server errors if present
 	let serverErrors = $derived(form?.form?.errors || {});
 	let serverMessage = $derived(serverErrors?.error?.[0] ?? '');
+
+	$effect(() => {
+		// Reload the page once when coming from the signin page or register page
+		if (document.referrer.includes('/signup') || document.referrer.includes('/signout')) {
+			console.log('Reloading page');
+			window.location.reload();
+		}
+	});
 </script>
 
 <RouteHead
@@ -130,7 +138,7 @@
 					{/if}
 				</Button>
 			</form>
-			<p class="mt-4 text-center text-sm text-muted-foreground">
+			<p class="text-muted-foreground mt-4 text-center text-sm">
 				Don't have an account? <a
 					href="/signup"
 					class="hover:text-brand underline underline-offset-4">Sign up here</a

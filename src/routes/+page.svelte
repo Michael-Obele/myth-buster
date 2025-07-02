@@ -11,6 +11,18 @@
 	import AlternatingFeatureSection from '$lib/components/landing-page/AlternatingFeatureSection.svelte';
 	import MiniMythCheck from '$lib/components/landing-page/MiniMythCheck.svelte';
 	import RouteHead from '$lib/components/layout/RouteHead.svelte';
+
+	$effect(() => {
+		// Reload the page once when coming from the signin page or register page
+		if (
+			document.referrer.includes('/signin') ||
+			document.referrer.includes('/signup') ||
+			document.referrer.includes('/signout')
+		) {
+			console.log('Reloading page');
+			window.location.reload();
+		}
+	});
 </script>
 
 <RouteHead
@@ -20,9 +32,9 @@
 />
 
 <!-- Animated background with grid pattern -->
-<div class="min-h-screen overflow-hidden bg-linear-to-br from-slate-900 to-slate-800">
+<div class="bg-linear-to-br min-h-screen overflow-hidden from-slate-900 to-slate-800">
 	<!-- Grid pattern overlay -->
-	<div class="bg-grid-black/[0.07] dark:bg-grid-white/[0.05] absolute inset-0"></div>
+	<div class="absolute inset-0 bg-grid-black/[0.07] dark:bg-grid-white/[0.05]"></div>
 	<!-- Main content -->
 	<main
 		class="text-foreground relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 py-16"
