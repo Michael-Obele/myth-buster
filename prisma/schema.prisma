@@ -14,11 +14,13 @@ datasource db {
 }
 
 model User {
-  id            String    @id @unique
-  username      String    @unique
-  email         String    @unique
-  password_hash String
-  sessions      Session[]
+  id                 String                 @id @unique
+  username           String                 @unique
+  email              String                 @unique
+  password_hash      String
+  sessions           Session[]
+  PremiumAnalytics   PremiumAnalytics[]
+  researchActivities UserResearchActivity[]
 }
 
 model Session {
@@ -33,4 +35,48 @@ model CommunitySignup {
   name      String
   email     String   @unique
   createdAt DateTime @default(now())
+}
+
+model PremiumAnalytics {
+  id                      String   @id @default(uuid())
+  userId                  String
+  user                    User     @relation(fields: [userId], references: [id])
+  timestamp               DateTime @default(now())
+  researchSessionId       String? // Optional, link to specific research sessions
+  lensUsageMetrics        Json // Stores counts/duration for each lens used
+  sourceAnalysisCount     Int
+  synthesisGeneratedCount Int
+  sonarCallCount          Int
+  mythTopicFrequency      Json // Stores frequency of topics researched
+  averageResearchDepth    Float
+  reportGenerationCount   Int
+}
+
+model MythInsight {
+  id                     String   @id @default(uuid())
+  mythId                 String? // Optional, link to a specific myth if applicable
+  timestamp              DateTime @default(now())
+  sourceUrl              String
+  sourceReliabilityScore Float
+  reliabilityFactors     Json // Details on what contributed to the reliability score
+  relatedTopics          String[] // Array of strings for topics
+  extractedKeywords      String[] // Array of strings for keywords
+  summarySnippet         String?  @db.Text // Brief summary of the source content
+  modelVersion           String // Sonar model version used for analysis
+}
+
+model UserResearchActivity {
+  id                      String   @id @default(uuid())
+  userId                  String
+  user                    User     @relation(fields: [userId], references: [id])
+  timestamp               DateTime @default(now())
+  researchSessionId       String?
+  lensUsageMetrics        Json
+  sourceAnalysisCount     Int
+  synthesisGeneratedCount Int
+  mythTopicFrequency      Json
+  generatedContentSnippet String?  @db.Text
+  contentType             String // e.g., 'myth_verification', 'synthesis', 'report_summary'
+  mythId                  String? // Optional: link to a specific Myth record
+  verificationStatus      String? // Optional: e.g., 'verified', 'debunked', 'in_progress'
 }
