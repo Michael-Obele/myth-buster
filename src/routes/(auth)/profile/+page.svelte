@@ -236,7 +236,7 @@
 											type="button"
 											variant="ghost"
 											size="icon"
-											class="absolute right-0 top-0 h-full px-3 py-2"
+											class="absolute top-0 right-0 h-full px-3 py-2"
 											onclick={() => (showCurrentPassword = !showCurrentPassword)}
 										>
 											{#if showCurrentPassword}
@@ -267,7 +267,7 @@
 											type="button"
 											variant="ghost"
 											size="icon"
-											class="absolute right-0 top-0 h-full px-3 py-2"
+											class="absolute top-0 right-0 h-full px-3 py-2"
 											onclick={() => (showNewPassword = !showNewPassword)}
 										>
 											{#if showNewPassword}
@@ -298,7 +298,7 @@
 											type="button"
 											variant="ghost"
 											size="icon"
-											class="absolute right-0 top-0 h-full px-3 py-2"
+											class="absolute top-0 right-0 h-full px-3 py-2"
 											onclick={() => (showConfirmPassword = !showConfirmPassword)}
 										>
 											{#if showConfirmPassword}
@@ -507,6 +507,42 @@
 											<Input type="text" placeholder="Promo Key" class="flex-grow" />
 											<Button>Apply</Button>
 										</div>
+									</CardContent>
+								</Card>
+
+								<!-- Perplexity API Key Input -->
+								<Card>
+									<CardHeader>
+										<CardTitle>Perplexity API Key</CardTitle>
+										<CardDescription>
+											Provide your own Perplexity AI API key to bypass global rate limits.
+										</CardDescription>
+									</CardHeader>
+									<CardContent>
+										<form
+											method="POST"
+											action="?/updatePerplexityApiKey"
+											class="space-y-4"
+											use:enhance={({ formElement, formData }) => {
+												// TODO: Add loading state for API key submission
+												return async ({ result }) => {
+													await applyAction(result);
+												};
+											}}
+										>
+											<div class="grid gap-2">
+												<Label for="perplexityApiKey">API Key</Label>
+												<Input
+													id="perplexityApiKey"
+													name="perplexityApiKey"
+													type="password"
+													placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+													required
+												/>
+												<!-- TODO: Add server error handling for API key -->
+											</div>
+											<Button type="submit" class="w-full">Save API Key</Button>
+										</form>
 									</CardContent>
 								</Card>
 							</div>

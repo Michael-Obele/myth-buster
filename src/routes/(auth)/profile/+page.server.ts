@@ -1,4 +1,4 @@
-import { redirect, fail } from '@sveltejs/kit';
+import { redirect, fail, json } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types'; // Corrected import
 import type { User } from '@prisma/client';
 import { updateUserDetails, updateUserPassword } from '$lib/server/profile';
@@ -7,6 +7,7 @@ import type {
 	UserResearchActivity as UserResearchActivityType,
 	PremiumAnalytics as PremiumAnalyticsType
 } from '$lib/types/index';
+import { PERPLEXITY_API_URL } from '$env/static/private';
 
 export interface PageData {
 	user: User | null;
@@ -212,5 +213,62 @@ export const actions: Actions = {
 
 		// If successful, redirect to sign-out page since sessions are invalidated
 		throw redirect(303, '/signout');
+	},
+
+	updatePerplexityApiKey: async ({ request, cookies }) => {
+		const formData = await request.formData();
+		const perplexityApiKey = formData.get('perplexityApiKey')?.toString() || '';
+
+		if (!perplexityApiKey) {
+			return fail(400, {
+				perplexityApiKeyMessage: 'API Key is required.',
+				perplexityApiKeySuccess: false
+			});
+		}
+
+		// Validate API key by making a minimal test call
+		try {
+			const testPayload = {
+				model: 'sonar-small-online',
+				messages: [{ role: 'user', content: 'Hello' }]
+			};
+			const resp = await fetch(PERPLEXITY_API_URL, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${perplexityApiKey}`
+				},
+				body: JSON.stringify(testPayload)
+			});
+
+			if (!resp.ok) {
+				const errorBody = await resp.text();
+				console.error('Perplexity API key validation failed:', resp.status, errorBody);
+				return fail(400, {
+					perplexityApiKeyMessage: `API Key validation failed: ${errorBody}`,
+					perplexityApiKeySuccess: false
+				});
+			}
+		} catch (e: unknown) {
+			console.error('Error validating Perplexity API key:', e);
+			return fail(500, {
+				perplexityApiKeyMessage: `Error validating API Key: ${e instanceof Error ? e.message : String(e)}`,
+				perplexityApiKeySuccess: false
+			});
+		}
+
+		// Store the valid API key in an HttpOnly session cookie
+		cookies.set('user_provided_api_key', perplexityApiKey, {
+			path: '/',
+			httpOnly: true,
+			sameSite: 'lax',
+			secure: process.env.NODE_ENV === 'production', // Use secure in production
+			maxAge: 60 * 60 * 24 * 30 // 30 days
+		});
+
+		return {
+			perplexityApiKeyMessage: 'Perplexity API Key saved successfully!',
+			perplexityApiKeySuccess: true
+		};
 	}
 };

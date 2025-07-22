@@ -1,9 +1,18 @@
 // Imports for SvelteKit server-side functionality and environment variables
 import type { Actions } from './$types';
-// @ts-expect-error editor error
 import { PERPLEXITY_API_KEY, PERPLEXITY_API_URL, PERPLEXITY_QUALITY } from '$env/static/private';
 import { building } from '$app/environment';
 import type { MythVerificationResult, LensResult } from '$lib/types'; // Import from shared types
+import { prisma } from '$lib/server/db'; // Import the shared Prisma client
+import { error } from '@sveltejs/kit'; // Import the error function
+
+import type { PageServerLoad } from './$types';
+import {
+	ANALYZE_SOURCE_SYSTEM_PROMPT,
+	RESEARCH_LENS_SYSTEM_PROMPT,
+	SYNTHESIZE_INSIGHTS_SYSTEM_PROMPT,
+	VERIFY_MYTH_SYSTEM_PROMPT
+} from './prompts';
 
 interface Citation {
 	title: string;
@@ -86,67 +95,6 @@ function isValidCitationsArray(arr: any): arr is Citation[] {
 	);
 }
 
-const VERIFY_MYTH_SYSTEM_PROMPT = `You are a myth-busting expert who analyzes statements to determine their accuracy using evidence-based research.
-For each statement provided, follow these steps:
-1. Conduct thorough research to analyze whether the statement is true, false, or inconclusive based on current scientific evidence and credible sources.
-2. Provide a detailed, factual explanation of your verdict with emphasis on debunking misconceptions if the statement is false.
-3. Include specific factual information that corrects any misconceptions, citing quantitative data where available.
-4. Search for and cite multiple reliable, authoritative sources to support your explanation (prefer peer-reviewed studies, official organizations, and established institutions).
-5. If applicable, explain the historical or cultural origin of this myth or misconception.
-6. If relevant, mention a related myth or common misconception in the same domain.
-7. Analyze and explain the psychological, social, or cognitive factors that lead people to believe this myth.
-Guidelines for analysis:
-- Prioritize recent, peer-reviewed research and official sources.
-- Consider scientific consensus and avoid fringe theories.
-- Be specific about limitations in current knowledge when marking something as "inconclusive".
-- Distinguish between correlation and causation in explanations.
-- Address common logical fallacies associated with the topic.
-Return your response as a JSON object with the following structure:
-{
-  "verdict": "true" | "false" | "inconclusive",
-  "explanation": "A comprehensive, evidence-based explanation of why the statement is true, false, or inconclusive",
-  "citations": [ { "title": "Specific source title with publication year", "url": "URL to the authoritative source" } ],
-  "mythOrigin": "Historical or cultural context of where this belief originated (if applicable)",
-  "relatedMyth": "A related myth or misconception in the same domain (if applicable)",
-  "whyBelieved": "Psychological, social, or cognitive factors that explain why people believe this myth (if applicable)"
-}
-Ensure the output is ONLY the JSON object.`;
-
-const RESEARCH_LENS_SYSTEM_PROMPT = `You are an expert researcher analyzing myths and claims from specific perspectives.
-Provide a detailed analysis that includes:
-1. Key insights from this perspective
-2. Supporting evidence with proper citations
-3. Any contradictory evidence
-4. Nuanced conclusions
-Format your response as JSON:
-{
-  "explanation": "Detailed analysis from this perspective",
-  "keyInsights": ["Insight 1", "Insight 2", "Insight 3"],
-  "citations": [{"title": "Source title", "url": "URL"}]
-}
-Ensure the output is ONLY the JSON object.`;
-
-const ANALYZE_SOURCE_SYSTEM_PROMPT = `You are an expert source analyst evaluating information quality and reliability.
-Provide a detailed analysis formatted as JSON:
-{
-  "analysis": "Main analysis of the source",
-  "reliability": "Assessment of source reliability (if applicable)",
-  "methodology": "Evaluation of research methods (if applicable)",
-  "corroborating": ["Supporting source 1", "Supporting source 2"],
-  "contradicting": ["Contradicting source 1", "Contradicting source 2"]
-}
-Ensure the output is ONLY the JSON object.`;
-
-const SYNTHESIZE_INSIGHTS_SYSTEM_PROMPT = `You are an expert research synthesizer who integrates findings from multiple perspectives to generate comprehensive insights. Focus on identifying patterns, themes, and connections across different analytical approaches.
-Format as JSON:
-{
-  "overallInsight": "Comprehensive summary integrating all perspectives",
-  "themes": [ {"title": "Theme 1", "description": "Description of theme"} ],
-  "connections": ["Connection 1", "Connection 2"],
-  "contradictions": ["Contradiction 1", "Contradiction 2"]
-}
-Ensure the output is ONLY the JSON object.`;
-
 type CachedResponse = { timestamp: number; response: MythVerificationResult; expiresAt: number };
 const responseCache: Map<string, CachedResponse> = !building ? new Map() : new Map();
 const CACHE_EXPIRATION_MS = 24 * 60 * 60 * 1000;
@@ -198,6 +146,9 @@ async function makePerplexityRequest<T>(
 			);
 		}
 		console.error(`[${actionName}] API Error ${resp.status}:`, errorBody);
+		if (resp.status === 429) {
+			throw error(429, `API rate limit exceeded: ${errorBody}`);
+		}
 		throw new Error(`API error ${resp.status}${errorBody ? `: ${errorBody}` : '.'}`);
 	}
 
@@ -241,7 +192,10 @@ async function makePerplexityRequest<T>(
 	return { answer, parsedContent };
 }
 
-async function verifyMythLogic(myth: string): Promise<MythVerificationResult> {
+async function verifyMythLogic(
+	myth: string,
+	userApiKey: string | null
+): Promise<MythVerificationResult> {
 	const actionName = 'verifyMythLogic';
 	console.log(`[${actionName}] Verifying myth: "${myth}"`);
 	if (typeof myth !== 'string' || !myth.trim()) {
@@ -249,12 +203,14 @@ async function verifyMythLogic(myth: string): Promise<MythVerificationResult> {
 		return { success: false, error: 'Myth is required.' };
 	}
 
-	const apiKey = PERPLEXITY_API_KEY;
+	const apiKey = userApiKey || PERPLEXITY_API_KEY;
 	if (!apiKey) {
-		console.error(`[${actionName}] API key missing.`);
+		console.error(
+			`[${actionName}] API key missing. User provided: ${!!userApiKey}, Env var: ${!!PERPLEXITY_API_KEY}`
+		);
 		return {
 			success: false,
-			error: 'Missing Perplexity API key.',
+			error: 'Missing Perplexity API key. Please provide one or ensure it is configured.',
 			data: {
 				verdict: 'inconclusive',
 				explanation: 'Server config error',
@@ -264,6 +220,57 @@ async function verifyMythLogic(myth: string): Promise<MythVerificationResult> {
 				whyBelieved: ''
 			}
 		};
+	}
+
+	const feature = 'myth_verification';
+	const today = new Date();
+	today.setUTCHours(0, 0, 0, 0); // Truncate to day for UTC comparison
+
+	if (!userApiKey) {
+		console.log(
+			`[${actionName}] No user API key provided. Checking global rate limit for feature: ${feature}`
+		);
+		// Check global rate limit
+		const globalUsage = await prisma.globalApiUsage.upsert({
+			where: { feature_date: { feature, date: today } },
+			update: {}, // No direct update needed here, just fetch
+			create: { feature, date: today, count: 0 }
+		});
+
+		const currentCount = globalUsage.count;
+		const globalLimit = 10; // As per plan
+
+		if (currentCount >= globalLimit) {
+			console.warn(
+				`[${actionName}] Daily global limit exceeded for feature "${feature}". Current count: ${currentCount}`
+			);
+			return {
+				success: false,
+				error:
+					'Daily global limit exceeded for this feature. Please try again tomorrow or provide your custom API key to bypass limits.',
+				data: {
+					verdict: 'inconclusive',
+					explanation: 'Rate limit exceeded.',
+					citations: [],
+					mythOrigin: '',
+					relatedMyth: '',
+					whyBelieved: ''
+				}
+			};
+		}
+
+		// Increment global usage
+		await prisma.globalApiUsage.update({
+			where: { feature_date: { feature, date: today } },
+			data: { count: { increment: 1 } }
+		});
+		console.log(
+			`[${actionName}] Global usage incremented for feature "${feature}". New count: ${currentCount + 1}`
+		);
+	} else {
+		console.log(
+			`[${actionName}] User API key provided. Bypassing global rate limit for feature: ${feature}`
+		);
 	}
 
 	const cacheKey = `verifyMyth:${myth.trim().toLowerCase()}`;
@@ -393,32 +400,34 @@ async function verifyMythLogic(myth: string): Promise<MythVerificationResult> {
 	}
 }
 
-import type { PageServerLoad } from './$types';
-
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ url, cookies }) => {
 	const myth = url.searchParams.get('myth');
+	const userApiKey = cookies.get('user_provided_api_key') || null;
+
 	if (myth) {
 		console.log(`[PageLoad] Myth parameter found in URL: "${myth}". Verifying...`);
-		return await verifyMythLogic(myth);
+		return await verifyMythLogic(myth, userApiKey);
 	}
 	console.log(`[PageLoad] No myth parameter in URL.`);
 	return {};
 };
 
 export const actions: Actions = {
-	verifyMyth: async ({ request }) => {
+	verifyMyth: async ({ request, cookies }) => {
 		console.log("[Action] 'verifyMyth' called.");
 		const data = await request.formData();
 		const myth = (data.get('myth') as string).trim();
+		const userApiKey = cookies.get('user_provided_api_key') || null;
+
 		if (typeof myth !== 'string' || !myth.trim()) {
 			console.error('[Action verifyMyth] Invalid input: Myth is required.');
-			return { status: 400, body: { error: 'Myth is required.' } };
+			throw error(400, 'Myth is required.');
 		}
 		console.log(`[Action verifyMyth] Received myth: "${myth}"`);
-		return await verifyMythLogic(myth);
+		return await verifyMythLogic(myth, userApiKey);
 	},
 
-	researchLens: async ({ request }) => {
+	researchLens: async ({ request, cookies }) => {
 		const actionName = 'researchLens';
 		console.log(`[Action ${actionName}] Called.`);
 		const data = await request.formData();
@@ -426,6 +435,7 @@ export const actions: Actions = {
 		const lensType = data.get('lensType') as string;
 		const lensName = data.get('lensName') as string;
 		const customQuery = data.get('customQuery') as string | null;
+		const userApiKey = cookies.get('user_provided_api_key') || null;
 
 		console.log(`[Action ${actionName}] Received data:`, {
 			mythStatement,
@@ -440,10 +450,58 @@ export const actions: Actions = {
 			);
 			return { success: false, error: 'Myth statement, lens type, and lens name are required.' };
 		}
-		const apiKey = PERPLEXITY_API_KEY;
+		const apiKey = userApiKey || PERPLEXITY_API_KEY;
 		if (!apiKey) {
-			console.error(`[Action ${actionName}] API key missing.`);
-			return { success: false, error: 'Missing API key.' };
+			console.error(
+				`[Action ${actionName}] API key missing. User provided: ${!!userApiKey}, Env var: ${!!PERPLEXITY_API_KEY}`
+			);
+			return {
+				success: false,
+				error: 'Missing API key. Please provide one or ensure it is configured.'
+			};
+		}
+
+		const feature = 'game_question'; // Assuming game_question for research lenses
+		const today = new Date();
+		today.setUTCHours(0, 0, 0, 0); // Truncate to day for UTC comparison
+
+		if (!userApiKey) {
+			console.log(
+				`[${actionName}] No user API key provided. Checking global rate limit for feature: ${feature}`
+			);
+			// Check global rate limit
+			const globalUsage = await prisma.globalApiUsage.upsert({
+				where: { feature_date: { feature, date: today } },
+				update: {},
+				create: { feature, date: today, count: 0 }
+			});
+
+			const currentCount = globalUsage.count;
+			const globalLimit = 10; // As per plan
+
+			if (currentCount >= globalLimit) {
+				console.warn(
+					`[${actionName}] Daily global limit exceeded for feature "${feature}". Current count: ${currentCount}`
+				);
+				return {
+					success: false,
+					error:
+						'Daily global limit exceeded for this feature. Please try again tomorrow or provide your custom API key to bypass limits.'
+				};
+			}
+
+			// Increment global usage
+			await prisma.globalApiUsage.update({
+				where: { feature_date: { feature, date: today } },
+				data: { count: { increment: 1 } }
+			});
+			console.log(
+				`[${actionName}] Global usage incremented for feature "${feature}". New count: ${currentCount + 1}`
+			);
+		} else {
+			console.log(
+				`[${actionName}] User API key provided. Bypassing global rate limit for feature: ${feature}`
+			);
 		}
 
 		let lensPrompt = '';
@@ -561,7 +619,7 @@ export const actions: Actions = {
 		}
 	},
 
-	analyzeSource: async ({ request }) => {
+	analyzeSource: async ({ request, cookies }) => {
 		const actionName = 'analyzeSource';
 		console.log(`[Action ${actionName}] Called.`);
 		const data = await request.formData();
@@ -570,6 +628,7 @@ export const actions: Actions = {
 		const mythContext = data.get('mythContext') as string;
 		const analysisType = data.get('analysisType') as string | null;
 		const customQuery = data.get('customQuery') as string | null;
+		const userApiKey = cookies.get('user_provided_api_key') || null;
 
 		console.log(`[Action ${actionName}] Received data:`, {
 			sourceUrl,
@@ -598,10 +657,58 @@ export const actions: Actions = {
 			);
 			return { success: false, error: 'Source URL and myth context are required.' };
 		}
-		const apiKey = PERPLEXITY_API_KEY;
+		const apiKey = userApiKey || PERPLEXITY_API_KEY;
 		if (!apiKey) {
-			console.error(`[Action ${actionName}] API key missing.`);
-			return { success: false, error: 'Missing API key.' };
+			console.error(
+				`[Action ${actionName}] API key missing. User provided: ${!!userApiKey}, Env var: ${!!PERPLEXITY_API_KEY}`
+			);
+			return {
+				success: false,
+				error: 'Missing API key. Please provide one or ensure it is configured.'
+			};
+		}
+
+		const feature = 'tracks_generation'; // Assuming tracks_generation for source analysis
+		const today = new Date();
+		today.setUTCHours(0, 0, 0, 0); // Truncate to day for UTC comparison
+
+		if (!userApiKey) {
+			console.log(
+				`[${actionName}] No user API key provided. Checking global rate limit for feature: ${feature}`
+			);
+			// Check global rate limit
+			const globalUsage = await prisma.globalApiUsage.upsert({
+				where: { feature_date: { feature, date: today } },
+				update: {},
+				create: { feature, date: today, count: 0 }
+			});
+
+			const currentCount = globalUsage.count;
+			const globalLimit = 10; // As per plan
+
+			if (currentCount >= globalLimit) {
+				console.warn(
+					`[${actionName}] Daily global limit exceeded for feature "${feature}". Current count: ${currentCount}`
+				);
+				return {
+					success: false,
+					error:
+						'Daily global limit exceeded for this feature. Please try again tomorrow or provide your custom API key to bypass limits.'
+				};
+			}
+
+			// Increment global usage
+			await prisma.globalApiUsage.update({
+				where: { feature_date: { feature, date: today } },
+				data: { count: { increment: 1 } }
+			});
+			console.log(
+				`[${actionName}] Global usage incremented for feature "${feature}". New count: ${currentCount + 1}`
+			);
+		} else {
+			console.log(
+				`[${actionName}] User API key provided. Bypassing global rate limit for feature: ${feature}`
+			);
 		}
 
 		let analysisPrompt = '';
@@ -696,12 +803,13 @@ export const actions: Actions = {
 		}
 	},
 
-	synthesizeInsights: async ({ request }) => {
+	synthesizeInsights: async ({ request, cookies }) => {
 		const actionName = 'synthesizeInsights';
 		console.log(`[Action ${actionName}] Called.`);
 		const data = await request.formData();
 		const mythStatement = data.get('mythStatement') as string;
 		const lensResultsJson = data.get('lensResults') as string;
+		const userApiKey = cookies.get('user_provided_api_key') || null;
 
 		console.log(`[Action ${actionName}] Received mythStatement: "${mythStatement}"`);
 
@@ -719,8 +827,59 @@ export const actions: Actions = {
 		if (lensResults.length < 2)
 			return { success: false, error: 'At least 2 research angles are needed.' };
 
-		const apiKey = PERPLEXITY_API_KEY;
-		if (!apiKey) return { success: false, error: 'Missing API key.' };
+		const apiKey = userApiKey || PERPLEXITY_API_KEY;
+		if (!apiKey) {
+			console.error(
+				`[Action ${actionName}] API key missing. User provided: ${!!userApiKey}, Env var: ${!!PERPLEXITY_API_KEY}`
+			);
+			return {
+				success: false,
+				error: 'Missing API key. Please provide one or ensure it is configured.'
+			};
+		}
+
+		const feature = 'tracks_generation'; // Assuming tracks_generation for synthesis
+		const today = new Date();
+		today.setUTCHours(0, 0, 0, 0); // Truncate to day for UTC comparison
+
+		if (!userApiKey) {
+			console.log(
+				`[${actionName}] No user API key provided. Checking global rate limit for feature: ${feature}`
+			);
+			// Check global rate limit
+			const globalUsage = await prisma.globalApiUsage.upsert({
+				where: { feature_date: { feature, date: today } },
+				update: {},
+				create: { feature, date: today, count: 0 }
+			});
+
+			const currentCount = globalUsage.count;
+			const globalLimit = 10; // As per plan
+
+			if (currentCount >= globalLimit) {
+				console.warn(
+					`[${actionName}] Daily global limit exceeded for feature "${feature}". Current count: ${currentCount}`
+				);
+				return {
+					success: false,
+					error:
+						'Daily global limit exceeded for this feature. Please try again tomorrow or provide your custom API key to bypass limits.'
+				};
+			}
+
+			// Increment global usage
+			await prisma.globalApiUsage.update({
+				where: { feature_date: { feature, date: today } },
+				data: { count: { increment: 1 } }
+			});
+			console.log(
+				`[${actionName}] Global usage incremented for feature "${feature}". New count: ${currentCount + 1}`
+			);
+		} else {
+			console.log(
+				`[${actionName}] User API key provided. Bypassing global rate limit for feature: ${feature}`
+			);
+		}
 
 		const lensDataForPrompt = lensResults.map((lr) => ({
 			perspective: lr.name,
@@ -839,5 +998,53 @@ export const actions: Actions = {
 	resetPage: async () => {
 		console.log('[Action resetPage] Called.');
 		return { success: true, reset: true };
+	},
+
+	updatePerplexityApiKey: async ({ request, cookies }) => {
+		const formData = await request.formData();
+		const perplexityApiKey = formData.get('perplexityApiKey')?.toString() || '';
+
+		if (!perplexityApiKey) {
+			return error(400, 'API Key is required.');
+		}
+
+		// Validate API key by making a minimal test call
+		try {
+			const testPayload = {
+				model: 'sonar',
+				messages: [{ role: 'user', content: 'Hello' }]
+			};
+			const resp = await fetch(PERPLEXITY_API_URL, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${perplexityApiKey}`
+				},
+				body: JSON.stringify(testPayload)
+			});
+
+			if (!resp.ok) {
+				const errorBody = await resp.text();
+				console.error('Perplexity API key validation failed:', resp.status, errorBody);
+				return error(400, `API Key validation failed: ${errorBody}`);
+			}
+		} catch (e: unknown) {
+			console.error('Error validating Perplexity API key:', e);
+			return error(500, `Error validating API Key: ${e instanceof Error ? e.message : String(e)}`);
+		}
+
+		// Store the valid API key in an HttpOnly session cookie
+		cookies.set('user_provided_api_key', perplexityApiKey, {
+			path: '/',
+			httpOnly: true,
+			sameSite: 'lax',
+			secure: process.env.NODE_ENV === 'production', // Use secure in production
+			maxAge: 60 * 60 * 24 * 30 // 30 days
+		});
+
+		return {
+			success: true,
+			message: 'Perplexity API Key saved successfully!'
+		};
 	}
 };

@@ -1,8 +1,11 @@
 <script lang="ts">
 	// Import UI components
 	import * as Tabs from '$lib/components/ui/tabs';
+	import { applyAction } from '$app/forms';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import type { SubmitFunction, ActionResult } from '@sveltejs/kit';
 	import { DatabaseZap } from '@lucide/svelte';
 	import type { PageProps } from './$types';
@@ -402,6 +405,40 @@
 						<div class="flex w-full justify-center py-8 sm:py-12 md:py-16">
 							<MythInput {loading} {handleSubmit} />
 						</div>
+
+						{#if displayData?.success === false && displayData?.error?.includes('Daily global limit exceeded')}
+							<div class="mx-auto mt-4 w-full max-w-md rounded-md border p-4 shadow-sm">
+								<h3 class="mb-2 text-lg font-semibold">Bypass Rate Limit</h3>
+								<p class="text-muted-foreground mb-4 text-sm">
+									The daily global limit for this feature has been reached. You can bypass this
+									limit by providing your own Perplexity AI API key.
+								</p>
+								<form
+									method="POST"
+									action="?/updatePerplexityApiKey"
+									class="space-y-4"
+									use:enhance={({ formElement, formData }) => {
+										// TODO: Add loading state for API key submission
+										return async ({ result }) => {
+											await applyAction(result);
+										};
+									}}
+								>
+									<div class="grid gap-2">
+										<Label for="perplexityApiKeyApp">API Key</Label>
+										<Input
+											id="perplexityApiKeyApp"
+											name="perplexityApiKey"
+											type="password"
+											placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+											required
+										/>
+										<!-- TODO: Add server error handling for API key -->
+									</div>
+									<Button type="submit" class="w-full">Save API Key</Button>
+								</form>
+							</div>
+						{/if}
 					{:else if displayData && displayData.data}
 						<div class="flex flex-col space-y-2" transition:fade={{ duration: 500 }}>
 							{#if displayData.cached}
