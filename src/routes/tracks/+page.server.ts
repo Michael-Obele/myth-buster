@@ -1,10 +1,10 @@
 // myth-buster/src/routes/tracks/+page.server.ts
 import { fail } from '@sveltejs/kit';
-// @ts-expect-error editor-error
 import { PERPLEXITY_API_KEY, PERPLEXITY_API_URL, PERPLEXITY_QUALITY } from '$env/static/private';
 import { building } from '$app/environment';
 import type { PageServerLoad } from './$types';
 import type { LearningTrack } from '$lib/game/tracks'; // Assuming LearningTrack interface is in tracks.ts
+import { prisma } from '$lib/server/db';
 
 // API Configuration
 
@@ -98,13 +98,52 @@ function cacheTrackConcepts(concepts: LearningTrack[]): void {
 	console.log('[TRACK CONCEPTS CACHE] Cached new track concepts.');
 }
 
-async function generateTrackConceptsFromAPI(): Promise<LearningTrack[]> {
+async function generateTrackConceptsFromAPI(userApiKey: string | null): Promise<LearningTrack[]> {
 	console.log('[API CALL] Generating learning track concepts from API.');
-	const apiKey = PERPLEXITY_API_KEY;
+	const apiKey = userApiKey || PERPLEXITY_API_KEY;
 
 	if (!apiKey) {
 		console.error('[API ERROR] Perplexity API key is missing for track concepts.');
 		throw new Error('API key is not configured for track concepts.');
+	}
+
+	const feature = 'tracks_generation';
+	const today = new Date();
+	today.setUTCHours(0, 0, 0, 0); // Truncate to day for UTC comparison
+
+	if (!userApiKey) {
+		console.log(
+			`[generateTrackConceptsFromAPI] No user API key provided. Checking global rate limit for feature: ${feature}`
+		);
+		const globalUsage = await prisma.globalApiUsage.upsert({
+			where: { feature_date: { feature, date: today } },
+			update: {},
+			create: { feature, date: today, count: 0 }
+		});
+
+		const currentCount = globalUsage.count;
+		const globalLimit = 10; // As per plan
+
+		if (currentCount >= globalLimit) {
+			console.warn(
+				`[generateTrackConceptsFromAPI] Daily global limit exceeded for feature "${feature}". Current count: ${currentCount}`
+			);
+			throw new Error(
+				'Daily global limit exceeded for tracks generation. Please try again tomorrow or provide your custom API key to bypass limits.'
+			);
+		}
+
+		await prisma.globalApiUsage.update({
+			where: { feature_date: { feature, date: today } },
+			data: { count: { increment: 1 } }
+		});
+		console.log(
+			`[generateTrackConceptsFromAPI] Global usage incremented for feature "${feature}". New count: ${currentCount + 1}`
+		);
+	} else {
+		console.log(
+			`[generateTrackConceptsFromAPI] User API key provided. Bypassing global rate limit for feature: ${feature}`
+		);
 	}
 
 	const payload = {
@@ -141,6 +180,11 @@ async function generateTrackConceptsFromAPI(): Promise<LearningTrack[]> {
 	if (!resp.ok) {
 		const errorText = await resp.text();
 		console.error('[TRACK CONCEPTS API ERROR] API request failed:', resp.status, errorText);
+		if (resp.status === 429) {
+			throw new Error(
+				'API rate limit exceeded for tracks generation. Please try again tomorrow or provide your custom API key to bypass limits.'
+			);
+		}
 		throw new Error(`Track concepts API request failed with status ${resp.status}: ${errorText}`);
 	}
 
@@ -215,12 +259,13 @@ async function generateTrackConceptsFromAPI(): Promise<LearningTrack[]> {
 	}
 }
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ cookies }) => {
+	const userApiKey = cookies.get('user_provided_api_key') || null;
 	let tracks: LearningTrack[] = getCachedTrackConcepts() || [];
 
 	if (tracks.length === 0) {
 		try {
-			tracks = await generateTrackConceptsFromAPI();
+			tracks = await generateTrackConceptsFromAPI(userApiKey);
 			if (tracks.length > 0) {
 				cacheTrackConcepts(tracks);
 			} else {
@@ -233,7 +278,7 @@ export const load: PageServerLoad = async () => {
 			// Using fail() might be too disruptive if it's just about track concepts not loading
 			return {
 				tracks: [],
-				error: 'Failed to load learning tracks. Please try again later.'
+				error: error.message || 'Failed to load learning tracks. Please try again later.'
 			};
 		}
 	}

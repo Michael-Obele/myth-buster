@@ -1,9 +1,9 @@
 // myth-buster/src/routes/tracks/[trackId]/+page.server.ts
 import { fail, error as SvelteKitError } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-// @ts-expect-error editor-error
 import { PERPLEXITY_API_KEY, PERPLEXITY_API_URL, PERPLEXITY_QUALITY } from '$env/static/private';
 import { building } from '$app/environment';
+import { prisma } from '$lib/server/db';
 import type {
 	GameStatement,
 	Citation,
@@ -104,7 +104,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 };
 
 export const actions: Actions = {
-	generateMyth: async ({ request, params }) => {
+	generateMyth: async ({ request, params, cookies }) => {
 		const formData = await request.formData();
 		const trackId = params.trackId;
 		const trackTitle = formData.get('trackTitle')?.toString();
@@ -152,8 +152,50 @@ export const actions: Actions = {
 						mythIndex + 1,
 						totalMythsInTrack
 					);
-					const apiKey = PERPLEXITY_API_KEY;
-					if (!apiKey) throw new Error('API key is not configured.');
+					const userApiKey = cookies.get('user_provided_api_key') || null;
+					const apiKey = userApiKey || PERPLEXITY_API_KEY;
+					if (!apiKey) {
+						throw new Error('API key is not configured.');
+					}
+
+					const feature = 'tracks_generation';
+					const today = new Date();
+					today.setUTCHours(0, 0, 0, 0);
+
+					if (!userApiKey) {
+						console.log(
+							`[generateMyth] No user API key provided. Checking global rate limit for feature: ${feature}`
+						);
+						const globalUsage = await prisma.globalApiUsage.upsert({
+							where: { feature_date: { feature, date: today } },
+							update: {},
+							create: { feature, date: today, count: 0 }
+						});
+
+						const currentCount = globalUsage.count;
+						const globalLimit = 10;
+
+						if (currentCount >= globalLimit) {
+							console.warn(
+								`[generateMyth] Daily global limit exceeded for feature "${feature}". Current count: ${currentCount}`
+							);
+							throw new Error(
+								'Daily global limit exceeded for tracks generation. Please try again tomorrow or provide your custom API key to bypass limits.'
+							);
+						}
+
+						await prisma.globalApiUsage.update({
+							where: { feature_date: { feature, date: today } },
+							data: { count: { increment: 1 } }
+						});
+						console.log(
+							`[generateMyth] Global usage incremented for feature "${feature}". New count: ${currentCount + 1}`
+						);
+					} else {
+						console.log(
+							`[generateMyth] User API key provided. Bypassing global rate limit for feature: ${feature}`
+						);
+					}
 
 					const payload = {
 						model: 'sonar',
@@ -206,6 +248,11 @@ export const actions: Actions = {
 							errorBody = await resp.text();
 						} catch (e) {
 							/* ignore */
+						}
+						if (resp.status === 429) {
+							throw new Error(
+								'API rate limit exceeded for tracks generation. Please try again tomorrow or provide your custom API key to bypass limits.'
+							);
 						}
 						throw new Error(
 							`API request failed: ${resp.status}${errorBody ? `: ${errorBody}` : '.'}`
