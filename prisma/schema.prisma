@@ -80,3 +80,13 @@ model UserResearchActivity {
   mythId                  String? // Optional: link to a specific Myth record
   verificationStatus      String? // Optional: e.g., 'verified', 'debunked', 'in_progress'
 }
+
+// New model for tracking GLOBAL API usage per feature per day
+model GlobalApiUsage {
+  id      String   @id @default(uuid())
+  feature String // e.g., "myth_verification", "game_question", "tracks_generation"
+  date    DateTime // Date of usage (truncated to the day, e.g., 2025-07-22T00:00:00.000Z)
+  count   Int      @default(0)
+
+  @@unique([feature, date]) // Unique constraint for global tracking
+}
