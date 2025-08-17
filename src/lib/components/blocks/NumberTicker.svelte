@@ -20,6 +20,7 @@ The `NumberTicker` component is used to display a numeric value that animates fr
   class="text-lg font-bold"
   direction="up"
 />
+```
 -->
 
 <script lang="ts">
