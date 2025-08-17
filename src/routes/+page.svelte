@@ -1,7 +1,7 @@
 <script lang="ts">
 	import FeatureCardGrid from '$lib/components/blocks/FeatureCardGrid.svelte';
 	import BackgroundBoxes from '$lib/components/blocks/BackgroundBoxes.svelte';
-	import ApiKeyModal from '$lib/components/ApiKeyModal.svelte';
+	import ApiKeyModal from '$lib/components/blocks/ApiKeyModal.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { PlusCircle } from '@lucide/svelte';
 
